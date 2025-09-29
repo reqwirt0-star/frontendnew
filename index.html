@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChaterLab Quick Replies</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Все ваши стили остаются без изменений */
+        :root {
+            --primary-blue: #007aff;
+            --primary-blue-hover: #005ecb;
+            --light-blue-bg: #f0f7ff;
+            --text-primary: #2c2c2e;
+            --text-secondary: #636366;
+            --background-main: #f8f8fa;
+            --background-card: #ffffff;
+            --border-color: #e5e5e9;
+            --shadow-color: rgba(0, 122, 255, 0.1);
+            --success-color: #34c759;
+            --error-color: #ff3b30;
+            --star-color: #ffcc00;
+        }
+        body.dark-mode {
+            --light-blue-bg: #2c2c2e;
+            --text-primary: #f2f2f7;
+            --text-secondary: #98989d;
+            --background-main: #1c1c1e;
+            --background-card: #2c2c2e;
+            --border-color: #48484a;
+            --shadow-color: rgba(0, 122, 255, 0.2);
+        }
+        body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background-color: var(--background-main); color: var(--text-primary); height: 100%; transition: background-color 0.3s, color 0.3s; }
+        .login-active { overflow: hidden; height: 100vh; }
+        #app-container { flex-direction: column; min-height: 100vh; opacity: 0; transition: opacity 0.5s ease-in-out; }
+        #app-container:not([data-logged="true"]) { display: none; }
+        #animation-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--background-main); display: none; justify-content: center; align-items: center; z-index: 3000; opacity: 1; transition: opacity 0.5s ease-out; }
+        .animation-content h1 { font-size: 48px; color: var(--primary-blue); letter-spacing: -1px; font-weight: 600; opacity: 0; }
+        #animation-overlay.animate .animation-content h1 { animation: fadeInOut 2.5s ease-in-out forwards; }
+        @keyframes fadeInOut { 0%{opacity:0;transform:scale(.95)} 20%{opacity:1;transform:scale(1)} 80%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(.95)} }
+        header { text-align: center; padding: 18px 20px; font-size: 24px; font-weight: 600; border-bottom: 1px solid var(--border-color); letter-spacing: -0.5px; background-color: var(--background-card); transition: background-color 0.3s, border-color 0.3s; }
+        main { display: flex; flex: 1; flex-wrap: wrap; overflow: hidden; }
+        .sidebar { width: 320px; min-width: 280px; padding: 20px; border-right: 1px solid var(--border-color); background-color: var(--background-card); box-sizing: border-box; display: flex; flex-direction: column; transition: background-color 0.3s, border-color 0.3s; }
+        .sidebar > div:first-child { flex-grow: 1; }
+        .sidebar h2 { font-size: 16px; margin-bottom: 12px; font-weight: 600; margin-top: 20px; color: var(--text-secondary); padding-left: 5px; }
+        .sidebar h2:first-of-type { margin-top: 0; }
+        .sidebar-divider { border: 0; height: 1px; background-color: var(--border-color); margin: 20px 0; transition: background-color 0.3s; }
+        .sidebar-footer { margin-top: auto; flex-shrink: 0; }
+        .sidebar-section { display: flex; flex-direction: column; }
+        .sidebar button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; margin-bottom: 10px; background-color: var(--background-card); border: 1px solid var(--border-color); border-radius: 10px; font-size: 15px; font-weight: 500; text-align: left; color: var(--text-primary); cursor: pointer; transition: all 0.2s ease; }
+        .sidebar button:hover { border-color: var(--primary-blue); color: var(--primary-blue); background-color: var(--light-blue-bg); transform: translateY(-2px); box-shadow: 0 4px 12px var(--shadow-color); }
+        .sidebar button svg { width: 20px; height: 20px; flex-shrink: 0; stroke-width: 1.5; color: var(--text-secondary); transition: color 0.2s ease; }
+        .sidebar button:hover svg { color: var(--primary-blue); }
+        .sidebar button .lang-marker { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--text-secondary); background-color: #f0f0f2; padding: 2px 6px; border-radius: 5px; }
+        body.dark-mode .sidebar button .lang-marker { background-color: #48484a; }
+        .favorite-toggle { cursor: pointer; padding: 5px; margin-left: auto; line-height: 0; }
+        .favorite-toggle svg { width: 18px; height: 18px; stroke: var(--text-secondary); fill: none; transition: all 0.2s ease; }
+        .favorite-toggle:hover svg { stroke: var(--star-color); }
+        .favorite-toggle.is-favorite svg { stroke: var(--star-color); fill: var(--star-color); }
+        .search-container { position: relative; margin-bottom: 20px; }
+        #searchInput { width: 100%; padding: 10px 15px 10px 40px; border-radius: 10px; border: 1px solid var(--border-color); background-color: var(--background-main); font-size: 15px; color: var(--text-primary); transition: all 0.2s ease; }
+        #searchInput:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px var(--shadow-color); outline: none; }
+        .search-container::before { content: '🔍'; position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
+        .info { flex: 1; padding: 30px; overflow-y: auto; }
+        .info h3 { font-size: 24px; font-weight: 600; margin-bottom: 15px; }
+        .info p { font-size: 16px; line-height: 1.6; margin-bottom: 25px; color: var(--text-secondary); }
+        .toggle { display: inline-flex; background-color: var(--border-color); border-radius: 9px; padding: 4px; margin-bottom: 25px; transition: background-color 0.3s; }
+        .toggle button { padding: 6px 16px; border: none; background: transparent; cursor: pointer; font-size: 14px; font-weight: 500; border-radius: 7px; margin: 0; color: var(--text-secondary); transition: all 0.25s ease; }
+        .toggle button.active { background: var(--background-card); color: var(--text-primary); box-shadow: 0 0 0 1px var(--border-color), 0 1px 4px rgba(0,0,0,0.08); }
+        .instructions { margin-top: 40px; }
+        .step { background: var(--background-card); border-radius: 12px; padding: 25px; margin-bottom: 20px; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; }
+        .step h4 { margin: 0 0 15px; font-size: 18px; font-weight: 600; color: var(--primary-blue); display: flex; align-items: center; gap: 12px; }
+        .step-number { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; background-color: var(--light-blue-bg); color: var(--primary-blue); border-radius: 50%; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+        .step ul, .step ol { padding-left: 20px; margin: 10px 0; color: var(--text-secondary); line-height: 1.7; word-break: break-word; }
+        .step ul li::marker, .step ol li::marker { font-weight: 500; }
+        .step li strong { color: var(--text-primary); }
+        .instructions table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 600px; }
+        .instructions table th, .instructions table td { border: 1px solid var(--border-color); padding: 10px 12px; font-size: 14px; text-align: left; }
+        .instructions table th { background: var(--light-blue-bg); font-weight: 500; }
+        .mobile-switcher { display: none; background-color: var(--background-card); border-bottom: 1px solid var(--border-color); padding: 0 10px; text-align: center; }
+        .mobile-switcher-inner { display: flex; }
+        .mobile-switcher button { flex: 1; padding: 14px 0; border: none; border-bottom: 3px solid transparent; background-color: transparent; font-size: 15px; cursor: pointer; font-weight: 600; color: var(--text-secondary); transition: all 0.25s ease; }
+        .mobile-switcher button.active { color: var(--primary-blue); border-bottom-color: var(--primary-blue); }
+        @media (max-width: 768px) {
+            header { font-size: 20px; padding: 15px; }
+            #app-container { height: 100vh; overflow: hidden; }
+            main { flex-direction: column; flex-grow: 1; height: calc(100% - 51px - 44px); }
+            .mobile-switcher { display: flex; justify-content: space-between; align-items: center; }
+            .sidebar, .info { width: 100%; min-width: unset; padding: 15px; border-right: none; border-bottom: 1px solid var(--border-color); display: none; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+            .sidebar { padding-bottom: 0; }
+            main.sidebar-visible .sidebar { display: flex; }
+            main.info-visible .info { display: block; }
+            .instructions table { display: block; border: none; }
+            .instructions table thead, .instructions table tr:first-child { display: none; }
+            .instructions table tr { display: block; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--background-card); }
+            .instructions table td { display: block; border: none; padding: 12px 10px; font-size: 15px; text-align: right; position: relative; word-break: break-all; }
+            .instructions table td::before { content: attr(data-label); position: absolute; left: 10px; width: 40%; text-align: left; font-weight: 600; color: var(--primary-blue); }
+        }
+        .toast-notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: var(--success-color); color: white; padding: 12px 20px; border-radius: 10px; opacity: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: all 0.3s ease-in-out; z-index: 1000; font-size: 15px; font-weight: 500; pointer-events: none; white-space: nowrap; }
+        .toast-notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 2000; overflow: hidden; }
+        .login-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(315deg, #007aff, #5856d6, #ff2d55, #ff9500); background-size: 400% 400%; animation: gradientAnimation 20s ease infinite; z-index: 1; }
+        @keyframes gradientAnimation { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        .login-form-container { background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 40px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 340px; max-width: 90%; text-align: center; transition: opacity 0.4s ease-out; z-index: 2; border: 1px solid rgba(255,255,255,0.2); }
+        .dark-mode .login-form-container { background: rgba(28, 28, 30, 0.85); border: 1px solid rgba(255,255,255,0.1); }
+        .login-form-container h1 { font-size: 28px; font-weight: 600; color: var(--primary-blue); margin-top: 0; margin-bottom: 8px; }
+        .login-form-container p { margin-top: 0; margin-bottom: 25px; color: var(--text-secondary); }
+        .login-lang-switcher { display: flex; justify-content: center; margin-bottom: 25px; background-color: rgba(0,0,0,0.05); border-radius: 10px; padding: 4px; }
+        .dark-mode .login-lang-switcher { background-color: rgba(255,255,255,0.1); }
+        .login-lang-switcher button { flex: 1; padding: 8px; border: none; background-color: transparent; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.25s ease; }
+        .login-lang-switcher button.active { background-color: var(--background-card); color: var(--primary-blue); box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+        .login-form-container input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 10px; box-sizing: border-box; font-size: 16px; transition: all 0.2s ease; background-color: var(--background-card); color: var(--text-primary); }
+        .login-form-container input:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px var(--shadow-color); outline: none; }
+        .login-form-container button[type="submit"] { width: 100%; padding: 14px; background-color: var(--primary-blue); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+        .login-form-container button[type="submit"]:hover { background-color: var(--primary-blue-hover); }
+        #login-error { color: #fff; background-color: var(--error-color); padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 14px; font-weight: 500; opacity: 0; transform: translateY(10px); transition: opacity 0.3s ease, transform 0.3s ease; pointer-events: none; }
+        #login-error.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .theme-switch-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 10px 5px; }
+        .theme-switch-label { font-weight: 500; color: var(--text-secondary); }
+        .theme-switch { display: inline-block; height: 26px; position: relative; width: 50px; }
+        .theme-switch input { display:none; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; }
+        .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 18px; left: 4px; position: absolute; transition: .4s; width: 18px; }
+        input:checked + .slider { background-color: var(--primary-blue); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        .slider.round { border-radius: 34px; }
+        .slider.round:before { border-radius: 50%; }
+    </style>
+</head>
+<body class="login-active">
+
+    <div id="animation-overlay">
+        <div class="animation-content"><h1>ChaterLab</h1></div>
+    </div>
+
+    <div id="login-screen">
+        <div class="login-background"></div>
+        <div class="login-form-container">
+            <h1 data-key="loginHeader">ChaterLab</h1>
+            <p data-key="loginSubheader">Панель быстрых ответов</p>
+            <div class="login-lang-switcher">
+                <button id="login-lang-ru" onclick="switchLanguage('ru')">RU</button>
+                <button id="login-lang-uk" onclick="switchLanguage('uk')">UA</button>
+                <button id="login-lang-en" onclick="switchLanguage('en')">ENG</button>
+            </div>
+            <form id="login-form">
+                <input type="text" id="login-username" data-key="loginPlaceholder" required placeholder="Логин">
+                <input type="password" id="login-password" data-key="passwordPlaceholder" required placeholder="Пароль">
+                <button type="submit" data-key="loginButton">Войти</button>
+                <div id="login-error"></div>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-container" data-logged="false">
+        <header data-key="appHeader">ChaterLab Quick Replies</header>
+        
+        <div class="mobile-switcher" id="mobileSwitcher">
+            <div class="mobile-switcher-inner">
+                <button id="switchButtons" class="active" onclick="toggleMobileView('buttons')">Ответы</button>
+                <button id="switchInstructions" onclick="toggleMobileView('instructions')">Инструкция</button>
+            </div>
+        </div>
+
+        <main class="sidebar-visible">
+            <div class="sidebar" id="sidebarBlock">
+                
+                <div>
+                    <div class="search-container">
+                        <input type="search" id="searchInput" data-key="searchPlaceholder" placeholder="Поиск...">
+                    </div>
+                    <div class="sidebar-section" id="eng-section">
+                        <h2 data-key="englishSection">English Content</h2>
+                        <button id="btn-greeting-en" onclick="copyGreetingENG()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span data-key="greetingButtonLabel"></span> <div class="favorite-toggle" onclick="toggleFavorite(event, 'btn-greeting-en')"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div></button>
+                        <button id="btn-job-en" onclick="copyJobENG()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span data-key="jobDescButtonLabel"></span> <div class="favorite-toggle" onclick="toggleFavorite(event, 'btn-job-en')"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div></button>
+                        <button id="btn-flirt-en" onclick="copyFlirtENG()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span data-key="flirtButtonLabel"></span> <div class="favorite-toggle" onclick="toggleFavorite(event, 'btn-flirt-en')"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div></button>
+                        <button id="btn-contact-en" onclick="copyContactENG()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span data-key="contactButtonLabel"></span> <div class="favorite-toggle" onclick="toggleFavorite(event, 'btn-contact-en')"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div></button>
+                    </div>
+
+                    <div class="sidebar-section" id="ru-section">
+                        <h2 data-key="russianSection">Русский</h2>
+                        <button id="btn-greeting-ru" onclick="copyGreetingRU()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span data-key="greetingButtonLabel"></span> <div class="favorite-toggle" onclick="toggleFavorite(event, 'btn-greeting-ru')"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div></button>
+                        <button id="btn-job-ru" onclick="copyJobRU()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span data-key="jobDescButtonLabel"></span> <div class="favorite-toggle" onclick="toggleFavorite(event, 'btn-job-ru')"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div></button>
+                        <button id="btn-jobprime-ru" onclick="copyJobPrimeRU()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span data-key="jobPrimeButtonLabel"></span> <div class="favorite-toggle" onclick="toggleFavorite(event, 'btn-jobprime-ru')"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div></button>
+                        <button id="btn-flirt-ru" onclick="copyFlirtRU()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span data-key="flirtButtonLabel"></span> <div class="favorite-toggle" onclick="toggleFavorite(event, 'btn-flirt-ru')"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div></button>
+                        <button id="btn-contact-ru" onclick="copyContactRU()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span data-key="contactButtonLabel"></span> <div class="favorite-toggle" onclick="toggleFavorite(event, 'btn-contact-ru')"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div></button>
+                    </div>
+                </div>
+                
+                <div class="sidebar-footer">
+                    <hr class="sidebar-divider">
+                    <div class="theme-switch-wrapper">
+                        <div class="theme-switch-label" data-key="darkModeLabel">Тёмная тема</div>
+                        <label class="theme-switch" for="theme-checkbox">
+                            <input type="checkbox" id="theme-checkbox" />
+                            <div class="slider round"></div>
+                        </label>
+                    </div>
+                    <button onclick="logout()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span data-key="logoutButtonText">Выйти</span></button>
+                </div>
+            </div>
+
+            <div class="info" id="infoBlock">
+                <div class="toggle">
+                    <button id="btnEN" onclick="switchLanguage('en')">EN</button>
+                    <button id="btnUA" onclick="switchLanguage('uk')">UA</button>
+                    <button id="btnRU" onclick="switchLanguage('ru')">RU</button>
+                </div>
+                <h3 id="infoHeader" data-key="aboutHeader"></h3>
+                <p id="infoText" data-key="aboutText"></p>
+                <div class="instructions" id="instructions"></div>
+            </div>
+        </main>
+    </div>
+    <div id="toast" class="toast-notification"></div>
+
+    <script>
+        "use strict";
+
+        // ===================================================================================
+        // DATA STORE - All content and translations are here for easy management
+        // ===================================================================================
+        const appData = {
+            // 🔥 ИЗМЕНЕНИЕ: Массив credentials полностью УДАЛЁН отсюда.
+            // Аутентификация теперь на сервере.
+            i18n: {
+                en: {
+                    loginHeader: "ChaterLab", loginSubheader: "Quick Replies Panel", loginPlaceholder: "Login", passwordPlaceholder: "Password", loginButton: "Log In",
+                    appHeader: "ChaterLab Quick Replies", repliesTab: "Replies", instructionsTab: "Instructions",
+                    englishSection: "English Content", russianSection: "Russian Content", logoutButtonText: "Log Out",
+                    aboutHeader: "About this tool", aboutText: "This panel allows you to quickly copy professional greetings, job descriptions, test assignments, and contacts for ChaterLab. Click any button to copy the text to your clipboard.",
+                    instructionHeader: "📖 Instruction", errorInvalid: "Invalid credentials. Please contact your manager.",
+                    toastMessage: "Copied", searchPlaceholder: "Search...", darkModeLabel: "Dark Mode",
+                    greetingButtonLabel: "Greeting", jobDescButtonLabel: "Job Description", jobPrimeButtonLabel: "Job Description (Prime)", flirtButtonLabel: "Flirt Task", contactButtonLabel: "Contact",
+                },
+                ru: {
+                    loginHeader: "ChaterLab", loginSubheader: "Панель быстрых ответов", loginPlaceholder: "Логин", passwordPlaceholder: "Пароль", loginButton: "Войти",
+                    appHeader: "ChaterLab Quick Replies", repliesTab: "Ответы", instructionsTab: "Инструкция",
+                    englishSection: "Английский контент", russianSection: "Русский контент", logoutButtonText: "Выйти",
+                    aboutHeader: "О панели", aboutText: "Эта панель позволяет быстро копировать профессиональные приветствия, описание вакансии, тестовое задание и контакты для ChaterLab. Нажмите любую кнопку, чтобы скопировать текст в буфер обмена.",
+                    instructionHeader: "📖 Инструкция для работы", errorInvalid: "Неверные данные. Свяжитесь с менеджером.",
+                    toastMessage: "Скопировано", searchPlaceholder: "Поиск...", darkModeLabel: "Тёмная тема",
+                    greetingButtonLabel: "Приветствие", jobDescButtonLabel: "Описание вакансии", jobPrimeButtonLabel: "Описание вакансии (Прайм)", flirtButtonLabel: "Флирт-задание", contactButtonLabel: "Контакт",
+                },
+                uk: {
+                    loginHeader: "ChaterLab", loginSubheader: "Панель швидких відповідей", loginPlaceholder: "Логін", passwordPlaceholder: "Пароль", loginButton: "Увійти",
+                    appHeader: "ChaterLab Quick Replies", repliesTab: "Відповіді", instructionsTab: "Інструкція",
+                    englishSection: "Англійський контент", russianSection: "Російський контент", logoutButtonText: "Вийти",
+                    aboutHeader: "Про панель", aboutText: "Ця панель дозволяє швидко копіювати професійні привітання, опис вакансії, тестове завдання та контакти для ChaterLab. Натисніть будь-яку кнопку, щоб скопіювати текст у буфер обміну.",
+                    instructionHeader: "📖 Інструкція для роботи", errorInvalid: "Невірні дані. Зв'яжіться з менеджером.",
+                    toastMessage: "Скопійовано", searchPlaceholder: "Пошук...", darkModeLabel: "Темна тема",
+                    greetingButtonLabel: "Привітання", jobDescButtonLabel: "Опис вакансії", jobPrimeButtonLabel: "Опис вакансії (Прайм)", flirtButtonLabel: "Флірт-завдання", contactButtonLabel: "Контакт",
+                }
+            },
+            templates: {
+                en: {
+                    greetings: [ "Good day! We are ChaterLab. Do you have experience...", "Hello! This is ChaterLab..." ],
+                    jobDescriptions: [ `Job Description:\n📌 Task: Communicate with foreign men...`, `Vacancy: Chat Operator...` ],
+                    jobDescriptionsPrime: [ `Job Description (Prime):\n📌 Task: Communicate with foreign men...` ],
+                    flirtClosings: [ "Please create 10 unique phrases...", "As a test, please write 10 creative lines..." ],
+                    contacts: [ "Thank you for completing the test...", "Great job on the test!..." ]
+                },
+                ru: {
+                    greetings: [ "Добрый день! Мы компания ChaterLab...", "Здравствуйте! Это ChaterLab..." ],
+                    jobDescriptions: [ `Описание вакансии:\n📌 Задача: Ведение переписки...`, `Вакансия: Оператор чата...` ],
+                    jobDescriptionsPrime: [ `Описание вакансии (Прайм):\n📌 Задача: Ведение переписки...` ],
+                    flirtClosings: [ "Пожалуйста, составьте 10 уникальных фраз...", "В качестве теста, напишите 10 креативных фраз..." ],
+                    contacts: [ "Благодарим за выполненное тестовое...", "Отличная работа! Следующий шаг — связаться..." ]
+                }
+            }
+        };
+
+        // ===================================================================================
+        // GLOBAL STATE & UTILITIES
+        // ===================================================================================
+        let currentLang = 'ru';
+        const templateIndexes = { en: {}, ru: {} };
+
+        function getLocalStorage(key, defaultValue) {
+            try {
+                const storedValue = localStorage.getItem(key);
+                return storedValue ? JSON.parse(storedValue) : defaultValue;
+            } catch (e) {
+                console.error("Error reading from localStorage", e);
+                return defaultValue;
+            }
+        }
+
+        function setLocalStorage(key, value) {
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+            } catch (e) {
+                console.error("Error writing to localStorage", e);
+            }
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            if (navigator.vibrate) navigator.vibrate(50);
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 1500);
+        }
+
+        // ===================================================================================
+        // AUTHENTICATION
+        // ===================================================================================
+        function checkLogin() {
+            // 🔥 ИЗМЕНЕНИЕ: Проверяем наличие токена, а не простого флага 'true'
+            const authToken = getLocalStorage('chaterlabAuthToken', null);
+            const loginScreen = document.getElementById('login-screen');
+            const appContainer = document.getElementById('app-container');
+
+            if (authToken) { // Если токен существует, считаем, что пользователь вошёл
+                loginScreen.style.display = 'none';
+                document.body.classList.remove('login-active');
+                appContainer.setAttribute('data-logged', 'true');
+                appContainer.style.opacity = '1';
+                appContainer.style.display = 'flex';
+                return true;
+            } else {
+                loginScreen.style.display = 'flex';
+                document.body.classList.add('login-active');
+                appContainer.setAttribute('data-logged', 'false');
+                appContainer.style.opacity = '0';
+                appContainer.style.display = 'none';
+                return false;
+            }
+        }
+
+        // 🔥 ИЗМЕНЕНИЕ: Полностью новая функция для входа через сервер
+        async function handleLogin(event) {
+            event.preventDefault();
+            const usernameInput = document.getElementById('login-username');
+            const passwordInput = document.getElementById('login-password');
+            const errorDiv = document.getElementById('login-error');
+
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            errorDiv.classList.remove('show');
+
+            try {
+                // Отправляем запрос на наш новый сервер
+                const response = await fetch('http://localhost:3000/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                // Получаем ответ от сервера
+                const data = await response.json();
+
+                if (!response.ok) {
+                    // Если сервер вернул ошибку (например, 401), показываем её
+                    throw new Error(data.message || 'Ошибка аутентификации');
+                }
+
+                // Успех! Сервер вернул токен. Сохраняем его.
+                setLocalStorage('chaterlabAuthToken', data.token);
+                
+                // --- Дальше ваша логика анимации и перехода к приложению ---
+                document.body.classList.remove('login-active');
+                document.getElementById('login-screen').style.display = 'none';
+                
+                const overlay = document.getElementById('animation-overlay');
+                overlay.style.display = 'flex';
+                void overlay.offsetHeight;
+                overlay.classList.add('animate');
+
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    overlay.classList.remove('animate');
+                    document.getElementById('app-container').style.display = 'flex';
+                    document.getElementById('app-container').setAttribute('data-logged', 'true');
+                    document.getElementById('app-container').style.opacity = '1';
+                    toggleMobileView('buttons');
+                }, 2500);
+
+                setupDarkMode();
+                renderFavorites();
+
+            } catch (error) {
+                // Показываем ошибку, полученную от сервера или из-за сбоя сети
+                errorDiv.textContent = error.message;
+                errorDiv.classList.add('show');
+            }
+        }
+
+        function logout() {
+            // 🔥 ИЗМЕНЕНИЕ: Удаляем токен из хранилища
+            localStorage.removeItem('chaterlabAuthToken');
+            
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            document.getElementById('app-container').style.opacity = '0';
+            document.getElementById('app-container').setAttribute('data-logged', 'false');
+            document.getElementById('app-container').style.display = 'none';
+            
+            document.getElementById('login-screen').style.display = 'flex';
+            document.body.classList.add('login-active');
+        }
+
+        // ===================================================================================
+        // INTERNATIONALIZATION (i18n) & UI UPDATES
+        // ===================================================================================
+        function getInitialLanguage() { return getLocalStorage('chaterlabLang', 'ru'); }
+        function switchLanguage(lang) { currentLang = lang; setLocalStorage('chaterlabLang', lang); updateUI(lang); }
+
+        function updateUI(lang) {
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.dataset.key;
+                const translation = appData.i18n[lang][key];
+                if (translation !== undefined) {
+                    if (el.tagName === 'INPUT') el.placeholder = translation;
+                    else el.textContent = translation;
+                }
+            });
+            document.documentElement.lang = lang;
+            document.querySelectorAll('.login-lang-switcher button').forEach(btn => btn.classList.toggle('active', btn.id.includes(`-${lang}`)));
+            
+            document.querySelectorAll('.toggle button').forEach(btn => {
+                const buttonLangCode = btn.id.replace('btn', '').toLowerCase();
+                const isActive = (lang === 'uk' && buttonLangCode === 'ua') || buttonLangCode === lang;
+                btn.classList.toggle('active', isActive);
+            });
+            
+            updateInstructions(lang);
+        }
+        
+        function updateInstructions(lang) {
+            const instructionsDiv = document.getElementById('instructions');
+            const infoHeader = document.getElementById('infoHeader');
+            const infoText = document.getElementById('infoText');
+            
+            const i18n = appData.i18n[lang];
+
+            infoHeader.textContent = i18n.aboutHeader;
+            infoText.textContent = i18n.aboutText;
+
+            let content;
+            const isEnglish = lang === 'en';
+            const isUkrainian = lang === 'uk';
+            
+            const loc = (key) => appData.i18n[lang][key] || key;
+            const ruText = isEnglish ? 'Russian audience' : (isUkrainian ? 'Російськомовна аудиторія' : 'Русскоязычная аудитория');
+            const enText = isEnglish ? 'English audience' : (isUkrainian ? 'Англомовна аудиторія' : 'Англоязычная аудитория');
+            
+
+            content = `
+                <h3 data-key="instructionHeader">${loc('instructionHeader')}</h3>
+                <div class="step">
+                    <h4><span class="step-number">1</span> ${isEnglish ? 'Candidate Greeting' : (isUkrainian ? 'Привітання кандидата' : 'Приветствие кандидата')}</h4>
+                    <ul>
+                        <li>${ruText} → <strong>Приветствие (RU)</strong></li>
+                        <li>${enText} → <strong>Greeting (ENG)</strong></li>
+                    </ul>
+                </div>
+                <div class="step">
+                    <h4><span class="step-number">2</span> ${isEnglish ? 'Job Description' : (isUkrainian ? 'Опис вакансії' : 'Описание вакансии')}</h4>
+                    <ul>
+                        <li>${ruText} → <strong>Описание вакансии (RU)</strong></li>
+                        <li>${enText} → <strong>Job Description (ENG)</strong></li>
+                    </ul>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>${isEnglish ? 'Location' : (isUkrainian ? 'Локація' : 'Локация')}</th>
+                                <th>${isEnglish ? 'Experience' : (isUkrainian ? 'Досвід' : 'Опыт')}</th>
+                                <th>${isEnglish ? 'Schedule' : (isUkrainian ? 'Графік' : 'График')}</th>
+                                <th>${isEnglish ? 'Button' : (isUkrainian ? 'Кнопка' : 'Кнопка')}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="${isEnglish ? 'Location' : (isUkrainian ? 'Локація' : 'Локация')}">Казахстан</td>
+                                <td data-label="${isEnglish ? 'Experience' : (isUkrainian ? 'Досвід' : 'Опыт')}">${isEnglish ? 'Basic / No experience' : (isUkrainian ? 'Без досвіду / базовий' : 'Без опыта / базовый')}</td>
+                                <td data-label="${isEnglish ? 'Schedule' : (isUkrainian ? 'Графік' : 'График')}">08:00–16:00, 16:00–00:00, 00:00–08:00 (Kyiv time)</td>
+                                <td data-label="${isEnglish ? 'Button' : (isUkrainian ? 'Кнопка' : 'Кнопка')}">${isEnglish ? 'Job Description (ENG)' : 'Описание вакансии (RU)'}</td>
+                            </tr>
+                            <tr>
+                                <td data-label="${isEnglish ? 'Location' : (isUkrainian ? 'Локація' : 'Локация')}">Казахстан</td>
+                                <td data-label="${isEnglish ? 'Experience' : (isUkrainian ? 'Досвід' : 'Опыт')}">${isEnglish ? 'Prime experience' : (isUkrainian ? 'Досвід Прайма' : 'Опыт Прайма')}</td>
+                                <td data-label="${isEnglish ? 'Schedule' : (isUkrainian ? 'Графік' : 'График')}">14:00–22:00, 22:00–06:00 (Kyiv time)</td>
+                                <td data-label="${isEnglish ? 'Button' : (isUkrainian ? 'Кнопка' : 'Кнопка')}">${isEnglish ? 'Job Description (Prime) (ENG)' : 'Описание вакансии. С опытом Прайма (RU)'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="step">
+                    <h4><span class="step-number">3</span> ${isEnglish ? 'Test Assignment' : (isUkrainian ? 'Тестове завдання' : 'Тестовое задание')}</h4>
+                    <ul>
+                        <li>${ruText} → <strong>Флирт-задание (RU)</strong></li>
+                        <li>${enText} → <strong>Flirt Closing (ENG)</strong></li>
+                    </ul>
+                </div>
+                <div class="step">
+                    <h4><span class="step-number">4</span> ${isEnglish ? 'Handling Applications & Documentation' : (isUkrainian ? 'Робота із заявками та документацією' : 'Работа с заявками и документацией')}</h4>
+                    <ol>
+                        <li>${isEnglish ? 'All applications are logged in the' : (isUkrainian ? 'Усі заявки фіксуються в таблиці' : 'Все заявки фиксируются в таблице')} <strong>ЛИДЫ</strong>.</li>
+                        <li>${isEnglish ? 'After completing the test and choosing a schedule → provide the manager contact.' : (isUkrainian ? 'Після виконання тесту та вибору графіку → видаємо контакт менеджера.' : 'После выполнения теста и выбора графика → выдаём контакт менеджера.')}</li>
+                        <li>${isEnglish ? 'Send in the work Telegram group:' : (isUkrainian ? 'Надсилаємо в робочу Telegram-групу:' : 'Отправляем в рабочую Telegram-группу:')}
+                            <ul>
+                                <li>${isEnglish ? 'Screenshot of the completed test' : (isUkrainian ? 'Скрін виконаного тесту' : 'Скрин выполненного теста')}</li>
+                                <li>${isEnglish ? 'Below it: candidate contacts, schedule, assigned manager' : (isUkrainian ? 'Підпис: контакти кандидата, графік, контакт менеджера' : 'Подпись: контакты кандидата, график, контакт менеджера')}</li>
+                            </ul>
+                        </li>
+                        <li>${isEnglish ? 'Documentation in Google Sheets:' : (isUkrainian ? 'Документація у Google Sheets:' : 'Документация в Google Sheets:')}
+                            <ul>
+                                <li>${isEnglish ? 'Philippines' : (isUkrainian ? 'Філіппіни' : 'Филиппины')} → <strong>Chathouse Philippines</strong></li>
+                                <li>${isEnglish ? 'Kazakhstan' : (isUkrainian ? 'Казахстан' : 'Казахстан')} → <strong>Chathouse</strong></li>
+                                <li>${isEnglish ? 'Tab: <strong>Interns</strong>' : (isUkrainian ? 'Вкладка: <strong>Стажисти</strong>' : 'Вкладка: <strong>Стажёры</strong>')}</li>
+                                <li>${isEnglish ? 'Fill: Date, Candidate contact, Schedule, Manager' : (isUkrainian ? 'Заповнюємо: Дата, Контакт, Графік, Менеджер' : 'Заполняем: Дата, Контакт, График, Менеджер')}</li>
+                                <li>${isEnglish ? 'Status → "assigned to admin"' : (isUkrainian ? 'Статус → «передано адміну»' : 'Статус → «передан админу»')}</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+                <div class="step">
+                    <h4><span class="step-number">5</span> ${isEnglish ? 'Manager Contacts' : (isUkrainian ? 'Контакти менеджерів' : 'Контакты менеджеров')}</h4>
+                    <table>
+                        <thead>
+                            <tr><th>${isEnglish ? 'Location' : (isUkrainian ? 'Локація' : 'Локация')}</th><th>${isEnglish ? 'Contacts' : (isUkrainian ? 'Контакти' : 'Контакты')}</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="${isEnglish ? 'Location' : (isUkrainian ? 'Локація' : 'Локация')}">${isEnglish ? 'Philippines' : (isUkrainian ? 'Філіппіни' : 'Филиппины')}</td>
+                                <td data-label="${isEnglish ? 'Contacts' : (isUkrainian ? 'Контакти' : 'Контакты')}">Telegram: @strighik / WhatsApp: +380990650264<br>Telegram: @jszmn1827 / WhatsApp: +639260025915</td>
+                            </tr>
+                            <tr>
+                                <td data-label="${isEnglish ? 'Location' : (isUkrainian ? 'Локація' : 'Локация')}">${isEnglish ? 'Kazakhstan (Prime)' : (isUkrainian ? 'Казахстан (досвід Прайма)' : 'Казахстан (опыт Прайма)')}</td>
+                                <td data-label="${isEnglish ? 'Contacts' : (isUkrainian ? 'Контакти' : 'Контакты')}">Telegram: @sandra01075 / WhatsApp: -</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            instructionsDiv.innerHTML = content;
+        }
+
+        // ===================================================================================
+        // CORE FUNCTIONALITY: COPY, SEARCH, FAVORITES, STATS
+        // ===================================================================================
+        function copyAndCycle(lang, type, buttonId) {
+            if (!appData.templates[lang] || !appData.templates[lang][type] || appData.templates[lang][type].length === 0) {
+                if (lang === 'uk') {
+                    showToast(appData.i18n[currentLang].toastMessage + " (Контент UA неактивен)");
+                } else {
+                    showToast(`Error: Content for ${lang} not found.`);
+                }
+                return;
+            }
+
+            const templates = appData.templates[lang][type];
+            if (!templateIndexes[lang][type]) templateIndexes[lang][type] = 0;
+            
+            const textToCopy = templates[templateIndexes[lang][type]];
+            const successMessage = `${appData.i18n[currentLang].toastMessage} (${templateIndexes[lang][type] + 1}/${templates.length})`;
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast(successMessage);
+                trackClick(buttonId);
+            }).catch(() => showToast('Error copying'));
+            
+            templateIndexes[lang][type] = (templateIndexes[lang][type] + 1) % templates.length;
+        }
+        
+        function handleSearch(event) {
+            const query = event.target.value.toLowerCase();
+            document.querySelectorAll('.sidebar-section').forEach(section => {
+                let visibleButtons = 0;
+                section.querySelectorAll('button').forEach(button => {
+                    const span = button.querySelector('span[data-key]');
+                    const text = span ? span.textContent.toLowerCase() : '';
+                    const buttonText = button.id.toLowerCase();
+
+                    if (text.includes(query) || buttonText.includes(query)) {
+                        button.style.display = 'flex';
+                        visibleButtons++;
+                    } else {
+                        button.style.display = 'none';
+                    }
+                });
+                const h2 = section.querySelector('h2');
+                if(h2) h2.style.display = visibleButtons > 0 ? 'block' : 'none';
+            });
+        }
+
+        function toggleFavorite(event, buttonId) {
+            event.stopPropagation();
+            const favorites = getLocalStorage('chaterlabFavorites', []);
+            const button = document.getElementById(buttonId);
+            const favToggle = button.querySelector('.favorite-toggle');
+
+            if (favorites.includes(buttonId)) {
+                const index = favorites.indexOf(buttonId);
+                favorites.splice(index, 1);
+                favToggle.classList.remove('is-favorite');
+            } else {
+                favorites.push(buttonId);
+                favToggle.classList.add('is-favorite');
+            }
+            setLocalStorage('chaterlabFavorites', favorites);
+            renderFavorites();
+        }
+
+        function renderFavorites() {
+            const favorites = getLocalStorage('chaterlabFavorites', []);
+            document.querySelectorAll('.sidebar-section').forEach(section => {
+                const buttons = Array.from(section.querySelectorAll('button'));
+                buttons.forEach(button => {
+                    const favToggle = button.querySelector('.favorite-toggle');
+                    if (favorites.includes(button.id) && favToggle) {
+                        favToggle.classList.add('is-favorite');
+                    } else if (favToggle) {
+                        favToggle.classList.remove('is-favorite');
+                    }
+                });
+                buttons.sort((a, b) => {
+                    const aIsFav = favorites.includes(a.id);
+                    const bIsFav = favorites.includes(b.id);
+                    return bIsFav - aIsFav;
+                });
+                buttons.forEach(button => section.appendChild(button));
+            });
+        }
+
+        function trackClick(buttonId) {
+            const stats = getLocalStorage('chaterlabStats', {});
+            stats[buttonId] = (stats[buttonId] || 0) + 1;
+            setLocalStorage('chaterlabStats', stats);
+        }
+        
+        function getStats() { console.table(getLocalStorage('chaterlabStats', {})); }
+        
+        function setupDarkMode() {
+            const toggle = document.getElementById('theme-checkbox');
+            const currentTheme = getLocalStorage('chaterlabTheme', 'light');
+            
+            if (currentTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                if(toggle) toggle.checked = true;
+            }
+
+            if(toggle) toggle.addEventListener('change', () => {
+                document.body.classList.toggle('dark-mode');
+                const theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+                setLocalStorage('chaterlabTheme', theme);
+            });
+        }
+
+        // ===================================================================================
+        // MOBILE VIEW TOGGLE
+        // ===================================================================================
+        function toggleMobileView(view) {
+            const main = document.querySelector('main');
+            const switchButtons = document.getElementById('switchButtons');
+            const switchInstructions = document.getElementById('switchInstructions');
+
+            const isMobile = window.innerWidth <= 768;
+
+            if (isMobile) {
+                if (view === 'buttons') {
+                    main.classList.add('sidebar-visible');
+                    main.classList.remove('info-visible');
+                    if (switchButtons) switchButtons.classList.add('active');
+                    if (switchInstructions) switchInstructions.classList.remove('active');
+                } else if (view === 'instructions') {
+                    main.classList.add('info-visible');
+                    main.classList.remove('sidebar-visible');
+                    if (switchInstructions) switchInstructions.classList.add('active');
+                    if (switchButtons) switchButtons.classList.remove('active');
+                }
+            } else {
+                main.classList.remove('sidebar-visible', 'info-visible');
+                if (switchButtons) switchButtons.classList.remove('active');
+                if (switchInstructions) switchInstructions.classList.remove('active');
+            }
+        }
+
+        // ===================================================================================
+        // DYNAMIC CONTENT & EVENT LISTENERS
+        // ===================================================================================
+        
+        function copyGreetingENG() { copyAndCycle('en', 'greetings', 'btn-greeting-en'); }
+        function copyJobENG() { copyAndCycle('en', 'jobDescriptions', 'btn-job-en'); }
+        function copyFlirtENG() { copyAndCycle('en', 'flirtClosings', 'btn-flirt-en'); }
+        function copyContactENG() { copyAndCycle('en', 'contacts', 'btn-contact-en'); }
+
+        function copyGreetingRU() { copyAndCycle('ru', 'greetings', 'btn-greeting-ru'); }
+        function copyJobRU() { copyAndCycle('ru', 'jobDescriptions', 'btn-job-ru'); }
+        function copyJobPrimeRU() { copyAndCycle('ru', 'jobDescriptionsPrime', 'btn-jobprime-ru'); }
+        function copyFlirtRU() { copyAndCycle('ru', 'flirtClosings', 'btn-flirt-ru'); }
+        function copyContactRU() { copyAndCycle('ru', 'contacts', 'btn-contact-ru'); }
+        
+        function copyGreetingUK() { copyAndCycle('uk', 'greetings', 'btn-greeting-uk'); }
+        function copyJobUK() { copyAndCycle('uk', 'jobDescriptions', 'btn-job-uk'); }
+        function copyJobPrimeUK() { copyAndCycle('uk', 'jobDescriptionsPrime', 'btn-jobprime-uk'); }
+        function copyFlirtUK() { copyAndCycle('uk', 'flirtClosings', 'btn-flirt-uk'); }
+        function copyContactUK() { copyAndCycle('uk', 'contacts', 'btn-contact-uk'); }
+        
+        window.addEventListener('resize', () => {
+             const main = document.querySelector('main');
+             const activeView = main.classList.contains('info-visible') ? 'instructions' : 'buttons';
+             toggleMobileView(activeView);
+        });
+        
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const loggedIn = checkLogin();
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('searchInput').addEventListener('input', handleSearch);
+            
+            const initialLang = getInitialLanguage();
+            switchLanguage(initialLang);
+
+            if (loggedIn) {
+                toggleMobileView('buttons');
+                setupDarkMode();
+                renderFavorites();
+            } else {
+                document.getElementById('login-screen').style.display = 'flex';
+            }
+        });
+
+    </script>
+</body>
+</html>
