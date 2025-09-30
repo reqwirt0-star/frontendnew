@@ -7,8 +7,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
     <style>
-        /* Все твои стили остаются тут без изменений */
+        /* Все твои старые стили остаются здесь */
         :root {
             --primary-blue: #007aff;
             --primary-blue-hover: #005ecb;
@@ -70,15 +73,9 @@
         .toggle button { padding: 6px 16px; border: none; background: transparent; cursor: pointer; font-size: 14px; font-weight: 500; border-radius: 7px; margin: 0; color: var(--text-secondary); transition: all 0.25s ease; }
         .toggle button.active { background: var(--background-card); color: var(--text-primary); box-shadow: 0 0 0 1px var(--border-color), 0 1px 4px rgba(0,0,0,0.08); }
         .instructions { margin-top: 40px; }
-        .step { background: var(--background-card); border-radius: 12px; padding: 25px; margin-bottom: 20px; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; }
-        .step h4 { margin: 0 0 15px; font-size: 18px; font-weight: 600; color: var(--primary-blue); display: flex; align-items: center; gap: 12px; }
-        .step-number { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; background-color: var(--light-blue-bg); color: var(--primary-blue); border-radius: 50%; font-size: 14px; font-weight: 600; flex-shrink: 0; }
-        .step ul, .step ol { padding-left: 20px; margin: 10px 0; color: var(--text-secondary); line-height: 1.7; word-break: break-word; }
-        .step ul li::marker, .step ol li::marker { font-weight: 500; }
-        .step li strong { color: var(--text-primary); }
-        .instructions table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 600px; }
-        .instructions table th, .instructions table td { border: 1px solid var(--border-color); padding: 10px 12px; font-size: 14px; text-align: left; }
-        .instructions table th { background: var(--light-blue-bg); font-weight: 500; }
+        .instructions h3 { font-size: 24px; font-weight: 600; margin-bottom: 15px; color: var(--text-primary); }
+        .instructions ul, .instructions ol { padding-left: 20px; margin: 10px 0; color: var(--text-secondary); line-height: 1.7; word-break: break-word; }
+        .instructions li strong { color: var(--text-primary); }
         .mobile-switcher { display: none; background-color: var(--background-card); border-bottom: 1px solid var(--border-color); padding: 0 10px; text-align: center; }
         .mobile-switcher-inner { display: flex; }
         .mobile-switcher button { flex: 1; padding: 14px 0; border: none; border-bottom: 3px solid transparent; background-color: transparent; font-size: 15px; cursor: pointer; font-weight: 600; color: var(--text-secondary); transition: all 0.25s ease; }
@@ -92,11 +89,6 @@
             .sidebar { padding-bottom: 0; }
             main.sidebar-visible .sidebar { display: flex; }
             main.info-visible .info { display: block; }
-            .instructions table { display: block; border: none; }
-            .instructions table thead, .instructions table tr:first-child { display: none; }
-            .instructions table tr { display: block; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--background-card); }
-            .instructions table td { display: block; border: none; padding: 12px 10px; font-size: 15px; text-align: right; position: relative; word-break: break-all; }
-            .instructions table td::before { content: attr(data-label); position: absolute; left: 10px; width: 40%; text-align: left; font-weight: 600; color: var(--primary-blue); }
         }
         .toast-notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: var(--success-color); color: white; padding: 12px 20px; border-radius: 10px; opacity: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: all 0.3s ease-in-out; z-index: 1000; font-size: 15px; font-weight: 500; pointer-events: none; white-space: nowrap; }
         .toast-notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -128,84 +120,41 @@
         .slider.round { border-radius: 34px; }
         .slider.round:before { border-radius: 50%; }
 
-        /* Стили для редактора контента */
+        /* НОВЫЕ СТИЛИ: Улучшенный редактор */
         #content-editor { display: none; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px; }
-        #content-editor h3 { font-size: 20px; }
-        .editor-section { margin-bottom: 25px; }
-        .editor-section label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 15px; color: var(--text-secondary); }
-        .editor-section textarea {
-            width: 100%;
-            min-height: 120px;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            background-color: var(--background-main);
-            font-size: 14px;
-            color: var(--text-primary);
-            transition: all 0.2s ease;
-            box-sizing: border-box;
-            font-family: inherit;
-            line-height: 1.6;
-        }
-        .editor-section textarea:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px var(--shadow-color); outline: none; }
+        .editor-main-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .editor-tabs { display: flex; gap: 5px; background-color: var(--background-main); padding: 5px; border-radius: 10px; }
+        .editor-tabs button { padding: 8px 16px; border: none; background-color: transparent; font-size: 15px; font-weight: 600; border-radius: 8px; cursor: pointer; color: var(--text-secondary); }
+        .editor-tabs button.active { background-color: var(--background-card); color: var(--primary-blue); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .editor-panel { display: none; }
+        .editor-panel.active { display: block; }
+        .editor-section { margin-bottom: 25px; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; background-color: var(--background-card); }
+        .editor-section h4 { margin-top: 0; font-size: 16px; font-weight: 600; color: var(--primary-blue); }
+        .template-variant { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+        .template-variant textarea { width: 100%; min-height: 50px; resize: vertical; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--background-main); font-size: 14px; color: var(--text-primary); font-family: inherit; line-height: 1.5; }
+        .template-variant .delete-variant-btn { padding: 8px; background-color: #ff3b3020; border: none; border-radius: 8px; cursor: pointer; color: var(--error-color); line-height: 0; transition: background-color 0.2s; }
+        .template-variant .delete-variant-btn:hover { background-color: #ff3b3040; }
+        .add-variant-btn { width: 100%; padding: 10px; background-color: #34c75920; color: var(--success-color); border: 1px dashed var(--success-color); border-radius: 8px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+        .add-variant-btn:hover { background-color: #34c75940; }
         .editor-buttons { display: flex; gap: 10px; }
-        .editor-buttons button {
-            padding: 10px 20px;
-            font-size: 15px;
-            font-weight: 500;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 1px solid transparent;
-        }
+        .editor-buttons button { padding: 10px 20px; font-size: 15px; font-weight: 500; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
         #save-content-btn { background-color: var(--primary-blue); color: #fff; }
         #save-content-btn:hover { background-color: var(--primary-blue-hover); }
         #cancel-edit-btn { background-color: var(--border-color); color: var(--text-primary); }
-        #cancel-edit-btn:hover { background-color: #dcdce1; }
-        body.dark-mode #cancel-edit-btn:hover { background-color: #58585b; }
     </style>
 </head>
 <body class="login-active">
 
-    <div id="animation-overlay">
-        <div class="animation-content"><h1>ChaterLab</h1></div>
-    </div>
-
-    <div id="login-screen">
-        <div class="login-background"></div>
-        <div class="login-form-container">
-            <h1 data-key="loginHeader">ChaterLab</h1>
-            <p data-key="loginSubheader">Панель быстрых ответов</p>
-            <div class="login-lang-switcher">
-                <button id="login-lang-ru" onclick="switchLanguage('ru')">RU</button>
-                <button id="login-lang-uk" onclick="switchLanguage('uk')">UA</button>
-                <button id="login-lang-en" onclick="switchLanguage('en')">ENG</button>
-            </div>
-            <form id="login-form">
-                <input type="text" id="login-username" data-key="loginPlaceholder" required placeholder="Логин">
-                <input type="password" id="login-password" data-key="passwordPlaceholder" required placeholder="Пароль">
-                <button type="submit" data-key="loginButton">Войти</button>
-                <div id="login-error"></div>
-            </form>
-        </div>
-    </div>
+    <div id="animation-overlay"><div class="animation-content"><h1>ChaterLab</h1></div></div>
+    <div id="login-screen"><div class="login-background"></div><div class="login-form-container"><h1 data-key="loginHeader">ChaterLab</h1><p data-key="loginSubheader">Панель быстрых ответов</p><div class="login-lang-switcher"><button id="login-lang-ru" onclick="switchLanguage('ru')">RU</button><button id="login-lang-uk" onclick="switchLanguage('uk')">UA</button><button id="login-lang-en" onclick="switchLanguage('en')">ENG</button></div><form id="login-form"><input type="text" id="login-username" data-key="loginPlaceholder" required placeholder="Логин"><input type="password" id="login-password" data-key="passwordPlaceholder" required placeholder="Пароль"><button type="submit" data-key="loginButton">Войти</button><div id="login-error"></div></form></div></div>
 
     <div id="app-container" data-logged="false">
         <header data-key="appHeader">ChaterLab Quick Replies</header>
-        
-        <div class="mobile-switcher" id="mobileSwitcher">
-            <div class="mobile-switcher-inner">
-                <button id="switchButtons" class="active" onclick="toggleMobileView('buttons')">Ответы</button>
-                <button id="switchInstructions" onclick="toggleMobileView('instructions')">Инструкция</button>
-            </div>
-        </div>
-
+        <div class="mobile-switcher" id="mobileSwitcher"><div class="mobile-switcher-inner"><button id="switchButtons" class="active" onclick="toggleMobileView('buttons')">Ответы</button><button id="switchInstructions" onclick="toggleMobileView('instructions')">Инструкция</button></div></div>
         <main class="sidebar-visible">
             <div class="sidebar" id="sidebarBlock">
-                
                 <div>
-                    <div class="search-container">
-                        <input type="search" id="searchInput" data-key="searchPlaceholder" placeholder="Поиск...">
-                    </div>
+                    <div class="search-container"><input type="search" id="searchInput" data-key="searchPlaceholder" placeholder="Поиск..."></div>
                     <div class="sidebar-section" id="eng-section">
                         <h2 data-key="englishSection">English Content</h2>
                         <button id="btn-greeting-en" onclick="copyGreetingENG()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span data-key="greetingButtonLabel"></span> <div class="favorite-toggle" onclick="toggleFavorite(event, 'btn-greeting-en')"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div></button>
@@ -213,7 +162,6 @@
                         <button id="btn-flirt-en" onclick="copyFlirtENG()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span data-key="flirtButtonLabel"></span> <div class="favorite-toggle" onclick="toggleFavorite(event, 'btn-flirt-en')"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div></button>
                         <button id="btn-contact-en" onclick="copyContactENG()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span data-key="contactButtonLabel"></span> <div class="favorite-toggle" onclick="toggleFavorite(event, 'btn-contact-en')"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div></button>
                     </div>
-
                     <div class="sidebar-section" id="ru-section">
                         <h2 data-key="russianSection">Русский</h2>
                         <button id="btn-greeting-ru" onclick="copyGreetingRU()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span data-key="greetingButtonLabel"></span> <div class="favorite-toggle" onclick="toggleFavorite(event, 'btn-greeting-ru')"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div></button>
@@ -223,43 +171,42 @@
                         <button id="btn-contact-ru" onclick="copyContactRU()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span data-key="contactButtonLabel"></span> <div class="favorite-toggle" onclick="toggleFavorite(event, 'btn-contact-ru')"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg></div></button>
                     </div>
                 </div>
-                
                 <div class="sidebar-footer">
                     <hr class="sidebar-divider">
-                    <div class="theme-switch-wrapper">
-                        <div class="theme-switch-label" data-key="darkModeLabel">Тёмная тема</div>
-                        <label class="theme-switch" for="theme-checkbox">
-                            <input type="checkbox" id="theme-checkbox" />
-                            <div class="slider round"></div>
-                        </label>
-                    </div>
+                    <div class="theme-switch-wrapper"><div class="theme-switch-label" data-key="darkModeLabel">Тёмная тема</div><label class="theme-switch" for="theme-checkbox"><input type="checkbox" id="theme-checkbox" /><div class="slider round"></div></label></div>
                     <button onclick="logout()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span data-key="logoutButtonText">Выйти</span></button>
                 </div>
             </div>
 
             <div class="info" id="infoBlock">
-                <div class="toggle">
-                    <button id="btnEN" onclick="switchLanguage('en')">EN</button>
-                    <button id="btnUA" onclick="switchLanguage('uk')">UA</button>
-                    <button id="btnRU" onclick="switchLanguage('ru')">RU</button>
-                </div>
+                <div class="toggle"><button id="btnEN" onclick="switchLanguage('en')">EN</button><button id="btnUA" onclick="switchLanguage('uk')">UA</button><button id="btnRU" onclick="switchLanguage('ru')">RU</button></div>
                 <h3 id="infoHeader" data-key="aboutHeader"></h3>
                 <p id="infoText" data-key="aboutText"></p>
-                
                 <button id="edit-mode-btn" style="display: none; margin-bottom: 20px;">Редактировать контент</button>
                 
                 <div class="instructions" id="instructions"></div>
 
                 <div id="content-editor">
-                    <h3>Редактор шаблонов</h3>
-                    <p>Каждая строка в поле ниже - это отдельный вариант шаблона, который будет копироваться по кругу.</p>
-                    
-                    <div id="editor-fields"></div> <div class="editor-buttons">
-                        <button id="save-content-btn">Сохранить</button>
-                        <button id="cancel-edit-btn">Отмена</button>
+                    <div class="editor-main-controls">
+                        <div class="editor-tabs">
+                            <button id="tab-btn-templates" class="active">Шаблоны кнопок</button>
+                            <button id="tab-btn-instructions">Инструкция</button>
+                        </div>
+                        <div class="editor-buttons">
+                            <button id="save-content-btn">Сохранить всё</button>
+                            <button id="cancel-edit-btn">Отмена</button>
+                        </div>
+                    </div>
+
+                    <div id="panel-templates" class="editor-panel active">
+                        </div>
+
+                    <div id="panel-instructions" class="editor-panel">
+                        <div class="editor-section"><h4>Инструкция (RU)</h4><textarea id="instructions-editor-ru"></textarea></div>
+                        <div class="editor-section"><h4>Инструкция (EN)</h4><textarea id="instructions-editor-en"></textarea></div>
+                        <div class="editor-section"><h4>Инструкция (UA)</h4><textarea id="instructions-editor-uk"></textarea></div>
                     </div>
                 </div>
-
             </div>
         </main>
     </div>
@@ -271,7 +218,6 @@
         // ===================================================================================
         // КОНФИГУРАЦИЯ
         // ===================================================================================
-        // 🔥 ИЗМЕНЕНИЕ: Указываем URL нашего бэкенда
         const API_BASE_URL = 'https://backendchater.onrender.com';
 
         // ===================================================================================
@@ -279,35 +225,10 @@
         // ===================================================================================
         const appData = {
             i18n: {
-                en: {
-                    loginHeader: "ChaterLab", loginSubheader: "Quick Replies Panel", loginPlaceholder: "Login", passwordPlaceholder: "Password", loginButton: "Log In",
-                    appHeader: "ChaterLab Quick Replies", repliesTab: "Replies", instructionsTab: "Instructions",
-                    englishSection: "English Content", russianSection: "Russian Content", logoutButtonText: "Log Out",
-                    aboutHeader: "About this tool", aboutText: "This panel allows you to quickly copy professional greetings, job descriptions, test assignments, and contacts for ChaterLab. Click any button to copy the text to your clipboard.",
-                    instructionHeader: "📖 Instruction", errorInvalid: "Invalid credentials. Please contact your manager.",
-                    toastMessage: "Copied", searchPlaceholder: "Search...", darkModeLabel: "Dark Mode",
-                    greetingButtonLabel: "Greeting", jobDescButtonLabel: "Job Description", jobPrimeButtonLabel: "Job Description (Prime)", flirtButtonLabel: "Flirt Task", contactButtonLabel: "Contact",
-                },
-                ru: {
-                    loginHeader: "ChaterLab", loginSubheader: "Панель быстрых ответов", loginPlaceholder: "Логин", passwordPlaceholder: "Пароль", loginButton: "Войти",
-                    appHeader: "ChaterLab Quick Replies", repliesTab: "Ответы", instructionsTab: "Инструкция",
-                    englishSection: "Английский контент", russianSection: "Русский контент", logoutButtonText: "Выйти",
-                    aboutHeader: "О панели", aboutText: "Эта панель позволяет быстро копировать профессиональные приветствия, описание вакансии, тестовое задание и контакты для ChaterLab. Нажмите любую кнопку, чтобы скопировать текст в буфер обмена.",
-                    instructionHeader: "📖 Инструкция для работы", errorInvalid: "Неверные данные. Свяжитесь с менеджером.",
-                    toastMessage: "Скопировано", searchPlaceholder: "Поиск...", darkModeLabel: "Тёмная тема",
-                    greetingButtonLabel: "Приветствие", jobDescButtonLabel: "Описание вакансии", jobPrimeButtonLabel: "Описание вакансии (Прайм)", flirtButtonLabel: "Флирт-задание", contactButtonLabel: "Контакт",
-                },
-                uk: {
-                    loginHeader: "ChaterLab", loginSubheader: "Панель швидких відповідей", loginPlaceholder: "Логін", passwordPlaceholder: "Пароль", loginButton: "Увійти",
-                    appHeader: "ChaterLab Quick Replies", repliesTab: "Відповіді", instructionsTab: "Інструкція",
-                    englishSection: "Англійський контент", russianSection: "Російський контент", logoutButtonText: "Вийти",
-                    aboutHeader: "Про панель", aboutText: "Ця панель дозволяє швидко копіювати професійні привітання, опис вакансії, тестове завдання та контакти для ChaterLab. Натисніть будь-яку кнопку, щоб скопіювати текст у буфер обміну.",
-                    instructionHeader: "📖 Інструкція для роботи", errorInvalid: "Невірні дані. Зв'яжіться з менеджером.",
-                    toastMessage: "Скопійовано", searchPlaceholder: "Пошук...", darkModeLabel: "Темна тема",
-                    greetingButtonLabel: "Привітання", jobDescButtonLabel: "Опис вакансії", jobPrimeButtonLabel: "Опис вакансії (Прайм)", flirtButtonLabel: "Флірт-завдання", contactButtonLabel: "Контакт",
-                }
+                en: { loginHeader: "ChaterLab", loginSubheader: "Quick Replies Panel", loginPlaceholder: "Login", passwordPlaceholder: "Password", loginButton: "Log In", appHeader: "ChaterLab Quick Replies", repliesTab: "Replies", instructionsTab: "Instructions", englishSection: "English Content", russianSection: "Russian Content", logoutButtonText: "Log Out", aboutHeader: "About this tool", aboutText: "This panel allows you to quickly copy professional greetings, job descriptions, test assignments, and contacts for ChaterLab. Click any button to copy the text to your clipboard.", instructionHeader: "📖 Instruction", errorInvalid: "Invalid credentials. Please contact your manager.", toastMessage: "Copied", searchPlaceholder: "Search...", darkModeLabel: "Dark Mode", greetingButtonLabel: "Greeting", jobDescButtonLabel: "Job Description", jobPrimeButtonLabel: "Job Description (Prime)", flirtButtonLabel: "Flirt Task", contactButtonLabel: "Contact" },
+                ru: { loginHeader: "ChaterLab", loginSubheader: "Панель быстрых ответов", loginPlaceholder: "Логин", passwordPlaceholder: "Пароль", loginButton: "Войти", appHeader: "ChaterLab Quick Replies", repliesTab: "Ответы", instructionsTab: "Инструкция", englishSection: "Английский контент", russianSection: "Русский контент", logoutButtonText: "Выйти", aboutHeader: "О панели", aboutText: "Эта панель позволяет быстро копировать профессиональные приветствия, описание вакансии, тестовое задание и контакты для ChaterLab. Нажмите любую кнопку, чтобы скопировать текст в буфер обмена.", instructionHeader: "📖 Инструкция для работы", errorInvalid: "Неверные данные. Свяжитесь с менеджером.", toastMessage: "Скопировано", searchPlaceholder: "Поиск...", darkModeLabel: "Тёмная тема", greetingButtonLabel: "Приветствие", jobDescButtonLabel: "Описание вакансии", jobPrimeButtonLabel: "Описание вакансии (Прайм)", flirtButtonLabel: "Флирт-задание", contactButtonLabel: "Контакт" },
+                uk: { loginHeader: "ChaterLab", loginSubheader: "Панель швидких відповідей", loginPlaceholder: "Логін", passwordPlaceholder: "Пароль", loginButton: "Увійти", appHeader: "ChaterLab Quick Replies", repliesTab: "Відповіді", instructionsTab: "Інструкція", englishSection: "Англійський контент", russianSection: "Російський контент", logoutButtonText: "Вийти", aboutHeader: "Про панель", aboutText: "Ця панель дозволяє швидко копіювати професійні привітання, опис вакансії, тестове завдання та контакти для ChaterLab. Натисніть будь-яку кнопку, щоб скопіювати текст у буфер обміну.", instructionHeader: "📖 Інструкція для роботи", errorInvalid: "Невірні дані. Зв'яжіться з менеджером.", toastMessage: "Скопійовано", searchPlaceholder: "Пошук...", darkModeLabel: "Темна тема", greetingButtonLabel: "Привітання", jobDescButtonLabel: "Опис вакансії", jobPrimeButtonLabel: "Опис вакансії (Прайм)", flirtButtonLabel: "Флірт-завдання", contactButtonLabel: "Контакт" }
             },
-            // 🔥 ИЗМЕНЕНИЕ: Шаблоны теперь ПУСТЫЕ. Они будут загружаться с сервера.
             templates: {}
         };
 
@@ -316,10 +237,8 @@
         // ===================================================================================
         let currentLang = 'ru';
         const templateIndexes = { en: {}, ru: {} };
-
-        // 🔥 НОВОЕ: Глобальные переменные для роли и контента с сервера
         let userRole = null;
-        let appContent = {}; // Здесь будет храниться объект { templates: {...} } с сервера
+        let appContent = {};
 
         function getLocalStorage(key, defaultValue) {
             try {
@@ -353,28 +272,22 @@
         // ===================================================================================
         // AUTHENTICATION & DATA LOADING
         // ===================================================================================
-        function checkLogin() {
+        async function checkLogin() {
             const authToken = getLocalStorage('chaterlabAuthToken', null);
             const savedRole = getLocalStorage('chaterlabUserRole', null);
-            const loginScreen = document.getElementById('login-screen');
-            const appContainer = document.getElementById('app-container');
-
+            
             if (authToken && savedRole) {
-                userRole = savedRole; // Устанавливаем роль
-                loginScreen.style.display = 'none';
+                userRole = savedRole;
+                document.getElementById('login-screen').style.display = 'none';
                 document.body.classList.remove('login-active');
+                const appContainer = document.getElementById('app-container');
                 appContainer.setAttribute('data-logged', 'true');
                 appContainer.style.opacity = '1';
                 appContainer.style.display = 'flex';
-                // 🔥 НОВОЕ: После проверки логина, загружаем контент
-                fetchContent(); 
+                await fetchContent();
                 return true;
             } else {
-                loginScreen.style.display = 'flex';
-                document.body.classList.add('login-active');
-                appContainer.setAttribute('data-logged', 'false');
-                appContainer.style.opacity = '0';
-                appContainer.style.display = 'none';
+                logout(false); // Вызываем logout без перезагрузки страницы, чтобы просто скрыть интерфейс
                 return false;
             }
         }
@@ -389,7 +302,6 @@
             errorDiv.classList.remove('show');
 
             try {
-                // Исправлена опечатка с fetch и URL в кавычках
                 const response = await fetch(`${API_BASE_URL}/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -401,7 +313,6 @@
                     throw new Error(data.message || 'Ошибка аутентификации');
                 }
 
-                // Успех! Сохраняем токен и РОЛЬ
                 setLocalStorage('chaterlabAuthToken', data.token);
                 setLocalStorage('chaterlabUserRole', data.role);
                 userRole = data.role;
@@ -417,12 +328,12 @@
                 setTimeout(async () => {
                     overlay.style.display = 'none';
                     overlay.classList.remove('animate');
-                    document.getElementById('app-container').style.display = 'flex';
-                    document.getElementById('app-container').setAttribute('data-logged', 'true');
-                    document.getElementById('app-container').style.opacity = '1';
+                    const appContainer = document.getElementById('app-container');
+                    appContainer.style.display = 'flex';
+                    appContainer.setAttribute('data-logged', 'true');
+                    appContainer.style.opacity = '1';
                     
-                    // 🔥 НОВОЕ: Загружаем контент после анимации
-                    await fetchContent(); 
+                    await fetchContent();
                     
                     toggleMobileView('buttons');
                     setupDarkMode();
@@ -435,18 +346,16 @@
             }
         }
 
-        // 🔥 НОВАЯ ФУНКЦИЯ: Загрузка контента с сервера
         async function fetchContent() {
             try {
                 const response = await fetch(`${API_BASE_URL}/content`);
                 if (!response.ok) throw new Error('Не удалось загрузить контент');
                 
-                const data = await response.json();
-                appContent = data; // Сохраняем контент в глобальную переменную
-                appData.templates = appContent.templates; // Для обратной совместимости
+                appContent = await response.json();
+                appData.templates = appContent.templates; 
                 console.log('Контент успешно загружен:', appContent);
                 
-                // 🔥 НОВОЕ: После загрузки данных, проверяем роль и показываем кнопку редактора
+                updateUI(currentLang);
                 checkUserRoleAndSetupEditor();
 
             } catch (error) {
@@ -455,23 +364,26 @@
             }
         }
 
-        function logout() {
+        function logout(doUIRefresh = true) {
             localStorage.removeItem('chaterlabAuthToken');
-            localStorage.removeItem('chaterlabUserRole'); // Удаляем роль
-            userRole = null; // Сбрасываем роль
+            localStorage.removeItem('chaterlabUserRole');
+            userRole = null;
             
-            document.getElementById('login-username').value = '';
-            document.getElementById('login-password').value = '';
-            document.getElementById('app-container').style.opacity = '0';
-            document.getElementById('app-container').setAttribute('data-logged', 'false');
-            document.getElementById('app-container').style.display = 'none';
-            
-            document.getElementById('login-screen').style.display = 'flex';
-            document.body.classList.add('login-active');
+            if (doUIRefresh) {
+                const appContainer = document.getElementById('app-container');
+                appContainer.style.opacity = '0';
+                appContainer.setAttribute('data-logged', 'false');
+                appContainer.style.display = 'none';
+                
+                document.getElementById('login-username').value = '';
+                document.getElementById('login-password').value = '';
+                document.getElementById('login-screen').style.display = 'flex';
+                document.body.classList.add('login-active');
+            }
         }
-
+        
         // ===================================================================================
-        // INTERNATIONALIZATION (i18n) & UI UPDATES
+        // UI & i18n
         // ===================================================================================
         function getInitialLanguage() { return getLocalStorage('chaterlabLang', 'ru'); }
         function switchLanguage(lang) { currentLang = lang; setLocalStorage('chaterlabLang', lang); updateUI(lang); }
@@ -479,9 +391,9 @@
         function updateUI(lang) {
             document.querySelectorAll('[data-key]').forEach(el => {
                 const key = el.dataset.key;
-                const translation = appData.i18n[lang][key];
+                const translation = appData.i18n[lang]?.[key];
                 if (translation !== undefined) {
-                    if (el.tagName === 'INPUT') el.placeholder = translation;
+                    if (el.placeholder) el.placeholder = translation;
                     else el.textContent = translation;
                 }
             });
@@ -498,164 +410,46 @@
         }
         
         function updateInstructions(lang) {
-            // Эта функция остается без изменений
             const instructionsDiv = document.getElementById('instructions');
-            const infoHeader = document.getElementById('infoHeader');
-            const infoText = document.getElementById('infoText');
-            
-            const i18n = appData.i18n[lang];
-
-            infoHeader.textContent = i18n.aboutHeader;
-            infoText.textContent = i18n.aboutText;
-
-            let content;
-            const isEnglish = lang === 'en';
-            const isUkrainian = lang === 'uk';
-            
-            const loc = (key) => appData.i18n[lang][key] || key;
-            const ruText = isEnglish ? 'Russian audience' : (isUkrainian ? 'Російськомовна аудиторія' : 'Русскоязычная аудитория');
-            const enText = isEnglish ? 'English audience' : (isUkrainian ? 'Англомовна аудиторія' : 'Англоязычная аудитория');
-            
-            content = `
-                <h3 data-key="instructionHeader">${loc('instructionHeader')}</h3>
-                <div class="step">
-                    <h4><span class="step-number">1</span> ${isEnglish ? 'Candidate Greeting' : (isUkrainian ? 'Привітання кандидата' : 'Приветствие кандидата')}</h4>
-                    <ul>
-                        <li>${ruText} → <strong>Приветствие (RU)</strong></li>
-                        <li>${enText} → <strong>Greeting (ENG)</strong></li>
-                    </ul>
-                </div>
-                <div class="step">
-                    <h4><span class="step-number">2</span> ${isEnglish ? 'Job Description' : (isUkrainian ? 'Опис вакансії' : 'Описание вакансии')}</h4>
-                    <ul>
-                        <li>${ruText} → <strong>Описание вакансии (RU)</strong></li>
-                        <li>${enText} → <strong>Job Description (ENG)</strong></li>
-                    </ul>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>${isEnglish ? 'Location' : (isUkrainian ? 'Локація' : 'Локация')}</th>
-                                <th>${isEnglish ? 'Experience' : (isUkrainian ? 'Досвід' : 'Опыт')}</th>
-                                <th>${isEnglish ? 'Schedule' : (isUkrainian ? 'Графік' : 'График')}</th>
-                                <th>${isEnglish ? 'Button' : (isUkrainian ? 'Кнопка' : 'Кнопка')}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td data-label="${isEnglish ? 'Location' : (isUkrainian ? 'Локація' : 'Локация')}">Казахстан</td>
-                                <td data-label="${isEnglish ? 'Experience' : (isUkrainian ? 'Досвід' : 'Опыт')}">${isEnglish ? 'Basic / No experience' : (isUkrainian ? 'Без досвіду / базовий' : 'Без опыта / базовый')}</td>
-                                <td data-label="${isEnglish ? 'Schedule' : (isUkrainian ? 'Графік' : 'График')}">08:00–16:00, 16:00–00:00, 00:00–08:00 (Kyiv time)</td>
-                                <td data-label="${isEnglish ? 'Button' : (isUkrainian ? 'Кнопка' : 'Кнопка')}">${isEnglish ? 'Job Description (ENG)' : 'Описание вакансии (RU)'}</td>
-                            </tr>
-                            <tr>
-                                <td data-label="${isEnglish ? 'Location' : (isUkrainian ? 'Локація' : 'Локация')}">Казахстан</td>
-                                <td data-label="${isEnglish ? 'Experience' : (isUkrainian ? 'Досвід' : 'Опыт')}">${isEnglish ? 'Prime experience' : (isUkrainian ? 'Досвід Прайма' : 'Опыт Прайма')}</td>
-                                <td data-label="${isEnglish ? 'Schedule' : (isUkrainian ? 'Графік' : 'График')}">14:00–22:00, 22:00–06:00 (Kyiv time)</td>
-                                <td data-label="${isEnglish ? 'Button' : (isUkrainian ? 'Кнопка' : 'Кнопка')}">${isEnglish ? 'Job Description (Prime) (ENG)' : 'Описание вакансии. С опытом Прайма (RU)'}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="step">
-                    <h4><span class="step-number">3</span> ${isEnglish ? 'Test Assignment' : (isUkrainian ? 'Тестове завдання' : 'Тестовое задание')}</h4>
-                    <ul>
-                        <li>${ruText} → <strong>Флирт-задание (RU)</strong></li>
-                        <li>${enText} → <strong>Flirt Closing (ENG)</strong></li>
-                    </ul>
-                </div>
-                <div class="step">
-                    <h4><span class="step-number">4</span> ${isEnglish ? 'Handling Applications & Documentation' : (isUkrainian ? 'Робота із заявками та документацією' : 'Работа с заявками и документацией')}</h4>
-                    <ol>
-                        <li>${isEnglish ? 'All applications are logged in the' : (isUkrainian ? 'Усі заявки фіксуються в таблиці' : 'Все заявки фиксируются в таблице')} <strong>ЛИДЫ</strong>.</li>
-                        <li>${isEnglish ? 'After completing the test and choosing a schedule → provide the manager contact.' : (isUkrainian ? 'Після виконання тесту та вибору графіку → видаємо контакт менеджера.' : 'После выполнения теста и выбора графика → выдаём контакт менеджера.')}</li>
-                        <li>${isEnglish ? 'Send in the work Telegram group:' : (isUkrainian ? 'Надсилаємо в робочу Telegram-групу:' : 'Отправляем в рабочую Telegram-группу:')}
-                            <ul>
-                                <li>${isEnglish ? 'Screenshot of the completed test' : (isUkrainian ? 'Скрін виконаного тесту' : 'Скрин выполненного теста')}</li>
-                                <li>${isEnglish ? 'Below it: candidate contacts, schedule, assigned manager' : (isUkrainian ? 'Підпис: контакти кандидата, графік, контакт менеджера' : 'Подпись: контакты кандидата, график, контакт менеджера')}</li>
-                            </ul>
-                        </li>
-                        <li>${isEnglish ? 'Documentation in Google Sheets:' : (isUkrainian ? 'Документація у Google Sheets:' : 'Документация в Google Sheets:')}
-                            <ul>
-                                <li>${isEnglish ? 'Philippines' : (isUkrainian ? 'Філіппіни' : 'Филиппины')} → <strong>Chathouse Philippines</strong></li>
-                                <li>${isEnglish ? 'Kazakhstan' : (isUkrainian ? 'Казахстан' : 'Казахстан')} → <strong>Chathouse</strong></li>
-                                <li>${isEnglish ? 'Tab: <strong>Interns</strong>' : (isUkrainian ? 'Вкладка: <strong>Стажисти</strong>' : 'Вкладка: <strong>Стажёры</strong>')}</li>
-                                <li>${isEnglish ? 'Fill: Date, Candidate contact, Schedule, Manager' : (isUkrainian ? 'Заповнюємо: Дата, Контакт, Графік, Менеджер' : 'Заполняем: Дата, Контакт, График, Менеджер')}</li>
-                                <li>${isEnglish ? 'Status → "assigned to admin"' : (isUkrainian ? 'Статус → «передано адміну»' : 'Статус → «передан админу»')}</li>
-                            </ul>
-                        </li>
-                    </ol>
-                </div>
-                <div class="step">
-                    <h4><span class="step-number">5</span> ${isEnglish ? 'Manager Contacts' : (isUkrainian ? 'Контакти менеджерів' : 'Контакты менеджеров')}</h4>
-                    <table>
-                        <thead>
-                            <tr><th>${isEnglish ? 'Location' : (isUkrainian ? 'Локація' : 'Локация')}</th><th>${isEnglish ? 'Contacts' : (isUkrainian ? 'Контакти' : 'Контакты')}</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td data-label="${isEnglish ? 'Location' : (isUkrainian ? 'Локація' : 'Локация')}">${isEnglish ? 'Philippines' : (isUkrainian ? 'Філіппіни' : 'Филиппины')}</td>
-                                <td data-label="${isEnglish ? 'Contacts' : (isUkrainian ? 'Контакти' : 'Контакты')}">Telegram: @strighik / WhatsApp: +380990650264<br>Telegram: @jszmn1827 / WhatsApp: +639260025915</td>
-                            </tr>
-                            <tr>
-                                <td data-label="${isEnglish ? 'Location' : (isUkrainian ? 'Локація' : 'Локация')}">${isEnglish ? 'Kazakhstan (Prime)' : (isUkrainian ? 'Казахстан (досвід Прайма)' : 'Казахстан (опыт Прайма)')}</td>
-                                <td data-label="${isEnglish ? 'Contacts' : (isUkrainian ? 'Контакти' : 'Контакты')}">Telegram: @sandra01075 / WhatsApp: -</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            instructionsDiv.innerHTML = content;
+            if (appContent.instructionsContent && appContent.instructionsContent[lang]) {
+                instructionsDiv.innerHTML = appContent.instructionsContent[lang];
+            } else {
+                 const header = appData.i18n[lang]?.instructionHeader || 'Instruction';
+                 instructionsDiv.innerHTML = `<h3 data-key="instructionHeader">${header}</h3>`;
+            }
         }
 
         // ===================================================================================
         // CORE FUNCTIONALITY
         // ===================================================================================
-        function copyAndCycle(lang, type, buttonId) {
-            // 🔥 ИЗМЕНЕНИЕ: Используем appData.templates, который теперь заполняется с сервера
-            if (!appData.templates[lang] || !appData.templates[lang][type] || appData.templates[lang][type].length === 0) {
-                if (lang === 'uk') {
-                    showToast(appData.i18n[currentLang].toastMessage + " (Контент UA неактивен)");
-                } else {
-                    showToast(`Error: Content for ${lang} not found.`);
-                }
+        function copyAndCycle(lang, type) {
+            const templates = appData.templates[lang]?.[type];
+            if (!templates || templates.length === 0) {
+                showToast(`Нет шаблонов для ${type} (${lang})`, true);
                 return;
             }
 
-            const templates = appData.templates[lang][type];
-            if (!templateIndexes[lang][type]) templateIndexes[lang][type] = 0;
+            if (templateIndexes[lang][type] === undefined) {
+                templateIndexes[lang][type] = 0;
+            }
             
             const textToCopy = templates[templateIndexes[lang][type]];
-            const successMessage = `${appData.i18n[currentLang].toastMessage} (${templateIndexes[lang][type] + 1}/${templates.length})`;
             
             navigator.clipboard.writeText(textToCopy).then(() => {
-                showToast(successMessage);
-                trackClick(buttonId);
-            }).catch(() => showToast('Error copying'));
+                showToast(`${appData.i18n[currentLang].toastMessage} (${templateIndexes[lang][type] + 1}/${templates.length})`);
+                trackClick(`${lang}-${type}`);
+            }).catch(() => showToast('Ошибка копирования', true));
             
             templateIndexes[lang][type] = (templateIndexes[lang][type] + 1) % templates.length;
         }
         
-        // Функции handleSearch, toggleFavorite, renderFavorites, trackClick, getStats, setupDarkMode, toggleMobileView
-        // остаются БЕЗ ИЗМЕНЕНИЙ. Копирую их как есть для полноты файла.
-
         function handleSearch(event) {
             const query = event.target.value.toLowerCase();
-            document.querySelectorAll('.sidebar-section').forEach(section => {
-                let visibleButtons = 0;
-                section.querySelectorAll('button').forEach(button => {
-                    const span = button.querySelector('span[data-key]');
-                    const text = span ? span.textContent.toLowerCase() : '';
-                    const buttonText = button.id.toLowerCase();
-
-                    if (text.includes(query) || buttonText.includes(query)) {
-                        button.style.display = 'flex';
-                        visibleButtons++;
-                    } else {
-                        button.style.display = 'none';
-                    }
-                });
-                const h2 = section.querySelector('h2');
-                if(h2) h2.style.display = visibleButtons > 0 ? 'block' : 'none';
+            document.querySelectorAll('.sidebar-section button').forEach(button => {
+                const span = button.querySelector('span[data-key]');
+                const text = span ? span.textContent.toLowerCase() : '';
+                const isVisible = text.includes(query);
+                button.style.display = isVisible ? 'flex' : 'none';
             });
         }
 
@@ -666,8 +460,7 @@
             const favToggle = button.querySelector('.favorite-toggle');
 
             if (favorites.includes(buttonId)) {
-                const index = favorites.indexOf(buttonId);
-                favorites.splice(index, 1);
+                favorites.splice(favorites.indexOf(buttonId), 1);
                 favToggle.classList.remove('is-favorite');
             } else {
                 favorites.push(buttonId);
@@ -683,10 +476,8 @@
                 const buttons = Array.from(section.querySelectorAll('button'));
                 buttons.forEach(button => {
                     const favToggle = button.querySelector('.favorite-toggle');
-                    if (favorites.includes(button.id) && favToggle) {
-                        favToggle.classList.add('is-favorite');
-                    } else if (favToggle) {
-                        favToggle.classList.remove('is-favorite');
+                    if (favToggle) {
+                         favToggle.classList.toggle('is-favorite', favorites.includes(button.id));
                     }
                 });
                 buttons.sort((a, b) => {
@@ -704,52 +495,43 @@
             setLocalStorage('chaterlabStats', stats);
         }
         
-        function getStats() { console.table(getLocalStorage('chaterlabStats', {})); }
-        
         function setupDarkMode() {
             const toggle = document.getElementById('theme-checkbox');
-            const currentTheme = getLocalStorage('chaterlabTheme', 'light');
+            const applyTheme = (theme) => {
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    if(toggle) toggle.checked = true;
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    if(toggle) toggle.checked = false;
+                }
+            };
             
-            if (currentTheme === 'dark') {
-                document.body.classList.add('dark-mode');
-                if(toggle) toggle.checked = true;
-            }
+            const savedTheme = getLocalStorage('chaterlabTheme', 'light');
+            applyTheme(savedTheme);
 
             if(toggle) toggle.addEventListener('change', () => {
-                document.body.classList.toggle('dark-mode');
-                const theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+                const theme = toggle.checked ? 'dark' : 'light';
                 setLocalStorage('chaterlabTheme', theme);
+                applyTheme(theme);
             });
         }
 
         function toggleMobileView(view) {
             const main = document.querySelector('main');
-            const switchButtons = document.getElementById('switchButtons');
-            const switchInstructions = document.getElementById('switchInstructions');
-
             const isMobile = window.innerWidth <= 768;
-
             if (isMobile) {
-                if (view === 'buttons') {
-                    main.classList.add('sidebar-visible');
-                    main.classList.remove('info-visible');
-                    if (switchButtons) switchButtons.classList.add('active');
-                    if (switchInstructions) switchInstructions.classList.remove('active');
-                } else if (view === 'instructions') {
-                    main.classList.add('info-visible');
-                    main.classList.remove('sidebar-visible');
-                    if (switchInstructions) switchInstructions.classList.add('active');
-                    if (switchButtons) switchButtons.classList.remove('active');
-                }
+                main.classList.toggle('sidebar-visible', view === 'buttons');
+                main.classList.toggle('info-visible', view === 'instructions');
+                document.getElementById('switchButtons').classList.toggle('active', view === 'buttons');
+                document.getElementById('switchInstructions').classList.toggle('active', view === 'instructions');
             } else {
-                main.classList.remove('sidebar-visible', 'info-visible');
-                if (switchButtons) switchButtons.classList.remove('active');
-                if (switchInstructions) switchInstructions.classList.remove('active');
+                 main.classList.remove('sidebar-visible', 'info-visible');
             }
         }
         
         // ===================================================================================
-        // 🔥 НОВЫЙ БЛОК: РЕДАКТОР КОНТЕНТА ДЛЯ МЕНЕДЖЕРА
+        // NEW EDITOR LOGIC
         // ===================================================================================
         function checkUserRoleAndSetupEditor() {
             const editBtn = document.getElementById('edit-mode-btn');
@@ -758,127 +540,178 @@
                 editBtn.addEventListener('click', showContentEditor);
                 document.getElementById('save-content-btn').addEventListener('click', saveContent);
                 document.getElementById('cancel-edit-btn').addEventListener('click', hideContentEditor);
+                document.getElementById('tab-btn-templates').addEventListener('click', () => switchEditorTab('templates'));
+                document.getElementById('tab-btn-instructions').addEventListener('click', () => switchEditorTab('instructions'));
             } else {
                 editBtn.style.display = 'none';
             }
         }
 
+        function switchEditorTab(tabName) {
+            document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.editor-tabs button').forEach(b => b.classList.remove('active'));
+            document.getElementById(`panel-${tabName}`).classList.add('active');
+            document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+        }
+        
         function showContentEditor() {
             document.getElementById('instructions').style.display = 'none';
             document.getElementById('content-editor').style.display = 'block';
-
-            const editorFields = document.getElementById('editor-fields');
-            editorFields.innerHTML = ''; // Очищаем старые поля
-
-            const templates = appContent.templates;
-            for (const lang in templates) {
-                for (const type in templates[lang]) {
-                    const section = document.createElement('div');
-                    section.className = 'editor-section';
-                    
-                    const label = document.createElement('label');
-                    label.textContent = `Шаблоны для "${type}" (${lang.toUpperCase()})`;
-                    
-                    const textarea = document.createElement('textarea');
-                    textarea.id = `editor-${lang}-${type}`;
-                    textarea.value = templates[lang][type].join('\n\n'); // Каждый шаблон с новой двойной строки
-                    
-                    section.appendChild(label);
-                    section.appendChild(textarea);
-                    editorFields.appendChild(section);
-                }
-            }
+            buildTemplatesEditor();
+            initInstructionsEditor();
+            switchEditorTab('templates'); // Открываем вкладку с шаблонами по умолчанию
         }
 
         function hideContentEditor() {
             document.getElementById('instructions').style.display = 'block';
             document.getElementById('content-editor').style.display = 'none';
+            tinymce.remove(); // Выгружаем редакторы для освобождения памяти
+        }
+        
+        function buildTemplatesEditor() {
+            const container = document.getElementById('panel-templates');
+            container.innerHTML = '';
+            const templates = appContent.templates;
+
+            for (const lang in templates) {
+                for (const type in templates[lang]) {
+                    const section = document.createElement('div');
+                    section.className = 'editor-section';
+                    
+                    const title = appData.i18n[lang]?.[`${type.replace('Descriptions', 'Desc').replace('Closings', '')}ButtonLabel`] || type;
+                    section.innerHTML = `<h4>${title} (${lang.toUpperCase()})</h4><div class="variants-container"></div>`;
+                    
+                    const variantsContainer = section.querySelector('.variants-container');
+                    templates[lang][type].forEach(variantText => {
+                        variantsContainer.appendChild(createVariantInput(variantText));
+                    });
+                    
+                    const addBtn = document.createElement('button');
+                    addBtn.className = 'add-variant-btn';
+                    addBtn.textContent = '+ Добавить вариант';
+                    addBtn.onclick = () => {
+                        const newVariant = createVariantInput('');
+                        variantsContainer.appendChild(newVariant);
+                        newVariant.querySelector('textarea').focus();
+                    };
+
+                    section.appendChild(addBtn);
+                    container.appendChild(section);
+                }
+            }
+        }
+
+        function createVariantInput(text) {
+            const variantDiv = document.createElement('div');
+            variantDiv.className = 'template-variant';
+            
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-variant-btn';
+            deleteBtn.innerHTML = '&#x1F5D1;'; // Иконка корзины
+            deleteBtn.title = 'Удалить вариант';
+            deleteBtn.onclick = () => variantDiv.remove();
+            
+            variantDiv.appendChild(textarea);
+            variantDiv.appendChild(deleteBtn);
+            return variantDiv;
+        }
+
+        function initInstructionsEditor() {
+            const skin = document.body.classList.contains('dark-mode') ? 'oxide-dark' : 'oxide';
+            const content_css = document.body.classList.contains('dark-mode') ? 'dark' : 'default';
+            
+            tinymce.init({
+                selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk',
+                height: 500,
+                menubar: false,
+                plugins: 'lists link image code help wordcount autoresize',
+                toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | help',
+                skin: skin,
+                content_css: content_css,
+                setup: editor => {
+                    editor.on('init', () => {
+                        const langKey = editor.id.split('-')[2]; // 'ru', 'en', or 'uk'
+                        editor.setContent(appContent.instructionsContent?.[langKey] || '');
+                    });
+                }
+            });
         }
 
         async function saveContent() {
-            const newTemplates = JSON.parse(JSON.stringify(appContent.templates)); // Глубокая копия
+            const newContent = { 
+                templates: JSON.parse(JSON.stringify(appContent.templates)), // Создаем копию структуры
+                instructionsContent: {} 
+            };
             
-            for (const lang in newTemplates) {
-                for (const type in newTemplates[lang]) {
-                    const textarea = document.getElementById(`editor-${lang}-${type}`);
-                    if (textarea) {
-                        // Разделяем по двум переносам строки, убираем пустые строки
-                        const values = textarea.value.split('\n\n').filter(line => line.trim() !== '');
-                        newTemplates[lang][type] = values;
-                    }
+            // Сохраняем шаблоны
+            document.querySelectorAll('#panel-templates .editor-section').forEach(section => {
+                const titleText = section.querySelector('h4').textContent;
+                const match = titleText.match(/\((.*?)\)/);
+                const lang = match ? match[1].toLowerCase() : null;
+                
+                // Находим ключ типа по названию
+                const typeKey = Object.keys(appData.i18n[lang] || {}).find(key => 
+                    (appData.i18n[lang][key] === titleText.replace(` (${lang.toUpperCase()})`, ''))
+                )?.replace('ButtonLabel', '').replace('Desc', 'Descriptions').replace('Flirt', 'flirtClosings');
+
+                if (lang && typeKey) {
+                    const values = Array.from(section.querySelectorAll('.template-variant textarea'))
+                        .map(t => t.value.trim())
+                        .filter(v => v); // Убираем пустые
+                    newContent.templates[lang][typeKey] = values;
+                }
+            });
+
+            // Сохраняем инструкции
+            for (const lang of ['ru', 'en', 'uk']) {
+                const editor = tinymce.get(`instructions-editor-${lang}`);
+                if (editor) {
+                    newContent.instructionsContent[lang] = editor.getContent();
                 }
             }
-
-            const newContentData = { templates: newTemplates };
+            
             const token = getLocalStorage('chaterlabAuthToken', '');
-
             try {
-                const response = await fetch(`${API_BASE_URL}/update-content`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': token 
-                    },
-                    body: JSON.stringify(newContentData)
+                const response = await fetch(`${API_BASE_URL}/update-content`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json', 'Authorization': token }, 
+                    body: JSON.stringify(newContent) 
                 });
-
                 const result = await response.json();
-                if (!response.ok) {
-                    throw new Error(result.message || 'Ошибка сохранения');
-                }
-
+                if (!response.ok) throw new Error(result.message);
                 showToast('Контент успешно сохранен!');
                 hideContentEditor();
-                await fetchContent(); // Перезагружаем контент, чтобы увидеть изменения
-
-            } catch (error) {
-                console.error("Ошибка сохранения контента:", error);
-                showToast(error.message, true);
+                await fetchContent();
+            } catch (error) { 
+                console.error("Ошибка сохранения:", error);
+                showToast(error.message, true); 
             }
         }
 
         // ===================================================================================
-        // DYNAMIC CONTENT & EVENT LISTENERS
+        // DYNAMIC BUTTON ONCLICK BINDINGS
         // ===================================================================================
-        
-        function copyGreetingENG() { copyAndCycle('en', 'greetings', 'btn-greeting-en'); }
-        function copyJobENG() { copyAndCycle('en', 'jobDescriptions', 'btn-job-en'); }
-        function copyFlirtENG() { copyAndCycle('en', 'flirtClosings', 'btn-flirt-en'); }
-        function copyContactENG() { copyAndCycle('en', 'contacts', 'btn-contact-en'); }
+        function copyGreetingENG() { copyAndCycle('en', 'greetings'); }
+        function copyJobENG() { copyAndCycle('en', 'jobDescriptions'); }
+        function copyFlirtENG() { copyAndCycle('en', 'flirtClosings'); }
+        function copyContactENG() { copyAndCycle('en', 'contacts'); }
+        function copyGreetingRU() { copyAndCycle('ru', 'greetings'); }
+        function copyJobRU() { copyAndCycle('ru', 'jobDescriptions'); }
+        function copyJobPrimeRU() { copyAndCycle('ru', 'jobDescriptionsPrime'); }
+        function copyFlirtRU() { copyAndCycle('ru', 'flirtClosings'); }
+        function copyContactRU() { copyAndCycle('ru', 'contacts'); }
 
-        function copyGreetingRU() { copyAndCycle('ru', 'greetings', 'btn-greeting-ru'); }
-        function copyJobRU() { copyAndCycle('ru', 'jobDescriptions', 'btn-job-ru'); }
-        function copyJobPrimeRU() { copyAndCycle('ru', 'jobDescriptionsPrime', 'btn-jobprime-ru'); }
-        function copyFlirtRU() { copyAndCycle('ru', 'flirtClosings', 'btn-flirt-ru'); }
-        function copyContactRU() { copyAndCycle('ru', 'contacts', 'btn-contact-ru'); }
-        
-        function copyGreetingUK() { copyAndCycle('uk', 'greetings', 'btn-greeting-uk'); }
-        function copyJobUK() { copyAndCycle('uk', 'jobDescriptions', 'btn-job-uk'); }
-        function copyJobPrimeUK() { copyAndCycle('uk', 'jobDescriptionsPrime', 'btn-jobprime-uk'); }
-        function copyFlirtUK() { copyAndCycle('uk', 'flirtClosings', 'btn-flirt-uk'); }
-        function copyContactUK() { copyAndCycle('uk', 'contacts', 'btn-contact-uk'); }
-        
-        window.addEventListener('resize', () => {
-             const main = document.querySelector('main');
-             const activeView = main.classList.contains('info-visible') ? 'instructions' : 'buttons';
-             toggleMobileView(activeView);
-        });
-        
+        // ===================================================================================
+        // EVENT LISTENERS
+        // ===================================================================================
         document.addEventListener('DOMContentLoaded', () => {
-            const loggedIn = checkLogin();
+            checkLogin();
             document.getElementById('login-form').addEventListener('submit', handleLogin);
             document.getElementById('searchInput').addEventListener('input', handleSearch);
-            
-            const initialLang = getInitialLanguage();
-            switchLanguage(initialLang);
-
-            if (loggedIn) {
-                toggleMobileView('buttons');
-                setupDarkMode();
-                renderFavorites();
-            } else {
-                document.getElementById('login-screen').style.display = 'flex';
-            }
+            window.addEventListener('resize', () => toggleMobileView(document.querySelector('.sidebar').style.display === 'flex' ? 'buttons' : 'instructions'));
         });
 
     </script>
