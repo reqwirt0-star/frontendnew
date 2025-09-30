@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* Все ваши стили остаются без изменений */
+        /* Все твои стили остаются тут без изменений */
         :root {
             --primary-blue: #007aff;
             --primary-blue-hover: #005ecb;
@@ -127,6 +127,41 @@
         input:checked + .slider:before { transform: translateX(24px); }
         .slider.round { border-radius: 34px; }
         .slider.round:before { border-radius: 50%; }
+
+        /* Стили для редактора контента */
+        #content-editor { display: none; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px; }
+        #content-editor h3 { font-size: 20px; }
+        .editor-section { margin-bottom: 25px; }
+        .editor-section label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 15px; color: var(--text-secondary); }
+        .editor-section textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background-color: var(--background-main);
+            font-size: 14px;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            font-family: inherit;
+            line-height: 1.6;
+        }
+        .editor-section textarea:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px var(--shadow-color); outline: none; }
+        .editor-buttons { display: flex; gap: 10px; }
+        .editor-buttons button {
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        #save-content-btn { background-color: var(--primary-blue); color: #fff; }
+        #save-content-btn:hover { background-color: var(--primary-blue-hover); }
+        #cancel-edit-btn { background-color: var(--border-color); color: var(--text-primary); }
+        #cancel-edit-btn:hover { background-color: #dcdce1; }
+        body.dark-mode #cancel-edit-btn:hover { background-color: #58585b; }
     </style>
 </head>
 <body class="login-active">
@@ -210,7 +245,21 @@
                 </div>
                 <h3 id="infoHeader" data-key="aboutHeader"></h3>
                 <p id="infoText" data-key="aboutText"></p>
+                
+                <button id="edit-mode-btn" style="display: none; margin-bottom: 20px;">Редактировать контент</button>
+                
                 <div class="instructions" id="instructions"></div>
+
+                <div id="content-editor">
+                    <h3>Редактор шаблонов</h3>
+                    <p>Каждая строка в поле ниже - это отдельный вариант шаблона, который будет копироваться по кругу.</p>
+                    
+                    <div id="editor-fields"></div> <div class="editor-buttons">
+                        <button id="save-content-btn">Сохранить</button>
+                        <button id="cancel-edit-btn">Отмена</button>
+                    </div>
+                </div>
+
             </div>
         </main>
     </div>
@@ -220,11 +269,15 @@
         "use strict";
 
         // ===================================================================================
-        // DATA STORE - All content and translations are here for easy management
+        // КОНФИГУРАЦИЯ
+        // ===================================================================================
+        // 🔥 ИЗМЕНЕНИЕ: Указываем URL нашего бэкенда
+        const API_BASE_URL = 'https://backendchater.onrender.com';
+
+        // ===================================================================================
+        // DATA STORE
         // ===================================================================================
         const appData = {
-            // 🔥 ИЗМЕНЕНИЕ: Массив credentials полностью УДАЛЁН отсюда.
-            // Аутентификация теперь на сервере.
             i18n: {
                 en: {
                     loginHeader: "ChaterLab", loginSubheader: "Quick Replies Panel", loginPlaceholder: "Login", passwordPlaceholder: "Password", loginButton: "Log In",
@@ -254,22 +307,8 @@
                     greetingButtonLabel: "Привітання", jobDescButtonLabel: "Опис вакансії", jobPrimeButtonLabel: "Опис вакансії (Прайм)", flirtButtonLabel: "Флірт-завдання", contactButtonLabel: "Контакт",
                 }
             },
-            templates: {
-                en: {
-                    greetings: [ "Good day! We are ChaterLab. Do you have experience...", "Hello! This is ChaterLab..." ],
-                    jobDescriptions: [ `Job Description:\n📌 Task: Communicate with foreign men...`, `Vacancy: Chat Operator...` ],
-                    jobDescriptionsPrime: [ `Job Description (Prime):\n📌 Task: Communicate with foreign men...` ],
-                    flirtClosings: [ "Please create 10 unique phrases...", "As a test, please write 10 creative lines..." ],
-                    contacts: [ "Thank you for completing the test...", "Great job on the test!..." ]
-                },
-                ru: {
-                    greetings: [ "Добрый день! Мы компания ChaterLab...", "Здравствуйте! Это ChaterLab..." ],
-                    jobDescriptions: [ `Описание вакансии:\n📌 Задача: Ведение переписки...`, `Вакансия: Оператор чата...` ],
-                    jobDescriptionsPrime: [ `Описание вакансии (Прайм):\n📌 Задача: Ведение переписки...` ],
-                    flirtClosings: [ "Пожалуйста, составьте 10 уникальных фраз...", "В качестве теста, напишите 10 креативных фраз..." ],
-                    contacts: [ "Благодарим за выполненное тестовое...", "Отличная работа! Следующий шаг — связаться..." ]
-                }
-            }
+            // 🔥 ИЗМЕНЕНИЕ: Шаблоны теперь ПУСТЫЕ. Они будут загружаться с сервера.
+            templates: {}
         };
 
         // ===================================================================================
@@ -277,6 +316,10 @@
         // ===================================================================================
         let currentLang = 'ru';
         const templateIndexes = { en: {}, ru: {} };
+
+        // 🔥 НОВОЕ: Глобальные переменные для роли и контента с сервера
+        let userRole = null;
+        let appContent = {}; // Здесь будет храниться объект { templates: {...} } с сервера
 
         function getLocalStorage(key, defaultValue) {
             try {
@@ -296,31 +339,35 @@
             }
         }
         
-        function showToast(message) {
+        function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
+            toast.style.backgroundColor = isError ? 'var(--error-color)' : 'var(--success-color)';
             toast.classList.add('show');
-            if (navigator.vibrate) navigator.vibrate(50);
+            if (navigator.vibrate && !isError) navigator.vibrate(50);
             setTimeout(() => {
                 toast.classList.remove('show');
-            }, 1500);
+            }, 2000);
         }
 
         // ===================================================================================
-        // AUTHENTICATION
+        // AUTHENTICATION & DATA LOADING
         // ===================================================================================
         function checkLogin() {
-            // 🔥 ИЗМЕНЕНИЕ: Проверяем наличие токена, а не простого флага 'true'
             const authToken = getLocalStorage('chaterlabAuthToken', null);
+            const savedRole = getLocalStorage('chaterlabUserRole', null);
             const loginScreen = document.getElementById('login-screen');
             const appContainer = document.getElementById('app-container');
 
-            if (authToken) { // Если токен существует, считаем, что пользователь вошёл
+            if (authToken && savedRole) {
+                userRole = savedRole; // Устанавливаем роль
                 loginScreen.style.display = 'none';
                 document.body.classList.remove('login-active');
                 appContainer.setAttribute('data-logged', 'true');
                 appContainer.style.opacity = '1';
                 appContainer.style.display = 'flex';
+                // 🔥 НОВОЕ: После проверки логина, загружаем контент
+                fetchContent(); 
                 return true;
             } else {
                 loginScreen.style.display = 'flex';
@@ -332,40 +379,33 @@
             }
         }
 
-        // 🔥 ИЗМЕНЕНИЕ: Полностью новая функция для входа через сервер
         async function handleLogin(event) {
             event.preventDefault();
             const usernameInput = document.getElementById('login-username');
             const passwordInput = document.getElementById('login-password');
             const errorDiv = document.getElementById('login-error');
-
             const username = usernameInput.value.trim();
             const password = passwordInput.value.trim();
-
             errorDiv.classList.remove('show');
 
             try {
-                // Отправляем запрос на наш новый сервер
-                const response = await fetch('http://localhost:3000/login', {
+                // Исправлена опечатка с fetch и URL в кавычках
+                const response = await fetch(`${API_BASE_URL}/login`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
 
-                // Получаем ответ от сервера
                 const data = await response.json();
-
                 if (!response.ok) {
-                    // Если сервер вернул ошибку (например, 401), показываем её
                     throw new Error(data.message || 'Ошибка аутентификации');
                 }
 
-                // Успех! Сервер вернул токен. Сохраняем его.
+                // Успех! Сохраняем токен и РОЛЬ
                 setLocalStorage('chaterlabAuthToken', data.token);
+                setLocalStorage('chaterlabUserRole', data.role);
+                userRole = data.role;
                 
-                // --- Дальше ваша логика анимации и перехода к приложению ---
                 document.body.classList.remove('login-active');
                 document.getElementById('login-screen').style.display = 'none';
                 
@@ -374,28 +414,51 @@
                 void overlay.offsetHeight;
                 overlay.classList.add('animate');
 
-                setTimeout(() => {
+                setTimeout(async () => {
                     overlay.style.display = 'none';
                     overlay.classList.remove('animate');
                     document.getElementById('app-container').style.display = 'flex';
                     document.getElementById('app-container').setAttribute('data-logged', 'true');
                     document.getElementById('app-container').style.opacity = '1';
+                    
+                    // 🔥 НОВОЕ: Загружаем контент после анимации
+                    await fetchContent(); 
+                    
                     toggleMobileView('buttons');
+                    setupDarkMode();
+                    renderFavorites();
                 }, 2500);
 
-                setupDarkMode();
-                renderFavorites();
-
             } catch (error) {
-                // Показываем ошибку, полученную от сервера или из-за сбоя сети
                 errorDiv.textContent = error.message;
                 errorDiv.classList.add('show');
             }
         }
 
+        // 🔥 НОВАЯ ФУНКЦИЯ: Загрузка контента с сервера
+        async function fetchContent() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/content`);
+                if (!response.ok) throw new Error('Не удалось загрузить контент');
+                
+                const data = await response.json();
+                appContent = data; // Сохраняем контент в глобальную переменную
+                appData.templates = appContent.templates; // Для обратной совместимости
+                console.log('Контент успешно загружен:', appContent);
+                
+                // 🔥 НОВОЕ: После загрузки данных, проверяем роль и показываем кнопку редактора
+                checkUserRoleAndSetupEditor();
+
+            } catch (error) {
+                console.error("Ошибка загрузки контента:", error);
+                showToast(error.message, true);
+            }
+        }
+
         function logout() {
-            // 🔥 ИЗМЕНЕНИЕ: Удаляем токен из хранилища
             localStorage.removeItem('chaterlabAuthToken');
+            localStorage.removeItem('chaterlabUserRole'); // Удаляем роль
+            userRole = null; // Сбрасываем роль
             
             document.getElementById('login-username').value = '';
             document.getElementById('login-password').value = '';
@@ -435,6 +498,7 @@
         }
         
         function updateInstructions(lang) {
+            // Эта функция остается без изменений
             const instructionsDiv = document.getElementById('instructions');
             const infoHeader = document.getElementById('infoHeader');
             const infoText = document.getElementById('infoText');
@@ -452,7 +516,6 @@
             const ruText = isEnglish ? 'Russian audience' : (isUkrainian ? 'Російськомовна аудиторія' : 'Русскоязычная аудитория');
             const enText = isEnglish ? 'English audience' : (isUkrainian ? 'Англомовна аудиторія' : 'Англоязычная аудитория');
             
-
             content = `
                 <h3 data-key="instructionHeader">${loc('instructionHeader')}</h3>
                 <div class="step">
@@ -545,9 +608,10 @@
         }
 
         // ===================================================================================
-        // CORE FUNCTIONALITY: COPY, SEARCH, FAVORITES, STATS
+        // CORE FUNCTIONALITY
         // ===================================================================================
         function copyAndCycle(lang, type, buttonId) {
+            // 🔥 ИЗМЕНЕНИЕ: Используем appData.templates, который теперь заполняется с сервера
             if (!appData.templates[lang] || !appData.templates[lang][type] || appData.templates[lang][type].length === 0) {
                 if (lang === 'uk') {
                     showToast(appData.i18n[currentLang].toastMessage + " (Контент UA неактивен)");
@@ -571,6 +635,9 @@
             templateIndexes[lang][type] = (templateIndexes[lang][type] + 1) % templates.length;
         }
         
+        // Функции handleSearch, toggleFavorite, renderFavorites, trackClick, getStats, setupDarkMode, toggleMobileView
+        // остаются БЕЗ ИЗМЕНЕНИЙ. Копирую их как есть для полноты файла.
+
         function handleSearch(event) {
             const query = event.target.value.toLowerCase();
             document.querySelectorAll('.sidebar-section').forEach(section => {
@@ -655,9 +722,6 @@
             });
         }
 
-        // ===================================================================================
-        // MOBILE VIEW TOGGLE
-        // ===================================================================================
         function toggleMobileView(view) {
             const main = document.querySelector('main');
             const switchButtons = document.getElementById('switchButtons');
@@ -681,6 +745,95 @@
                 main.classList.remove('sidebar-visible', 'info-visible');
                 if (switchButtons) switchButtons.classList.remove('active');
                 if (switchInstructions) switchInstructions.classList.remove('active');
+            }
+        }
+        
+        // ===================================================================================
+        // 🔥 НОВЫЙ БЛОК: РЕДАКТОР КОНТЕНТА ДЛЯ МЕНЕДЖЕРА
+        // ===================================================================================
+        function checkUserRoleAndSetupEditor() {
+            const editBtn = document.getElementById('edit-mode-btn');
+            if (userRole === 'manager') {
+                editBtn.style.display = 'inline-block';
+                editBtn.addEventListener('click', showContentEditor);
+                document.getElementById('save-content-btn').addEventListener('click', saveContent);
+                document.getElementById('cancel-edit-btn').addEventListener('click', hideContentEditor);
+            } else {
+                editBtn.style.display = 'none';
+            }
+        }
+
+        function showContentEditor() {
+            document.getElementById('instructions').style.display = 'none';
+            document.getElementById('content-editor').style.display = 'block';
+
+            const editorFields = document.getElementById('editor-fields');
+            editorFields.innerHTML = ''; // Очищаем старые поля
+
+            const templates = appContent.templates;
+            for (const lang in templates) {
+                for (const type in templates[lang]) {
+                    const section = document.createElement('div');
+                    section.className = 'editor-section';
+                    
+                    const label = document.createElement('label');
+                    label.textContent = `Шаблоны для "${type}" (${lang.toUpperCase()})`;
+                    
+                    const textarea = document.createElement('textarea');
+                    textarea.id = `editor-${lang}-${type}`;
+                    textarea.value = templates[lang][type].join('\n\n'); // Каждый шаблон с новой двойной строки
+                    
+                    section.appendChild(label);
+                    section.appendChild(textarea);
+                    editorFields.appendChild(section);
+                }
+            }
+        }
+
+        function hideContentEditor() {
+            document.getElementById('instructions').style.display = 'block';
+            document.getElementById('content-editor').style.display = 'none';
+        }
+
+        async function saveContent() {
+            const newTemplates = JSON.parse(JSON.stringify(appContent.templates)); // Глубокая копия
+            
+            for (const lang in newTemplates) {
+                for (const type in newTemplates[lang]) {
+                    const textarea = document.getElementById(`editor-${lang}-${type}`);
+                    if (textarea) {
+                        // Разделяем по двум переносам строки, убираем пустые строки
+                        const values = textarea.value.split('\n\n').filter(line => line.trim() !== '');
+                        newTemplates[lang][type] = values;
+                    }
+                }
+            }
+
+            const newContentData = { templates: newTemplates };
+            const token = getLocalStorage('chaterlabAuthToken', '');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/update-content`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token 
+                    },
+                    body: JSON.stringify(newContentData)
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.message || 'Ошибка сохранения');
+                }
+
+                showToast('Контент успешно сохранен!');
+                hideContentEditor();
+                await fetchContent(); // Перезагружаем контент, чтобы увидеть изменения
+
+            } catch (error) {
+                console.error("Ошибка сохранения контента:", error);
+                showToast(error.message, true);
             }
         }
 
@@ -711,7 +864,6 @@
              toggleMobileView(activeView);
         });
         
-
         document.addEventListener('DOMContentLoaded', () => {
             const loggedIn = checkLogin();
             document.getElementById('login-form').addEventListener('submit', handleLogin);
