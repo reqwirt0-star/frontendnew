@@ -6,144 +6,714 @@
     <title>ChaterLab Quick Replies</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tiny.cloud/1/2vkf90yplt2jwzdkcxwwk0cnde1wl6wmoaou6uauoogheruk/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 
     <style>
         :root {
-            --primary-blue: #007aff;
-            --primary-blue-hover: #005ecb;
-            --light-blue-bg: #f0f7ff;
-            --text-primary: #2c2c2e;
-            --text-secondary: #636366;
-            --background-main: #f8f8fa;
+            --primary-blue: #3b82f6;
+            --primary-blue-hover: #2563eb;
+            --accent-purple: #8b5cf6;
+            --light-blue-bg: #eff6ff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --background-main: #f8fafc;
             --background-card: #ffffff;
-            --border-color: #e5e5e9;
-            --shadow-color: rgba(0, 122, 255, 0.1);
-            --success-color: #34c759;
-            --error-color: #ff3b30;
-            --star-color: #ffcc00;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
+            --success-color: #10b981;
+            --error-color: #ef4444;
         }
         body.dark-mode {
-            --light-blue-bg: #2c2c2e;
-            --text-primary: #f2f2f7;
-            --text-secondary: #98989d;
-            --background-main: #1c1c1e;
-            --background-card: #2c2c2e;
-            --border-color: #48484a;
-            --shadow-color: rgba(0, 122, 255, 0.2);
+            --primary-blue: #60a5fa;
+            --primary-blue-hover: #3b82f6;
+            --accent-purple: #a78bfa;
+            --light-blue-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --background-main: #0f172a;
+            --background-card: #1e293b;
+            --border-color: #334155;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
-        body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background-color: var(--background-main); color: var(--text-primary); transition: background-color 0.3s, color 0.3s; }
-        .login-active { overflow: hidden; height: 100vh; }
-        #app-container { flex-direction: column; min-height: 100vh; opacity: 0; transition: opacity 0.5s ease-in-out; }
-        #app-container:not([data-logged="true"]) { display: none; }
-        #animation-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--background-main); display: none; justify-content: center; align-items: center; z-index: 3000; opacity: 1; transition: opacity 0.5s ease-out; }
-        .animation-content h1 { font-size: 48px; color: var(--primary-blue); letter-spacing: -1px; font-weight: 600; opacity: 0; }
-        #animation-overlay.animate .animation-content h1 { animation: fadeInOut 2.5s ease-in-out forwards; }
-        @keyframes fadeInOut { 0%{opacity:0;transform:scale(.95)} 20%{opacity:1;transform:scale(1)} 80%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(.95)} }
-        header { text-align: center; padding: 18px 20px; font-size: 24px; font-weight: 600; border-bottom: 1px solid var(--border-color); letter-spacing: -0.5px; background-color: var(--background-card); transition: background-color 0.3s, border-color 0.3s; }
-        main { display: flex; flex: 1; flex-wrap: wrap; overflow: hidden; }
-        .sidebar { width: 320px; min-width: 280px; padding: 20px; border-right: 1px solid var(--border-color); background-color: var(--background-card); box-sizing: border-box; display: flex; flex-direction: column; transition: background-color 0.3s, border-color 0.3s; }
-        .sidebar > div:first-child { flex-grow: 1; overflow-y: auto; }
-        .sidebar h2 { font-size: 16px; margin-bottom: 12px; font-weight: 600; margin-top: 20px; color: var(--text-secondary); padding-left: 5px; }
-        .sidebar h2:first-of-type { margin-top: 0; }
-        .sidebar-footer { margin-top: auto; flex-shrink: 0; padding-top: 10px; border-top: 1px solid var(--border-color);}
-        .sidebar-section { display: flex; flex-direction: column; }
-        .sidebar button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; margin-bottom: 10px; background-color: var(--background-card); border: 1px solid var(--border-color); border-radius: 10px; font-size: 15px; font-weight: 500; text-align: left; color: var(--text-primary); cursor: pointer; transition: all 0.2s ease; }
-        .sidebar button:hover { border-color: var(--primary-blue); color: var(--primary-blue); background-color: var(--light-blue-bg); transform: translateY(-2px); box-shadow: 0 4px 12px var(--shadow-color); }
-        .sidebar button svg { width: 20px; height: 20px; flex-shrink: 0; stroke-width: 1.5; color: var(--text-secondary); transition: color 0.2s ease; }
-        .info { flex: 1; padding: 30px; overflow-y: auto; }
-        .instructions { margin-top: 20px; }
-        .instructions h3 { font-size: 24px; font-weight: 600; margin-bottom: 15px; color: var(--text-primary); }
-        .instructions ul, .instructions ol { padding-left: 20px; margin: 10px 0; color: var(--text-secondary); line-height: 1.7; word-break: break-word; }
-        .toast-notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: var(--success-color); color: white; padding: 12px 20px; border-radius: 10px; opacity: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: all 0.3s ease-in-out; z-index: 2000; font-size: 15px; font-weight: 500; pointer-events: none; white-space: nowrap; }
-        .toast-notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 2000; overflow: hidden; }
-        .login-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(315deg, #007aff, #5856d6, #ff2d55, #ff9500); background-size: 400% 400%; animation: gradientAnimation 20s ease infinite; z-index: 1; }
-        @keyframes gradientAnimation { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-        .login-form-container { background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 40px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 340px; max-width: 90%; text-align: center; transition: opacity 0.4s ease-out; z-index: 2; border: 1px solid rgba(255,255,255,0.2); }
-        .dark-mode .login-form-container { background: rgba(28, 28, 30, 0.85); border: 1px solid rgba(255,255,255,0.1); }
-        .login-form-container h1 { font-size: 28px; font-weight: 600; color: var(--primary-blue); margin-top: 0; margin-bottom: 8px; }
-        .login-form-container p { margin-top: 0; margin-bottom: 25px; color: var(--text-secondary); }
-        .login-form-container input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 10px; box-sizing: border-box; font-size: 16px; transition: all 0.2s ease; background-color: var(--background-card); color: var(--text-primary); }
-        .login-form-container input:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px var(--shadow-color); outline: none; }
-        .login-form-container button[type="submit"] { width: 100%; padding: 14px; background-color: var(--primary-blue); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
-        #login-error { color: #fff; background-color: var(--error-color); padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 14px; font-weight: 500; opacity: 0; transform: translateY(10px); transition: opacity 0.3s ease, transform 0.3s ease; pointer-events: none; }
-        #login-error.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
-        .theme-switch-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 10px 5px; }
-        .theme-switch-label { font-weight: 500; color: var(--text-secondary); }
-        .theme-switch { display: inline-block; height: 26px; position: relative; width: 50px; }
-        .theme-switch input { display:none; }
-        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; }
-        .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 18px; left: 4px; position: absolute; transition: .4s; width: 18px; }
-        input:checked + .slider { background-color: var(--primary-blue); }
-        input:checked + .slider:before { transform: translateX(24px); }
-        .slider.round { border-radius: 34px; }
-        .slider.round:before { border-radius: 50%; }
-
-        /* СТИЛИ КОНСТРУКТОРА */
-        .editor-main-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-        .editor-tabs { display: flex; gap: 5px; background-color: var(--background-main); padding: 5px; border-radius: 10px; }
-        .editor-tabs button { padding: 8px 16px; border: none; background-color: transparent; font-size: 15px; font-weight: 600; border-radius: 8px; cursor: pointer; color: var(--text-secondary); }
-        .editor-tabs button.active { background-color: var(--background-card); color: var(--primary-blue); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .editor-panel { display: none; }
-        .editor-panel.active { display: block; }
-        .editor-buttons { display: flex; gap: 10px; }
-        .editor-buttons button { padding: 10px 20px; font-size: 15px; font-weight: 500; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
-        #save-content-btn { background-color: var(--primary-blue); color: #fff; }
-        #cancel-edit-btn { background-color: var(--border-color); color: var(--text-primary); }
-
-        .editor-section, .editor-button-entry { border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; background-color: var(--background-card); margin-bottom: 15px; }
-        .editor-section-header, .editor-button-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
-        .editor-section-header input, .editor-button-header input { font-size: 16px; font-weight: 600; color: var(--primary-blue); border: none; background: transparent; width: 100%; border-bottom: 1px dashed var(--border-color); padding: 5px; }
-        .editor-section-header input:focus, .editor-button-header input:focus { outline: none; border-bottom-style: solid; }
-        .editor-controls { margin-left: auto; display: flex; }
-        .editor-controls button { background-color: transparent; border: none; cursor: pointer; padding: 5px; }
-        .delete-btn { color: var(--error-color); }
-        .template-variant { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
-        .template-variant textarea { width: 100%; min-height: 50px; resize: vertical; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--background-main); font-size: 14px; color: var(--text-primary); font-family: inherit; line-height: 1.5; }
-        .delete-variant-btn { padding: 8px; background-color: #ff3b3020; border: none; border-radius: 8px; cursor: pointer; color: var(--error-color); line-height: 0; transition: background-color 0.2s; }
-        .add-variant-btn, .add-btn { width: 100%; padding: 10px; background-color: #34c75920; color: var(--success-color); border: 1px dashed var(--success-color); border-radius: 8px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; margin-top: 10px; }
         
-        /* НОВЫЕ СТИЛИ ДЛЯ ПЕРЕКЛЮЧАТЕЛЯ ЯЗЫКА */
-        .lang-btn.active, .lang-btn-app.active {
-            color: var(--primary-blue) !important;
-            border-color: var(--primary-blue) !important;
-            font-weight: 600;
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            background-color: var(--background-main); 
+            color: var(--text-primary); 
+            transition: background-color 0.3s ease, color 0.3s ease;
+            line-height: 1.6;
+        }
+        
+        .login-active { overflow: hidden; height: 100vh; }
+        
+        /* APP CONTAINER */
+        #app-container { 
+            display: flex;
+            flex-direction: column; 
+            min-height: 100vh; 
+            opacity: 0; 
+            transition: opacity 0.5s ease-in-out; 
+        }
+        #app-container:not([data-logged="true"]) { display: none; }
+        
+        /* ANIMATION OVERLAY */
+        #animation-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: var(--background-main); 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 3000; 
+            opacity: 1; 
+            transition: opacity 0.5s ease-out; 
+        }
+        .animation-content h1 { 
+            font-size: 56px; 
+            background: linear-gradient(135deg, var(--primary-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -2px; 
+            font-weight: 700; 
+            opacity: 0; 
+        }
+        #animation-overlay.animate .animation-content h1 { 
+            animation: fadeInOut 2.5s ease-in-out forwards; 
+        }
+        @keyframes fadeInOut { 
+            0% { opacity: 0; transform: scale(0.9); } 
+            20% { opacity: 1; transform: scale(1); } 
+            80% { opacity: 1; transform: scale(1); } 
+            100% { opacity: 0; transform: scale(0.9); } 
+        }
+        
+        /* HEADER */
+        header { 
+            text-align: center; 
+            padding: 24px 20px; 
+            font-size: 28px; 
+            font-weight: 700; 
+            border-bottom: 1px solid var(--border-color); 
+            letter-spacing: -1px; 
+            background-color: var(--background-card); 
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        /* MAIN LAYOUT */
+        main { 
+            display: flex; 
+            flex: 1; 
+            flex-wrap: wrap; 
+            overflow: hidden; 
+        }
+        
+        /* SIDEBAR */
+        .sidebar { 
+            width: 340px; 
+            min-width: 300px; 
+            padding: 24px; 
+            border-right: 1px solid var(--border-color); 
+            background-color: var(--background-card); 
+            box-sizing: border-box; 
+            display: flex; 
+            flex-direction: column; 
+            transition: all 0.3s ease;
+        }
+        .sidebar > div:first-child { 
+            flex-grow: 1; 
+            overflow-y: auto; 
+        }
+        .sidebar h2 { 
+            font-size: 13px; 
+            margin-bottom: 12px; 
+            font-weight: 600; 
+            margin-top: 24px; 
+            color: var(--text-secondary); 
+            padding-left: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .sidebar h2:first-of-type { margin-top: 0; }
+        
+        .sidebar-footer { 
+            margin-top: auto; 
+            flex-shrink: 0; 
+            padding-top: 16px; 
+            border-top: 1px solid var(--border-color);
+        }
+        .sidebar-section { 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .sidebar button { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            width: 100%; 
+            padding: 14px 16px; 
+            margin-bottom: 8px; 
+            background-color: var(--background-main); 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
+            font-size: 15px; 
+            font-weight: 500; 
+            text-align: left; 
+            color: var(--text-primary); 
+            cursor: pointer; 
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        .sidebar button:hover { 
+            border-color: var(--primary-blue); 
+            color: var(--primary-blue); 
+            background-color: var(--light-blue-bg); 
+            transform: translateY(-2px); 
+            box-shadow: var(--shadow-md);
+        }
+        .sidebar button svg { 
+            width: 20px; 
+            height: 20px; 
+            flex-shrink: 0; 
+            stroke-width: 2; 
+            color: var(--text-secondary); 
+            transition: color 0.2s ease; 
+        }
+        .sidebar button:hover svg {
+            color: var(--primary-blue);
+        }
+        
+        /* INFO PANEL */
+        .info { 
+            flex: 1; 
+            padding: 40px; 
+            overflow-y: auto; 
+            background-color: var(--background-main);
+        }
+        .instructions { 
+            margin-top: 20px; 
+        }
+        .instructions h3 { 
+            font-size: 32px; 
+            font-weight: 700; 
+            margin-bottom: 16px; 
+            color: var(--text-primary);
+            letter-spacing: -1px;
+        }
+        .instructions ul, .instructions ol { 
+            padding-left: 24px; 
+            margin: 12px 0; 
+            color: var(--text-secondary); 
+            line-height: 1.8;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        /* TOAST NOTIFICATION */
+        .toast-notification { 
+            position: fixed; 
+            bottom: 24px; 
+            left: 50%; 
+            transform: translateX(-50%) translateY(100px); 
+            background-color: var(--success-color); 
+            color: white; 
+            padding: 14px 24px; 
+            border-radius: 12px; 
+            opacity: 0; 
+            box-shadow: var(--shadow-lg); 
+            transition: all 0.3s ease; 
+            z-index: 2000; 
+            font-size: 15px; 
+            font-weight: 500; 
+            pointer-events: none; 
+            white-space: nowrap; 
+        }
+        .toast-notification.show { 
+            opacity: 1; 
+            transform: translateX(-50%) translateY(0); 
+        }
+        
+        /* LOGIN SCREEN */
+        #login-screen { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 2000; 
+            overflow: hidden; 
+        }
+        .login-background { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+            background-size: 400% 400%; 
+            animation: gradientAnimation 15s ease infinite; 
+            z-index: 1; 
+        }
+        @keyframes gradientAnimation { 
+            0% { background-position: 0% 50%; } 
+            50% { background-position: 100% 50%; } 
+            100% { background-position: 0% 50%; } 
+        }
+        
+        .login-form-container { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            padding: 48px 40px; 
+            border-radius: 24px; 
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); 
+            width: 400px; 
+            max-width: 90%; 
+            text-align: center; 
+            transition: all 0.4s ease; 
+            z-index: 2; 
+            border: 1px solid rgba(255, 255, 255, 0.3); 
+        }
+        .dark-mode .login-form-container { 
+            background: rgba(15, 23, 42, 0.95); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+        }
+        
+        .login-form-container h1 { 
+            font-size: 36px; 
+            font-weight: 700; 
+            background: linear-gradient(135deg, var(--primary-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-top: 0; 
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+        .login-form-container p { 
+            margin-top: 0; 
+            margin-bottom: 32px; 
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+        
+        /* LANGUAGE SWITCHER LOGIN */
+        #language-switcher-login {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 6px;
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+        }
+        .dark-mode #language-switcher-login {
+            background-color: rgba(255, 255, 255, 0.05);
         }
         #language-switcher-login button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
             transition: all 0.2s ease;
+            flex: 1;
+        }
+        #language-switcher-login button:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--primary-blue);
+        }
+        #language-switcher-login button.active {
+            background-color: var(--primary-blue);
+            color: white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+        
+        .login-form-container input { 
+            width: 100%; 
+            padding: 16px; 
+            margin-bottom: 16px; 
+            border: 2px solid var(--border-color); 
+            border-radius: 12px; 
+            box-sizing: border-box; 
+            font-size: 16px; 
+            transition: all 0.2s ease; 
+            background-color: var(--background-card); 
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+        .login-form-container input:focus { 
+            border-color: var(--primary-blue); 
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); 
+            outline: none; 
+        }
+        .login-form-container button[type="submit"] { 
+            width: 100%; 
+            padding: 16px; 
+            background: linear-gradient(135deg, var(--primary-blue), var(--accent-purple));
+            color: #fff; 
+            border: none; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .login-form-container button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        #login-error { 
+            color: #fff; 
+            background-color: var(--error-color); 
+            padding: 14px; 
+            border-radius: 12px; 
+            margin-top: 20px; 
+            font-size: 14px; 
+            font-weight: 500; 
+            opacity: 0; 
+            transform: translateY(10px); 
+            transition: all 0.3s ease; 
+            pointer-events: none; 
+        }
+        #login-error.show { 
+            opacity: 1; 
+            transform: translateY(0); 
+            pointer-events: auto; 
+        }
+        
+        /* THEME SWITCH */
+        .theme-switch-wrapper { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 12px 8px; 
+        }
+        .theme-switch-label { 
+            font-weight: 500; 
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .theme-switch { 
+            display: inline-block; 
+            height: 28px; 
+            position: relative; 
+            width: 52px; 
+        }
+        .theme-switch input { display: none; }
+        .slider { 
+            background-color: #cbd5e1; 
+            bottom: 0; 
+            cursor: pointer; 
+            left: 0; 
+            position: absolute; 
+            right: 0; 
+            top: 0; 
+            transition: 0.3s; 
+        }
+        .slider:before { 
+            background-color: #fff; 
+            bottom: 4px; 
+            content: ""; 
+            height: 20px; 
+            left: 4px; 
+            position: absolute; 
+            transition: 0.3s; 
+            width: 20px; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        input:checked + .slider { 
+            background-color: var(--primary-blue); 
+        }
+        input:checked + .slider:before { 
+            transform: translateX(24px); 
+        }
+        .slider.round { border-radius: 34px; }
+        .slider.round:before { border-radius: 50%; }
+        
+        /* LANGUAGE SWITCHER APP */
+        #language-switcher-app {
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 12px;
         }
         #language-switcher-app button {
-            background: none; border: none; font-weight: 600; color: var(--text-secondary); cursor: pointer;
-            padding: 8px 15px;
-            margin: 0 5px;
+            background: none;
+            border: none;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 8px 16px;
+            margin: 0;
+            font-size: 14px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
         }
-        #language-switcher-app .active {
-            color: var(--primary-blue) !important;
-            border-bottom: 2px solid var(--primary-blue);
+        #language-switcher-app button:hover {
+            background-color: var(--light-blue-bg);
+            color: var(--primary-blue);
         }
-        /* Конец НОВЫХ СТИЛЕЙ */
+        #language-switcher-app button.active {
+            color: var(--primary-blue);
+            background-color: var(--light-blue-bg);
+        }
+        
+        /* EDITOR STYLES */
+        .editor-main-controls { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 24px; 
+            flex-wrap: wrap; 
+            gap: 16px; 
+        }
+        .editor-tabs { 
+            display: flex; 
+            gap: 8px; 
+            background-color: var(--background-card); 
+            padding: 6px; 
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        .editor-tabs button { 
+            padding: 10px 20px; 
+            border: none; 
+            background-color: transparent; 
+            font-size: 15px; 
+            font-weight: 600; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+        .editor-tabs button.active { 
+            background-color: var(--primary-blue); 
+            color: white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+        .editor-panel { display: none; }
+        .editor-panel.active { display: block; }
+        
+        .editor-buttons { 
+            display: flex; 
+            gap: 12px; 
+        }
+        .editor-buttons button { 
+            padding: 12px 24px; 
+            font-size: 15px; 
+            font-weight: 600; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            border: none;
+            transition: all 0.2s ease;
+        }
+        #save-content-btn { 
+            background-color: var(--primary-blue); 
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+        #save-content-btn:hover {
+            background-color: var(--primary-blue-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        #cancel-edit-btn { 
+            background-color: var(--background-card); 
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        #cancel-edit-btn:hover {
+            background-color: var(--background-main);
+        }
+        
+        #edit-mode-btn {
+            background: linear-gradient(135deg, var(--primary-blue), var(--accent-purple));
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        #edit-mode-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        .editor-section, .editor-button-entry { 
+            border: 1px solid var(--border-color); 
+            border-radius: 16px; 
+            padding: 20px; 
+            background-color: var(--background-card); 
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+        .editor-section-header, .editor-button-header { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            margin-bottom: 16px; 
+        }
+        .editor-section-header input, .editor-button-header input { 
+            font-size: 18px; 
+            font-weight: 600; 
+            color: var(--primary-blue); 
+            border: none; 
+            background: transparent; 
+            width: 100%; 
+            border-bottom: 2px dashed var(--border-color); 
+            padding: 8px;
+            font-family: inherit;
+        }
+        .editor-section-header input:focus, .editor-button-header input:focus { 
+            outline: none; 
+            border-bottom-style: solid;
+            border-bottom-color: var(--primary-blue);
+        }
+        .editor-controls { 
+            margin-left: auto; 
+            display: flex; 
+        }
+        .editor-controls button { 
+            background-color: transparent; 
+            border: none; 
+            cursor: pointer; 
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        .editor-controls button:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+        .delete-btn { 
+            color: var(--error-color);
+            font-size: 18px;
+        }
+        
+        .template-variant { 
+            display: flex; 
+            align-items: flex-start; 
+            gap: 12px; 
+            margin-bottom: 12px; 
+        }
+        .template-variant textarea { 
+            width: 100%; 
+            min-height: 60px; 
+            resize: vertical; 
+            padding: 12px; 
+            border-radius: 12px; 
+            border: 2px solid var(--border-color); 
+            background-color: var(--background-main); 
+            font-size: 14px; 
+            color: var(--text-primary); 
+            font-family: inherit; 
+            line-height: 1.6;
+            transition: all 0.2s ease;
+        }
+        .template-variant textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .delete-variant-btn { 
+            padding: 10px; 
+            background-color: rgba(239, 68, 68, 0.1); 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            color: var(--error-color); 
+            line-height: 0; 
+            transition: all 0.2s ease;
+            font-size: 18px;
+        }
+        .delete-variant-btn:hover {
+            background-color: rgba(239, 68, 68, 0.2);
+        }
+        
+        .add-variant-btn, .add-btn { 
+            width: 100%; 
+            padding: 12px; 
+            background-color: rgba(16, 185, 129, 0.1); 
+            color: var(--success-color); 
+            border: 2px dashed var(--success-color); 
+            border-radius: 12px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            margin-top: 12px;
+            font-size: 15px;
+        }
+        .add-variant-btn:hover, .add-btn:hover {
+            background-color: rgba(16, 185, 129, 0.2);
+            border-style: solid;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .info {
+                padding: 24px;
+            }
+            header {
+                font-size: 24px;
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 <body class="login-active">
-    <div id="animation-overlay"><div class="animation-content"><h1>ChaterLab</h1></div></div>
+    <div id="animation-overlay">
+        <div class="animation-content">
+            <h1>ChaterLab</h1>
+        </div>
+    </div>
+    
     <div id="login-screen">
         <div class="login-background"></div>
         <div class="login-form-container">
             <h1 data-key="loginHeader">ChaterLab</h1>
             <p data-key="loginSubheader">Панель быстрых ответов</p>
             
-            <div id="language-switcher-login" style="margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
-                <button data-lang="ru" class="lang-btn" style="padding: 8px 15px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--background-card); color: var(--text-primary); cursor: pointer;">RU</button>
-                <button data-lang="en" class="lang-btn" style="padding: 8px 15px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--background-card); color: var(--text-primary); cursor: pointer;">EN</button>
-                <button data-lang="uk" class="lang-btn" style="padding: 8px 15px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--background-card); color: var(--text-primary); cursor: pointer;">UA</button>
+            <div id="language-switcher-login">
+                <button data-lang="ru" class="lang-btn">RU</button>
+                <button data-lang="en" class="lang-btn">EN</button>
+                <button data-lang="uk" class="lang-btn">UA</button>
             </div>
+            
             <form id="login-form">
                 <input type="text" id="login-username" required placeholder="Логин">
                 <input type="password" id="login-password" required placeholder="Пароль">
-                <button type="submit">Войти</button> 
+                <button type="submit">Войти</button>
                 <div id="login-error"></div>
             </form>
         </div>
@@ -154,14 +724,13 @@
         <main>
             <div class="sidebar">
                 <div>
-                    <div class="search-container"><input type="search" id="searchInput" placeholder="Поиск..."></div>
                     <div id="sidebar-content"></div>
                 </div>
                 <div class="sidebar-footer">
-                    <div id="language-switcher-app" style="display: flex; justify-content: space-around; padding: 10px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 10px;">
-                        <button data-lang="ru">RU</button>
-                        <button data-lang="en">EN</button>
-                        <button data-lang="uk">UA</button>
+                    <div id="language-switcher-app">
+                        <button data-lang="ru" class="lang-btn-app">RU</button>
+                        <button data-lang="en" class="lang-btn-app">EN</button>
+                        <button data-lang="uk" class="lang-btn-app">UA</button>
                     </div>
                     <div class="theme-switch-wrapper">
                         <div class="theme-switch-label">Тёмная тема</div>
@@ -170,11 +739,18 @@
                             <div class="slider round"></div>
                         </label>
                     </div>
-                     <button onclick="logout()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Выйти</span></button>
+                    <button onclick="logout()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <path d="M16 17l5-5-5-5"/>
+                            <path d="M21 12H9"/>
+                        </svg>
+                        <span>Выйти</span>
+                    </button>
                 </div>
             </div>
             <div class="info" id="infoBlock">
-                <button id="edit-mode-btn" style="display: none; margin-bottom: 20px;">Редактировать контент</button>
+                <button id="edit-mode-btn" style="display: none;">Редактировать контент</button>
                 <div class="instructions" id="instructions"></div>
                 <div id="content-editor" style="display: none;">
                     <div class="editor-main-controls">
@@ -190,15 +766,25 @@
                     <div id="panel-layout" class="editor-panel active">
                         <button class="add-btn" id="add-section-btn">+ Добавить новый раздел</button>
                     </div>
-                     <div id="panel-instructions" class="editor-panel">
-                        <div class="editor-section"><h4>Инструкция (RU)</h4><textarea id="instructions-editor-ru"></textarea></div>
-                        <div class="editor-section"><h4>Инструкция (EN)</h4><textarea id="instructions-editor-en"></textarea></div>
-                        <div class="editor-section"><h4>Инструкция (UA)</h4><textarea id="instructions-editor-uk"></textarea></div>
+                    <div id="panel-instructions" class="editor-panel">
+                        <div class="editor-section">
+                            <h4>Инструкция (RU)</h4>
+                            <textarea id="instructions-editor-ru" style="width: 100%; min-height: 300px;"></textarea>
+                        </div>
+                        <div class="editor-section">
+                            <h4>Инструкция (EN)</h4>
+                            <textarea id="instructions-editor-en" style="width: 100%; min-height: 300px;"></textarea>
+                        </div>
+                        <div class="editor-section">
+                            <h4>Инструкция (UA)</h4>
+                            <textarea id="instructions-editor-uk" style="width: 100%; min-height: 300px;"></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
+    
     <div id="toast" class="toast-notification"></div>
 
     <script>
@@ -207,51 +793,79 @@
         let userRole = null;
         let appContent = {};
 
-        // ===================================================================================
-        // УТИЛИТЫ И АУТЕНТИФИКАЦИЯ
-        // ===================================================================================
-        function getLocalStorage(key, defaultValue) { try { const val = localStorage.getItem(key); return val ? JSON.parse(val) : defaultValue; } catch (e) { return defaultValue; } }
-        function setLocalStorage(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.error(e); } }
-        function showToast(message, isError = false) { const t = document.getElementById('toast'); t.textContent = message; t.style.backgroundColor = isError ? 'var(--error-color)' : 'var(--success-color)'; t.classList.add('show'); if (navigator.vibrate && !isError) navigator.vibrate(50); setTimeout(() => t.classList.remove('show'), 2000); }
-        function generateId(prefix) { return prefix + Date.now() + Math.random().toString(16).slice(2); }
+        // UTILITIES
+        function getLocalStorage(key, defaultValue) { 
+            try { 
+                const val = localStorage.getItem(key); 
+                return val ? JSON.parse(val) : defaultValue; 
+            } catch (e) { 
+                return defaultValue; 
+            } 
+        }
         
-        // НОВАЯ ФУНКЦИЯ ДЛЯ ПЕРЕКЛЮЧЕНИЯ ЯЗЫКА
+        function setLocalStorage(key, value) { 
+            try { 
+                localStorage.setItem(key, JSON.stringify(value)); 
+            } catch (e) { 
+                console.error(e); 
+            } 
+        }
+        
+        function showToast(message, isError = false) { 
+            const t = document.getElementById('toast'); 
+            t.textContent = message; 
+            t.style.backgroundColor = isError ? 'var(--error-color)' : 'var(--success-color)'; 
+            t.classList.add('show'); 
+            if (navigator.vibrate && !isError) navigator.vibrate(50); 
+            setTimeout(() => t.classList.remove('show'), 2000); 
+        }
+        
+        function generateId(prefix) { 
+            return prefix + Date.now() + Math.random().toString(16).slice(2); 
+        }
+        
+        // LANGUAGE SWITCHING
         function switchLanguage(lang) {
             setLocalStorage('chaterlabLang', lang);
             updateLoginInterface(lang);
-            // Если пользователь залогинен, обновляем интерфейс приложения и инструкцию
             if (document.getElementById('app-container').getAttribute('data-logged') === 'true') {
                 updateAppInterface(lang);
                 updateInstructions(lang);
             }
         }
         
-        // НОВАЯ ФУНКЦИЯ: Обновление интерфейса логина
         function updateLoginInterface(lang) {
             const currentLang = getLocalStorage('chaterlabLang', 'ru');
             
-            // 1. Обновление стилей кнопок
             const langButtons = document.querySelectorAll('#language-switcher-login button');
             langButtons.forEach(btn => {
-                const isActive = btn.dataset.lang === currentLang;
-                btn.classList.toggle('active', isActive);
-                if (isActive) {
-                    btn.style.backgroundColor = 'var(--primary-blue)';
-                    btn.style.color = '#fff';
-                    btn.style.borderColor = 'var(--primary-blue)';
-                } else {
-                    btn.style.backgroundColor = 'var(--background-card)';
-                    btn.style.color = 'var(--text-primary)';
-                    btn.style.borderColor = 'var(--border-color)';
-                }
+                btn.classList.toggle('active', btn.dataset.lang === currentLang);
             });
             
-            // 2. Обновление текстовых элементов (по data-key)
             const texts = {
-                ru: { loginHeader: 'ChaterLab', loginSubheader: 'Панель быстрых ответов', loginUsername: 'Логин', loginPassword: 'Пароль', loginBtn: 'Войти' },
-                en: { loginHeader: 'ChaterLab', loginSubheader: 'Quick Replies Panel', loginUsername: 'Username', loginPassword: 'Password', loginBtn: 'Login' },
-                uk: { loginHeader: 'ChaterLab', loginSubheader: 'Панель швидких відповідей', loginUsername: 'Логін', loginPassword: 'Пароль', loginBtn: 'Увійти' }
+                ru: { 
+                    loginHeader: 'ChaterLab', 
+                    loginSubheader: 'Панель быстрых ответов', 
+                    loginUsername: 'Логин', 
+                    loginPassword: 'Пароль', 
+                    loginBtn: 'Войти' 
+                },
+                en: { 
+                    loginHeader: 'ChaterLab', 
+                    loginSubheader: 'Quick Replies Panel', 
+                    loginUsername: 'Username', 
+                    loginPassword: 'Password', 
+                    loginBtn: 'Login' 
+                },
+                uk: { 
+                    loginHeader: 'ChaterLab', 
+                    loginSubheader: 'Панель швидких відповідей', 
+                    loginUsername: 'Логін', 
+                    loginPassword: 'Пароль', 
+                    loginBtn: 'Увійти' 
+                }
             };
+            
             const currentTexts = texts[currentLang];
             document.querySelector('[data-key="loginHeader"]').textContent = currentTexts.loginHeader;
             document.querySelector('[data-key="loginSubheader"]').textContent = currentTexts.loginSubheader;
@@ -260,24 +874,16 @@
             document.querySelector('#login-form button[type="submit"]').textContent = currentTexts.loginBtn;
         }
         
-        // НОВАЯ ФУНКЦИЯ: Обновление интерфейса приложения
         function updateAppInterface(lang) {
             const currentLang = getLocalStorage('chaterlabLang', 'ru');
             const langButtons = document.querySelectorAll('#language-switcher-app button');
             
             langButtons.forEach(btn => {
-                const isActive = btn.dataset.lang === currentLang;
-                btn.classList.toggle('active', isActive);
-                if (isActive) {
-                     btn.style.color = 'var(--primary-blue)';
-                     btn.style.borderBottom = '2px solid var(--primary-blue)';
-                } else {
-                    btn.style.color = 'var(--text-secondary)';
-                    btn.style.borderBottom = 'none';
-                }
+                btn.classList.toggle('active', btn.dataset.lang === currentLang);
             });
         }
         
+        // AUTHENTICATION
         async function checkLogin() {
             const authToken = getLocalStorage('chaterlabAuthToken', null);
             const savedRole = getLocalStorage('chaterlabUserRole', null);
@@ -291,7 +897,7 @@
                 appContainer.style.opacity = '1';
                 appContainer.style.display = 'flex';
                 await fetchContent();
-                setupDarkMode(); // Включаем темную тему после загрузки контента
+                setupDarkMode();
                 return true;
             } else {
                 logout(false);
@@ -320,7 +926,6 @@
 
                 setLocalStorage('chaterlabAuthToken', data.token);
                 setLocalStorage('chaterlabUserRole', data.role);
-                // Если язык не был выбран, сохраняем русский как дефолтный
                 if (!getLocalStorage('chaterlabLang', null)) setLocalStorage('chaterlabLang', 'ru');
                 userRole = data.role;
                 
@@ -362,9 +967,8 @@
                 document.getElementById('login-screen').style.display = 'flex';
                 document.body.classList.add('login-active');
                 
-                // Обновляем интерфейс логина после выхода
                 const currentLang = getLocalStorage('chaterlabLang', 'ru');
-                updateLoginInterface(currentLang); 
+                updateLoginInterface(currentLang);
             }
         }
 
@@ -373,20 +977,18 @@
                 const response = await fetch(`${API_BASE_URL}/content`);
                 if (!response.ok) throw new Error('Не удалось загрузить контент');
                 appContent = await response.json();
-                console.log('Контент загружен:', appContent);
-                renderSidebar(); 
+                renderSidebar();
                 
-                // Получаем сохраненный или дефолтный язык и обновляем все
-                const currentLang = getLocalStorage('chaterlabLang', 'ru'); 
-                updateInstructions(currentLang); 
-                updateAppInterface(currentLang); // <-- Обновляем кнопки языка в панели
+                const currentLang = getLocalStorage('chaterlabLang', 'ru');
+                updateInstructions(currentLang);
+                updateAppInterface(currentLang);
                 checkUserRoleAndSetupEditor();
-            } catch (error) { showToast(error.message, true); }
+            } catch (error) { 
+                showToast(error.message, true); 
+            }
         }
 
-        // ===================================================================================
-        // ЛОГИКА ОТРИСОВКИ ИНТЕРФЕЙСА
-        // ===================================================================================
+        // RENDERING
         function renderSidebar() {
             const container = document.getElementById('sidebar-content');
             container.innerHTML = '';
@@ -398,7 +1000,7 @@
                 sectionDiv.appendChild(title);
                 section.buttons.forEach(buttonData => {
                     const button = document.createElement('button');
-                    button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span>`;
+                    button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span>`;
                     button.onclick = () => copyDynamicTemplate(buttonData.id);
                     sectionDiv.appendChild(button);
                 });
@@ -410,8 +1012,7 @@
             const instructionsDiv = document.getElementById('instructions');
             if (appContent.instructionsContent && appContent.instructionsContent[lang]) {
                 instructionsDiv.innerHTML = appContent.instructionsContent[lang];
-            } else { 
-                // Сообщение об ошибке в зависимости от выбранного языка (если нужно)
+            } else {
                 const fallbackMessage = {
                     'ru': '<h3>Инструкция не найдена</h3><p>Для выбранного языка нет инструкции в базе данных.</p>',
                     'en': '<h3>Instructions Not Found</h3><p>No instructions are available for the selected language in the database.</p>',
@@ -443,8 +1044,7 @@
             const toggle = document.getElementById('theme-checkbox');
             const applyTheme = (theme) => {
                 document.body.classList.toggle('dark-mode', theme === 'dark');
-                if(toggle) toggle.checked = (theme === 'dark');
-                // Переинициализируем редакторы, если они активны, с новой темой
+                if (toggle) toggle.checked = (theme === 'dark');
                 if (document.getElementById('content-editor').style.display === 'block') {
                     tinymce.remove();
                     initInstructionsEditor();
@@ -452,16 +1052,14 @@
             };
             const savedTheme = getLocalStorage('chaterlabTheme', 'light');
             applyTheme(savedTheme);
-            if(toggle) toggle.addEventListener('change', () => {
+            if (toggle) toggle.addEventListener('change', () => {
                 const theme = toggle.checked ? 'dark' : 'light';
                 setLocalStorage('chaterlabTheme', theme);
                 applyTheme(theme);
             });
         }
 
-        // ===================================================================================
-        // ЛОГИКА КОНСТРУКТОРА
-        // ===================================================================================
+        // EDITOR
         function checkUserRoleAndSetupEditor() {
             const editBtn = document.getElementById('edit-mode-btn');
             if (userRole === 'manager') {
@@ -472,7 +1070,9 @@
                 document.getElementById('tab-btn-layout').addEventListener('click', () => switchEditorTab('layout'));
                 document.getElementById('tab-btn-instructions').addEventListener('click', () => switchEditorTab('instructions'));
                 document.getElementById('add-section-btn').addEventListener('click', addSection);
-            } else { editBtn.style.display = 'none'; }
+            } else { 
+                editBtn.style.display = 'none'; 
+            }
         }
 
         function switchEditorTab(tabName) {
@@ -517,7 +1117,7 @@
                 <div class="editor-section-header">
                     <input type="text" class="section-title-input" value="${section.title}" placeholder="Название раздела">
                     <div class="editor-controls">
-                        <button class="delete-btn" title="Удалить раздел">&#x1F5D1;</button>
+                        <button class="delete-btn" title="Удалить раздел">🗑</button>
                     </div>
                 </div>
                 <div class="buttons-container"></div>
@@ -527,7 +1127,9 @@
             section.buttons.forEach(button => {
                 buttonsContainer.appendChild(createButtonEditor(button));
             });
-            sectionDiv.querySelector('.delete-btn').onclick = () => { if(confirm('Удалить этот раздел со всеми кнопками?')) sectionDiv.remove(); };
+            sectionDiv.querySelector('.delete-btn').onclick = () => { 
+                if (confirm('Удалить этот раздел со всеми кнопками?')) sectionDiv.remove(); 
+            };
             sectionDiv.querySelector('.add-button-btn').onclick = () => {
                 const newButton = { id: generateId('btn_'), label: 'Новая кнопка', templates: ['Новый шаблон'] };
                 buttonsContainer.appendChild(createButtonEditor(newButton));
@@ -543,7 +1145,7 @@
                 <div class="editor-button-header">
                     <input type="text" class="button-label-input" value="${button.label}" placeholder="Название кнопки">
                     <div class="editor-controls">
-                        <button class="delete-btn" title="Удалить кнопку">&#x1F5D1;</button>
+                        <button class="delete-btn" title="Удалить кнопку">🗑</button>
                     </div>
                 </div>
                 <div class="variants-container"></div>
@@ -565,7 +1167,7 @@
         function createVariantInput(text) {
             const variantDiv = document.createElement('div');
             variantDiv.className = 'template-variant';
-            variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" title="Удалить вариант">&#x1F5D1;</button>`;
+            variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" title="Удалить вариант">🗑</button>`;
             variantDiv.querySelector('.delete-variant-btn').onclick = () => variantDiv.remove();
             return variantDiv;
         }
@@ -582,9 +1184,12 @@
             const content_css = document.body.classList.contains('dark-mode') ? 'dark' : 'default';
             tinymce.init({
                 selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk',
-                height: 500, menubar: false, plugins: 'lists link image code help wordcount autoresize',
+                height: 500, 
+                menubar: false, 
+                plugins: 'lists link image code help wordcount autoresize',
                 toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | help',
-                skin: skin, content_css: content_css,
+                skin: skin, 
+                content_css: content_css,
                 setup: editor => {
                     editor.on('init', () => {
                         const langKey = editor.id.split('-')[2];
@@ -602,24 +1207,27 @@
                     title: sectionNode.querySelector('.section-title-input').value.trim(),
                     buttons: []
                 };
-                if (!section.title) return; // Пропускаем разделы без названия
+                if (!section.title) return;
                 sectionNode.querySelectorAll('.editor-button-entry').forEach(buttonNode => {
                     const button = {
                         id: buttonNode.dataset.id,
                         label: buttonNode.querySelector('.button-label-input').value.trim(),
                         templates: Array.from(buttonNode.querySelectorAll('.template-variant textarea')).map(t => t.value.trim()).filter(v => v)
                     };
-                    if (button.label) section.buttons.push(button); // Добавляем кнопку только если у нее есть название
+                    if (button.label) section.buttons.push(button);
                 });
                 newLayout.push(section);
             });
+            
             const newInstructions = {};
             for (const lang of ['ru', 'en', 'uk']) {
                 const editor = tinymce.get(`instructions-editor-${lang}`);
                 if (editor) newInstructions[lang] = editor.getContent();
             }
+            
             const newContent = { layout: newLayout, instructionsContent: newInstructions };
             const token = getLocalStorage('chaterlabAuthToken', '');
+            
             try {
                 const response = await fetch(`${API_BASE_URL}/update-content`, { 
                     method: 'POST', 
@@ -638,19 +1246,15 @@
             }
         }
 
-        // ===================================================================================
-        // ГЛАВНЫЙ СЛУШАТЕЛЬ СОБЫТИЙ
-        // ===================================================================================
+        // INITIALIZATION
         document.addEventListener('DOMContentLoaded', () => {
             const initialLang = getLocalStorage('chaterlabLang', 'ru');
-            updateLoginInterface(initialLang); // Обновляем интерфейс логина при загрузке
+            updateLoginInterface(initialLang);
             
-            // Обработчики для переключателя языка на экране логина
             document.querySelectorAll('#language-switcher-login button').forEach(button => {
                 button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang));
             });
             
-            // Обработчики для переключателя языка в рабочей панели
             document.querySelectorAll('#language-switcher-app button').forEach(button => {
                 button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang));
             });
