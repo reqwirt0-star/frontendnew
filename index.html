@@ -202,6 +202,20 @@
             overflow-y: auto; 
             background-color: var(--background-main);
         }
+        /* ДОБАВЛЕННЫЙ КОНТЕЙНЕР ДЛЯ КАРТОЧКИ И КНОПКИ */
+        .info-header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* Выравнивание по верхнему краю */
+            margin-bottom: 24px;
+            gap: 20px;
+        }
+        #user-status-card {
+            flex-grow: 1;
+            max-width: 400px; /* Ограничение ширины карточки */
+        }
+        /* Конец ДОБАВЛЕННОГО КОНТЕЙНЕРА */
+
         .instructions { 
             margin-top: 20px; 
         }
@@ -750,7 +764,21 @@
                 </div>
             </div>
             <div class="info" id="infoBlock">
-                <button id="edit-mode-btn" style="display: none;">Редактировать контент</button>
+                <div class="info-header-controls">
+                    <div id="user-status-card" style="
+                        background-color: var(--background-card);
+                        border: 1px solid var(--border-color);
+                        border-radius: 12px;
+                        padding: 16px;
+                        font-size: 14px;
+                        line-height: 1.6;
+                        box-shadow: var(--shadow-sm);
+                        flex-grow: 1;
+                        max-width: 400px;
+                    ">
+                        </div>
+                    <button id="edit-mode-btn" style="display: none;">Редактировать контент</button>
+                </div>
                 <div class="instructions" id="instructions"></div>
                 <div id="content-editor" style="display: none;">
                     <div class="editor-main-controls">
@@ -792,6 +820,7 @@
         const API_BASE_URL = 'https://backendchater.onrender.com';
         let userRole = null;
         let appContent = {};
+        let userName = null; // ДОБАВЛЕНО
 
         // UTILITIES
         function getLocalStorage(key, defaultValue) { 
@@ -887,9 +916,11 @@
         async function checkLogin() {
             const authToken = getLocalStorage('chaterlabAuthToken', null);
             const savedRole = getLocalStorage('chaterlabUserRole', null);
+            const savedName = getLocalStorage('chaterlabUserName', null); // ДОБАВЛЕНО
             
-            if (authToken && savedRole) {
+            if (authToken && savedRole && savedName) { // ПРОВЕРКА ИМЕНИ
                 userRole = savedRole;
+                userName = savedName; // СОХРАНЕНИЕ ИМЕНИ
                 document.getElementById('login-screen').style.display = 'none';
                 document.body.classList.remove('login-active');
                 const appContainer = document.getElementById('app-container');
@@ -898,6 +929,7 @@
                 appContainer.style.display = 'flex';
                 await fetchContent();
                 setupDarkMode();
+                renderUserStatusCard(); // ДОБАВЛЕНО
                 return true;
             } else {
                 logout(false);
@@ -926,8 +958,10 @@
 
                 setLocalStorage('chaterlabAuthToken', data.token);
                 setLocalStorage('chaterlabUserRole', data.role);
+                setLocalStorage('chaterlabUserName', username); // ДОБАВЛЕНО
                 if (!getLocalStorage('chaterlabLang', null)) setLocalStorage('chaterlabLang', 'ru');
                 userRole = data.role;
+                userName = username; // ДОБАВЛЕНО
                 
                 document.body.classList.remove('login-active');
                 document.getElementById('login-screen').style.display = 'none';
@@ -946,6 +980,7 @@
                     appContainer.style.opacity = '1';
                     await fetchContent();
                     setupDarkMode();
+                    renderUserStatusCard(); // ДОБАВЛЕНО
                 }, 2500);
             } catch (error) {
                 errorDiv.textContent = error.message;
@@ -956,7 +991,9 @@
         function logout(doUIRefresh = true) {
             localStorage.removeItem('chaterlabAuthToken');
             localStorage.removeItem('chaterlabUserRole');
+            localStorage.removeItem('chaterlabUserName'); // УДАЛЕНО
             userRole = null;
+            userName = null; // СБРОС
             if (doUIRefresh) {
                 const appContainer = document.getElementById('app-container');
                 appContainer.style.opacity = '0';
@@ -1006,6 +1043,42 @@
                 });
                 container.appendChild(sectionDiv);
             });
+        }
+        
+        // НОВАЯ ФУНКЦИЯ
+        function renderUserStatusCard() {
+            const card = document.getElementById('user-status-card');
+            if (!card || !userName || !userRole) return;
+            
+            let statusText;
+            let accessText;
+            let statusColor;
+            
+            if (userRole === 'manager') {
+                statusText = 'admin';
+                accessText = 'Разрешено редактирование';
+                statusColor = 'var(--accent-purple)'; // Фиолетовый
+            } else {
+                statusText = 'worker';
+                accessText = 'Редактирование не доступно';
+                statusColor = 'var(--text-secondary)'; // Серый
+            }
+
+            card.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-weight: 600; color: var(--text-primary);">Пользователь:</span>
+                    <span style="font-weight: 700; color: var(--primary-blue);">${userName}</span>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-weight: 600; color: var(--text-primary);">Статус:</span>
+                    <span style="font-weight: 700; color: ${statusColor};">${statusText}</span>
+                </div>
+                <div style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; text-align: center;">
+                    <span style="color: ${userRole === 'manager' ? 'var(--success-color)' : 'var(--text-secondary)'}; font-weight: 500;">
+                        ${accessText}
+                    </span>
+                </div>
+            `;
         }
 
         function updateInstructions(lang) {
