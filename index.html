@@ -11,10 +11,37 @@
     <script src="https://cdn.tiny.cloud/1/2vkf90yplt2jwzdkcxwwk0cnde1wl6wmoaou6uauoogheruk/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 
     <style>
-        :root { --primary-blue: #007aff; --primary-blue-hover: #005ecb; --light-blue-bg: #f0f7ff; --text-primary: #2c2c2e; --text-secondary: #636366; --background-main: #f8f8fa; --background-card: #ffffff; --border-color: #e5e5e9; --shadow-color: rgba(0, 122, 255, 0.1); --success-color: #34c759; --error-color: #ff3b30; --star-color: #ffcc00; }
-        body.dark-mode { --light-blue-bg: #2c2c2e; --text-primary: #f2f2f7; --text-secondary: #98989d; --background-main: #1c1c1e; --background-card: #2c2c2e; --border-color: #48484a; --shadow-color: rgba(0, 122, 255, 0.2); }
+        :root {
+            --primary-blue: #007aff;
+            --primary-blue-hover: #005ecb;
+            --light-blue-bg: #f0f7ff;
+            --text-primary: #2c2c2e;
+            --text-secondary: #636366;
+            --background-main: #f8f8fa;
+            --background-card: #ffffff;
+            --border-color: #e5e5e9;
+            --shadow-color: rgba(0, 122, 255, 0.1);
+            --success-color: #34c759;
+            --error-color: #ff3b30;
+            --star-color: #ffcc00;
+        }
+        body.dark-mode {
+            --light-blue-bg: #2c2c2e;
+            --text-primary: #f2f2f7;
+            --text-secondary: #98989d;
+            --background-main: #1c1c1e;
+            --background-card: #2c2c2e;
+            --border-color: #48484a;
+            --shadow-color: rgba(0, 122, 255, 0.2);
+        }
         body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background-color: var(--background-main); color: var(--text-primary); transition: background-color 0.3s, color 0.3s; }
-        #app-container { flex-direction: column; min-height: 100vh; }
+        .login-active { overflow: hidden; height: 100vh; }
+        #app-container { flex-direction: column; min-height: 100vh; opacity: 0; transition: opacity 0.5s ease-in-out; }
+        #app-container:not([data-logged="true"]) { display: none; }
+        #animation-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--background-main); display: none; justify-content: center; align-items: center; z-index: 3000; opacity: 1; transition: opacity 0.5s ease-out; }
+        .animation-content h1 { font-size: 48px; color: var(--primary-blue); letter-spacing: -1px; font-weight: 600; opacity: 0; }
+        #animation-overlay.animate .animation-content h1 { animation: fadeInOut 2.5s ease-in-out forwards; }
+        @keyframes fadeInOut { 0%{opacity:0;transform:scale(.95)} 20%{opacity:1;transform:scale(1)} 80%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(.95)} }
         header { text-align: center; padding: 18px 20px; font-size: 24px; font-weight: 600; border-bottom: 1px solid var(--border-color); letter-spacing: -0.5px; background-color: var(--background-card); transition: background-color 0.3s, border-color 0.3s; }
         main { display: flex; flex: 1; flex-wrap: wrap; overflow: hidden; }
         .sidebar { width: 320px; min-width: 280px; padding: 20px; border-right: 1px solid var(--border-color); background-color: var(--background-card); box-sizing: border-box; display: flex; flex-direction: column; transition: background-color 0.3s, border-color 0.3s; }
@@ -32,7 +59,28 @@
         .instructions ul, .instructions ol { padding-left: 20px; margin: 10px 0; color: var(--text-secondary); line-height: 1.7; word-break: break-word; }
         .toast-notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: var(--success-color); color: white; padding: 12px 20px; border-radius: 10px; opacity: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: all 0.3s ease-in-out; z-index: 2000; font-size: 15px; font-weight: 500; pointer-events: none; white-space: nowrap; }
         .toast-notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        /* ...Остальные общие стили без изменений... */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 2000; overflow: hidden; }
+        .login-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(315deg, #007aff, #5856d6, #ff2d55, #ff9500); background-size: 400% 400%; animation: gradientAnimation 20s ease infinite; z-index: 1; }
+        @keyframes gradientAnimation { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        .login-form-container { background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 40px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 340px; max-width: 90%; text-align: center; transition: opacity 0.4s ease-out; z-index: 2; border: 1px solid rgba(255,255,255,0.2); }
+        .dark-mode .login-form-container { background: rgba(28, 28, 30, 0.85); border: 1px solid rgba(255,255,255,0.1); }
+        .login-form-container h1 { font-size: 28px; font-weight: 600; color: var(--primary-blue); margin-top: 0; margin-bottom: 8px; }
+        .login-form-container p { margin-top: 0; margin-bottom: 25px; color: var(--text-secondary); }
+        .login-form-container input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 10px; box-sizing: border-box; font-size: 16px; transition: all 0.2s ease; background-color: var(--background-card); color: var(--text-primary); }
+        .login-form-container input:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px var(--shadow-color); outline: none; }
+        .login-form-container button[type="submit"] { width: 100%; padding: 14px; background-color: var(--primary-blue); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+        #login-error { color: #fff; background-color: var(--error-color); padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 14px; font-weight: 500; opacity: 0; transform: translateY(10px); transition: opacity 0.3s ease, transform 0.3s ease; pointer-events: none; }
+        #login-error.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .theme-switch-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 10px 5px; }
+        .theme-switch-label { font-weight: 500; color: var(--text-secondary); }
+        .theme-switch { display: inline-block; height: 26px; position: relative; width: 50px; }
+        .theme-switch input { display:none; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; }
+        .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 18px; left: 4px; position: absolute; transition: .4s; width: 18px; }
+        input:checked + .slider { background-color: var(--primary-blue); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        .slider.round { border-radius: 34px; }
+        .slider.round:before { border-radius: 50%; }
 
         /* СТИЛИ КОНСТРУКТОРА */
         .editor-main-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
@@ -60,10 +108,23 @@
     </style>
 </head>
 <body class="login-active">
-    <div id="login-screen"></div>
+    <div id="animation-overlay"><div class="animation-content"><h1>ChaterLab</h1></div></div>
+    <div id="login-screen">
+        <div class="login-background"></div>
+        <div class="login-form-container">
+            <h1 data-key="loginHeader">ChaterLab</h1>
+            <p data-key="loginSubheader">Панель быстрых ответов</p>
+            <form id="login-form">
+                <input type="text" id="login-username" required placeholder="Логин">
+                <input type="password" id="login-password" required placeholder="Пароль">
+                <button type="submit">Войти</button>
+                <div id="login-error"></div>
+            </form>
+        </div>
+    </div>
 
     <div id="app-container" data-logged="false">
-        <header data-key="appHeader">ChaterLab Quick Replies</header>
+        <header>ChaterLab Quick Replies</header>
         <main>
             <div class="sidebar">
                 <div>
@@ -71,8 +132,14 @@
                     <div id="sidebar-content"></div>
                 </div>
                 <div class="sidebar-footer">
-                     <div class="theme-switch-wrapper"></div>
-                     <button onclick="logout()"></button>
+                     <div class="theme-switch-wrapper">
+                        <div class="theme-switch-label">Тёмная тема</div>
+                        <label class="theme-switch" for="theme-checkbox">
+                            <input type="checkbox" id="theme-checkbox" />
+                            <div class="slider round"></div>
+                        </label>
+                    </div>
+                     <button onclick="logout()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Выйти</span></button>
                 </div>
             </div>
             <div class="info" id="infoBlock">
@@ -107,18 +174,98 @@
         "use strict";
         const API_BASE_URL = 'https://backendchater.onrender.com';
         let userRole = null;
-        let appContent = {}; 
+        let appContent = {};
 
         // ===================================================================================
-        // УТИЛИТЫ И АУТЕНТИФИКАЦИЯ (без изменений)
+        // УТИЛИТЫ И АУТЕНТИФИКАЦИЯ
         // ===================================================================================
         function getLocalStorage(key, defaultValue) { try { const val = localStorage.getItem(key); return val ? JSON.parse(val) : defaultValue; } catch (e) { return defaultValue; } }
         function setLocalStorage(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.error(e); } }
         function showToast(message, isError = false) { const t = document.getElementById('toast'); t.textContent = message; t.style.backgroundColor = isError ? 'var(--error-color)' : 'var(--success-color)'; t.classList.add('show'); if (navigator.vibrate && !isError) navigator.vibrate(50); setTimeout(() => t.classList.remove('show'), 2000); }
         function generateId(prefix) { return prefix + Date.now() + Math.random().toString(16).slice(2); }
-        async function checkLogin() { /* ... код без изменений ... */ }
-        async function handleLogin(event) { /* ... код без изменений ... */ }
-        function logout() { /* ... код без изменений ... */ }
+        
+        async function checkLogin() {
+            const authToken = getLocalStorage('chaterlabAuthToken', null);
+            const savedRole = getLocalStorage('chaterlabUserRole', null);
+            
+            if (authToken && savedRole) {
+                userRole = savedRole;
+                document.getElementById('login-screen').style.display = 'none';
+                document.body.classList.remove('login-active');
+                const appContainer = document.getElementById('app-container');
+                appContainer.setAttribute('data-logged', 'true');
+                appContainer.style.opacity = '1';
+                appContainer.style.display = 'flex';
+                await fetchContent();
+                return true;
+            } else {
+                logout(false);
+                return false;
+            }
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const usernameInput = document.getElementById('login-username');
+            const passwordInput = document.getElementById('login-password');
+            const errorDiv = document.getElementById('login-error');
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            errorDiv.classList.remove('show');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message);
+
+                setLocalStorage('chaterlabAuthToken', data.token);
+                setLocalStorage('chaterlabUserRole', data.role);
+                userRole = data.role;
+                
+                document.body.classList.remove('login-active');
+                document.getElementById('login-screen').style.display = 'none';
+                
+                const overlay = document.getElementById('animation-overlay');
+                overlay.style.display = 'flex';
+                void overlay.offsetHeight;
+                overlay.classList.add('animate');
+
+                setTimeout(async () => {
+                    overlay.style.display = 'none';
+                    overlay.classList.remove('animate');
+                    const appContainer = document.getElementById('app-container');
+                    appContainer.style.display = 'flex';
+                    appContainer.setAttribute('data-logged', 'true');
+                    appContainer.style.opacity = '1';
+                    await fetchContent();
+                    setupDarkMode();
+                }, 2500);
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.classList.add('show');
+            }
+        }
+
+        function logout(doUIRefresh = true) {
+            localStorage.removeItem('chaterlabAuthToken');
+            localStorage.removeItem('chaterlabUserRole');
+            userRole = null;
+            if (doUIRefresh) {
+                const appContainer = document.getElementById('app-container');
+                appContainer.style.opacity = '0';
+                appContainer.setAttribute('data-logged', 'false');
+                appContainer.style.display = 'none';
+                document.getElementById('login-username').value = '';
+                document.getElementById('login-password').value = '';
+                document.getElementById('login-screen').style.display = 'flex';
+                document.body.classList.add('login-active');
+            }
+        }
 
         async function fetchContent() {
             try {
@@ -127,13 +274,13 @@
                 appContent = await response.json();
                 console.log('Контент загружен:', appContent);
                 renderSidebar(); 
-                updateInstructions(getLocalStorage('chaterlabLang', 'ru'));
+                updateInstructions('ru'); // Язык по умолчанию, можно будет менять
                 checkUserRoleAndSetupEditor();
             } catch (error) { showToast(error.message, true); }
         }
 
         // ===================================================================================
-        // 🔥 НОВАЯ ЛОГИКА ОТРИСОВКИ ИНТЕРФЕЙСА
+        // ЛОГИКА ОТРИСОВКИ ИНТЕРФЕЙСА
         // ===================================================================================
         function renderSidebar() {
             const container = document.getElementById('sidebar-content');
@@ -146,7 +293,7 @@
                 sectionDiv.appendChild(title);
                 section.buttons.forEach(buttonData => {
                     const button = document.createElement('button');
-                    button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span>`;
+                    button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span>`;
                     button.onclick = () => copyDynamicTemplate(buttonData.id);
                     sectionDiv.appendChild(button);
                 });
@@ -158,7 +305,7 @@
             const instructionsDiv = document.getElementById('instructions');
             if (appContent.instructionsContent && appContent.instructionsContent[lang]) {
                 instructionsDiv.innerHTML = appContent.instructionsContent[lang];
-            } else { instructionsDiv.innerHTML = ''; }
+            } else { instructionsDiv.innerHTML = '<h3>Инструкция не найдена</h3>'; }
         }
         
         function copyDynamicTemplate(buttonId) {
@@ -179,8 +326,28 @@
             targetButton.currentIndex = (targetButton.currentIndex + 1) % targetButton.templates.length;
         }
 
+        function setupDarkMode() {
+            const toggle = document.getElementById('theme-checkbox');
+            const applyTheme = (theme) => {
+                document.body.classList.toggle('dark-mode', theme === 'dark');
+                if(toggle) toggle.checked = (theme === 'dark');
+                // Переинициализируем редакторы, если они активны, с новой темой
+                if (document.getElementById('content-editor').style.display === 'block') {
+                    tinymce.remove();
+                    initInstructionsEditor();
+                }
+            };
+            const savedTheme = getLocalStorage('chaterlabTheme', 'light');
+            applyTheme(savedTheme);
+            if(toggle) toggle.addEventListener('change', () => {
+                const theme = toggle.checked ? 'dark' : 'light';
+                setLocalStorage('chaterlabTheme', theme);
+                applyTheme(theme);
+            });
+        }
+
         // ===================================================================================
-        // 🔥 НОВАЯ ЛОГИКА КОНСТРУКТОРА
+        // ЛОГИКА КОНСТРУКТОРА
         // ===================================================================================
         function checkUserRoleAndSetupEditor() {
             const editBtn = document.getElementById('edit-mode-btn');
@@ -204,6 +371,7 @@
         
         function showContentEditor() {
             document.getElementById('instructions').style.display = 'none';
+            document.getElementById('edit-mode-btn').style.display = 'none';
             document.getElementById('content-editor').style.display = 'block';
             buildLayoutEditor();
             initInstructionsEditor();
@@ -212,13 +380,13 @@
 
         function hideContentEditor() {
             document.getElementById('instructions').style.display = 'block';
+            document.getElementById('edit-mode-btn').style.display = 'inline-block';
             document.getElementById('content-editor').style.display = 'none';
             tinymce.remove();
         }
-
+        
         function buildLayoutEditor() {
             const container = document.getElementById('panel-layout');
-            // Очищаем всё, кроме кнопки "Добавить раздел"
             while (container.firstChild && container.firstChild.id !== 'add-section-btn') {
                 container.removeChild(container.firstChild);
             }
@@ -232,7 +400,6 @@
             const sectionDiv = document.createElement('div');
             sectionDiv.className = 'editor-section';
             sectionDiv.dataset.id = section.id;
-
             sectionDiv.innerHTML = `
                 <div class="editor-section-header">
                     <input type="text" class="section-title-input" value="${section.title}" placeholder="Название раздела">
@@ -243,13 +410,11 @@
                 <div class="buttons-container"></div>
                 <button class="add-btn add-button-btn">+ Добавить кнопку в раздел</button>
             `;
-
             const buttonsContainer = sectionDiv.querySelector('.buttons-container');
             section.buttons.forEach(button => {
                 buttonsContainer.appendChild(createButtonEditor(button));
             });
-
-            sectionDiv.querySelector('.delete-btn').onclick = () => sectionDiv.remove();
+            sectionDiv.querySelector('.delete-btn').onclick = () => { if(confirm('Удалить этот раздел со всеми кнопками?')) sectionDiv.remove(); };
             sectionDiv.querySelector('.add-button-btn').onclick = () => {
                 const newButton = { id: generateId('btn_'), label: 'Новая кнопка', templates: ['Новый шаблон'] };
                 buttonsContainer.appendChild(createButtonEditor(newButton));
@@ -275,10 +440,11 @@
             button.templates.forEach(template => {
                 variantsContainer.appendChild(createVariantInput(template));
             });
-            
             buttonDiv.querySelector('.delete-btn').onclick = () => buttonDiv.remove();
             buttonDiv.querySelector('.add-variant-btn').onclick = () => {
-                variantsContainer.appendChild(createVariantInput(''));
+                const newVariant = createVariantInput('');
+                variantsContainer.appendChild(newVariant);
+                newVariant.querySelector('textarea').focus();
             };
             return buttonDiv;
         }
@@ -298,36 +464,49 @@
             container.insertBefore(sectionNode, document.getElementById('add-section-btn'));
         }
 
-        function initInstructionsEditor() { /* ... код без изменений ... */ }
+        function initInstructionsEditor() {
+            const skin = document.body.classList.contains('dark-mode') ? 'oxide-dark' : 'oxide';
+            const content_css = document.body.classList.contains('dark-mode') ? 'dark' : 'default';
+            tinymce.init({
+                selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk',
+                height: 500, menubar: false, plugins: 'lists link image code help wordcount autoresize',
+                toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | help',
+                skin: skin, content_css: content_css,
+                setup: editor => {
+                    editor.on('init', () => {
+                        const langKey = editor.id.split('-')[2];
+                        editor.setContent(appContent.instructionsContent?.[langKey] || '');
+                    });
+                }
+            });
+        }
 
         async function saveContent() {
             const newLayout = [];
             document.querySelectorAll('#panel-layout .editor-section').forEach(sectionNode => {
                 const section = {
                     id: sectionNode.dataset.id,
-                    title: sectionNode.querySelector('.section-title-input').value,
+                    title: sectionNode.querySelector('.section-title-input').value.trim(),
                     buttons: []
                 };
+                if (!section.title) return; // Пропускаем разделы без названия
                 sectionNode.querySelectorAll('.editor-button-entry').forEach(buttonNode => {
                     const button = {
                         id: buttonNode.dataset.id,
-                        label: buttonNode.querySelector('.button-label-input').value,
+                        label: buttonNode.querySelector('.button-label-input').value.trim(),
                         templates: Array.from(buttonNode.querySelectorAll('.template-variant textarea')).map(t => t.value.trim()).filter(v => v)
                     };
-                    section.buttons.push(button);
+                    if (button.label) section.buttons.push(button); // Добавляем кнопку только если у нее есть название
                 });
                 newLayout.push(section);
             });
-            
             const newInstructions = {};
             for (const lang of ['ru', 'en', 'uk']) {
                 const editor = tinymce.get(`instructions-editor-${lang}`);
                 if (editor) newInstructions[lang] = editor.getContent();
             }
-
             const newContent = { layout: newLayout, instructionsContent: newInstructions };
             const token = getLocalStorage('chaterlabAuthToken', '');
-            
             try {
                 const response = await fetch(`${API_BASE_URL}/update-content`, { 
                     method: 'POST', 
@@ -350,11 +529,9 @@
         // ГЛАВНЫЙ СЛУШАТЕЛЬ СОБЫТИЙ
         // ===================================================================================
         document.addEventListener('DOMContentLoaded', () => {
-            // Весь код инициализации здесь, для простоты оставим пустым,
-            // т.к. весь необходимый код уже есть выше.
-            // В реальном файле здесь будет checkLogin() и другие слушатели
+            checkLogin();
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
         });
-
     </script>
 </body>
 </html>
