@@ -131,10 +131,12 @@
             display: flex; 
             flex-direction: column; 
             transition: all 0.3s ease;
+            /* Вся панель должна иметь возможность прокрутки, если контента много */
+            overflow-y: auto; 
         }
         .sidebar > div:first-child { 
-            flex-grow: 1; 
-            overflow-y: auto; 
+            /* Удалены flex-grow: 1 и overflow-y: auto, 
+               чтобы футер следовал сразу за контентом */
         }
         .sidebar h2 { 
             font-size: 13px; 
@@ -149,7 +151,7 @@
         .sidebar h2:first-of-type { margin-top: 0; }
         
         .sidebar-footer { 
-            margin-top: auto; 
+            margin-top: 16px; /* Небольшой отступ от последних кнопок */
             flex-shrink: 0; 
             padding-top: 16px; 
             border-top: 1px solid var(--border-color);
