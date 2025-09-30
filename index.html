@@ -36,8 +36,12 @@
         }
         body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background-color: var(--background-main); color: var(--text-primary); transition: background-color 0.3s, color 0.3s; }
         .login-active { overflow: hidden; height: 100vh; }
-        #app-container { display: flex; flex-direction: column; min-height: 100vh; opacity: 0; transition: opacity 0.5s ease-in-out; }
+        #app-container { flex-direction: column; min-height: 100vh; opacity: 0; transition: opacity 0.5s ease-in-out; }
         #app-container:not([data-logged="true"]) { display: none; }
+        #animation-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--background-main); display: none; justify-content: center; align-items: center; z-index: 3000; opacity: 1; transition: opacity 0.5s ease-out; }
+        .animation-content h1 { font-size: 48px; color: var(--primary-blue); letter-spacing: -1px; font-weight: 600; opacity: 0; }
+        #animation-overlay.animate .animation-content h1 { animation: fadeInOut 2.5s ease-in-out forwards; }
+        @keyframes fadeInOut { 0%{opacity:0;transform:scale(.95)} 20%{opacity:1;transform:scale(1)} 80%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(.95)} }
         header { text-align: center; padding: 18px 20px; font-size: 24px; font-weight: 600; border-bottom: 1px solid var(--border-color); letter-spacing: -0.5px; background-color: var(--background-card); transition: background-color 0.3s, border-color 0.3s; }
         main { display: flex; flex: 1; flex-wrap: wrap; overflow: hidden; }
         .sidebar { width: 320px; min-width: 280px; padding: 20px; border-right: 1px solid var(--border-color); background-color: var(--background-card); box-sizing: border-box; display: flex; flex-direction: column; transition: background-color 0.3s, border-color 0.3s; }
@@ -55,25 +59,28 @@
         .instructions ul, .instructions ol { padding-left: 20px; margin: 10px 0; color: var(--text-secondary); line-height: 1.7; word-break: break-word; }
         .toast-notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: var(--success-color); color: white; padding: 12px 20px; border-radius: 10px; opacity: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: all 0.3s ease-in-out; z-index: 2000; font-size: 15px; font-weight: 500; pointer-events: none; white-space: nowrap; }
         .toast-notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        #login-screen, #animation-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 3000; }
-        #login-screen { overflow: hidden; }
-        #animation-overlay { display: none; background-color: var(--background-main); }
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 2000; overflow: hidden; }
         .login-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(315deg, #007aff, #5856d6, #ff2d55, #ff9500); background-size: 400% 400%; animation: gradientAnimation 20s ease infinite; z-index: 1; }
         @keyframes gradientAnimation { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-        .login-form-container { background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 40px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 340px; max-width: 90%; text-align: center; z-index: 2; border: 1px solid rgba(255,255,255,0.2); }
+        .login-form-container { background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 40px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 340px; max-width: 90%; text-align: center; transition: opacity 0.4s ease-out; z-index: 2; border: 1px solid rgba(255,255,255,0.2); }
         .dark-mode .login-form-container { background: rgba(28, 28, 30, 0.85); border: 1px solid rgba(255,255,255,0.1); }
-        .login-form-container input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 10px; box-sizing: border-box; font-size: 16px; background-color: var(--background-card); color: var(--text-primary); }
-        .login-form-container button[type="submit"] { width: 100%; padding: 14px; background-color: var(--primary-blue); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 500; cursor: pointer; }
+        .login-form-container h1 { font-size: 28px; font-weight: 600; color: var(--primary-blue); margin-top: 0; margin-bottom: 8px; }
+        .login-form-container p { margin-top: 0; margin-bottom: 25px; color: var(--text-secondary); }
+        .login-form-container input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 10px; box-sizing: border-box; font-size: 16px; transition: all 0.2s ease; background-color: var(--background-card); color: var(--text-primary); }
+        .login-form-container input:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px var(--shadow-color); outline: none; }
+        .login-form-container button[type="submit"] { width: 100%; padding: 14px; background-color: var(--primary-blue); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
         #login-error { color: #fff; background-color: var(--error-color); padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 14px; font-weight: 500; opacity: 0; transform: translateY(10px); transition: opacity 0.3s ease, transform 0.3s ease; pointer-events: none; }
         #login-error.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
         .theme-switch-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 10px 5px; }
         .theme-switch-label { font-weight: 500; color: var(--text-secondary); }
         .theme-switch { display: inline-block; height: 26px; position: relative; width: 50px; }
         .theme-switch input { display:none; }
-        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; }
-        .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 18px; left: 4px; position: absolute; transition: .4s; width: 18px; border-radius: 50%; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; }
+        .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 18px; left: 4px; position: absolute; transition: .4s; width: 18px; }
         input:checked + .slider { background-color: var(--primary-blue); }
         input:checked + .slider:before { transform: translateX(24px); }
+        .slider.round { border-radius: 34px; }
+        .slider.round:before { border-radius: 50%; }
 
         /* СТИЛИ КОНСТРУКТОРА */
         .editor-main-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
@@ -86,40 +93,18 @@
         .editor-buttons button { padding: 10px 20px; font-size: 15px; font-weight: 500; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
         #save-content-btn { background-color: var(--primary-blue); color: #fff; }
         #cancel-edit-btn { background-color: var(--border-color); color: var(--text-primary); }
+
         .editor-section, .editor-button-entry { border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; background-color: var(--background-card); margin-bottom: 15px; }
         .editor-section-header, .editor-button-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
         .editor-section-header input, .editor-button-header input { font-size: 16px; font-weight: 600; color: var(--primary-blue); border: none; background: transparent; width: 100%; border-bottom: 1px dashed var(--border-color); padding: 5px; }
         .editor-section-header input:focus, .editor-button-header input:focus { outline: none; border-bottom-style: solid; }
         .editor-controls { margin-left: auto; display: flex; }
-        .editor-controls button { background-color: transparent; border: none; cursor: pointer; padding: 5px; font-size: 18px; }
+        .editor-controls button { background-color: transparent; border: none; cursor: pointer; padding: 5px; }
         .delete-btn { color: var(--error-color); }
         .template-variant { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
         .template-variant textarea { width: 100%; min-height: 50px; resize: vertical; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--background-main); font-size: 14px; color: var(--text-primary); font-family: inherit; line-height: 1.5; }
-        .delete-variant-btn { padding: 8px; background-color: #ff3b3020; border: none; border-radius: 8px; cursor: pointer; color: var(--error-color); line-height: 0; font-size: 18px; transition: background-color 0.2s; }
+        .delete-variant-btn { padding: 8px; background-color: #ff3b3020; border: none; border-radius: 8px; cursor: pointer; color: var(--error-color); line-height: 0; transition: background-color 0.2s; }
         .add-variant-btn, .add-btn { width: 100%; padding: 10px; background-color: #34c75920; color: var(--success-color); border: 1px dashed var(--success-color); border-radius: 8px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; margin-top: 10px; }
-
-        /* 🔥 МОБИЛЬНАЯ АДАПТАЦИЯ 🔥 */
-        .mobile-switcher { display: none; background-color: var(--background-card); border-bottom: 1px solid var(--border-color); padding: 0 10px; text-align: center; }
-        .mobile-switcher-inner { display: flex; }
-        .mobile-switcher button { flex: 1; padding: 14px 0; border: none; border-bottom: 3px solid transparent; background-color: transparent; font-size: 15px; cursor: pointer; font-weight: 600; color: var(--text-secondary); transition: all 0.25s ease; }
-        .mobile-switcher button.active { color: var(--primary-blue); border-bottom-color: var(--primary-blue); }
-
-        @media (max-width: 768px) {
-            header { font-size: 20px; padding: 15px; }
-            #app-container { height: 100vh; overflow: hidden; }
-            main { flex-direction: column; flex-grow: 1; height: calc(100% - 51px - 44px); }
-            .mobile-switcher { display: flex; }
-            .sidebar, .info { width: 100%; min-width: unset; padding: 15px; border-right: none; border-bottom: 1px solid var(--border-color); display: none; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; box-sizing: border-box; }
-            main.sidebar-visible .sidebar { display: flex; }
-            main.info-visible .info { display: block; }
-
-            /* Адаптация конструктора */
-            .editor-main-controls { flex-direction: column; align-items: stretch; gap: 15px; }
-            .editor-tabs { justify-content: center; }
-            .editor-buttons { justify-content: center; }
-            .editor-section, .editor-button-entry { padding: 10px; }
-            .editor-controls button, .delete-variant-btn { padding: 12px; font-size: 22px; }
-        }
     </style>
 </head>
 <body class="login-active">
@@ -127,8 +112,8 @@
     <div id="login-screen">
         <div class="login-background"></div>
         <div class="login-form-container">
-            <h1>ChaterLab</h1>
-            <p>Панель быстрых ответов</p>
+            <h1 data-key="loginHeader">ChaterLab</h1>
+            <p data-key="loginSubheader">Панель быстрых ответов</p>
             <form id="login-form">
                 <input type="text" id="login-username" required placeholder="Логин">
                 <input type="password" id="login-password" required placeholder="Пароль">
@@ -140,12 +125,6 @@
 
     <div id="app-container" data-logged="false">
         <header>ChaterLab Quick Replies</header>
-        <div class="mobile-switcher" id="mobileSwitcher">
-            <div class="mobile-switcher-inner">
-                <button id="switchButtons" class="active" onclick="toggleMobileView('buttons')">Ответы</button>
-                <button id="switchInstructions" onclick="toggleMobileView('instructions')">Инструкция</button>
-            </div>
-        </div>
         <main>
             <div class="sidebar">
                 <div>
@@ -169,7 +148,7 @@
                 <div id="content-editor" style="display: none;">
                     <div class="editor-main-controls">
                         <div class="editor-tabs">
-                            <button id="tab-btn-layout" class="active">Конструктор</button>
+                            <button id="tab-btn-layout" class="active">Конструктор кнопок</button>
                             <button id="tab-btn-instructions">Инструкция</button>
                         </div>
                         <div class="editor-buttons">
@@ -195,7 +174,7 @@
         "use strict";
         const API_BASE_URL = 'https://backendchater.onrender.com';
         let userRole = null;
-        let appContent = {}; 
+        let appContent = {};
 
         // ===================================================================================
         // УТИЛИТЫ И АУТЕНТИФИКАЦИЯ
@@ -208,6 +187,7 @@
         async function checkLogin() {
             const authToken = getLocalStorage('chaterlabAuthToken', null);
             const savedRole = getLocalStorage('chaterlabUserRole', null);
+            
             if (authToken && savedRole) {
                 userRole = savedRole;
                 document.getElementById('login-screen').style.display = 'none';
@@ -226,32 +206,45 @@
 
         async function handleLogin(event) {
             event.preventDefault();
-            const username = document.getElementById('login-username').value.trim();
-            const password = document.getElementById('login-password').value.trim();
+            const usernameInput = document.getElementById('login-username');
+            const passwordInput = document.getElementById('login-password');
             const errorDiv = document.getElementById('login-error');
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
             errorDiv.classList.remove('show');
+
             try {
-                const response = await fetch(`${API_BASE_URL}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+                const response = await fetch(`${API_BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message);
+
                 setLocalStorage('chaterlabAuthToken', data.token);
                 setLocalStorage('chaterlabUserRole', data.role);
                 userRole = data.role;
+                
                 document.body.classList.remove('login-active');
                 document.getElementById('login-screen').style.display = 'none';
+                
                 const overlay = document.getElementById('animation-overlay');
                 overlay.style.display = 'flex';
                 void overlay.offsetHeight;
+                overlay.classList.add('animate');
+
                 setTimeout(async () => {
                     overlay.style.display = 'none';
+                    overlay.classList.remove('animate');
                     const appContainer = document.getElementById('app-container');
                     appContainer.style.display = 'flex';
                     appContainer.setAttribute('data-logged', 'true');
                     appContainer.style.opacity = '1';
                     await fetchContent();
                     setupDarkMode();
-                    toggleMobileView('buttons');
-                }, 500); // Reduced animation time for quicker login
+                }, 2500);
             } catch (error) {
                 errorDiv.textContent = error.message;
                 errorDiv.classList.add('show');
@@ -263,9 +256,12 @@
             localStorage.removeItem('chaterlabUserRole');
             userRole = null;
             if (doUIRefresh) {
-                window.location.reload();
-            } else {
-                document.getElementById('app-container').style.display = 'none';
+                const appContainer = document.getElementById('app-container');
+                appContainer.style.opacity = '0';
+                appContainer.setAttribute('data-logged', 'false');
+                appContainer.style.display = 'none';
+                document.getElementById('login-username').value = '';
+                document.getElementById('login-password').value = '';
                 document.getElementById('login-screen').style.display = 'flex';
                 document.body.classList.add('login-active');
             }
@@ -278,7 +274,7 @@
                 appContent = await response.json();
                 console.log('Контент загружен:', appContent);
                 renderSidebar(); 
-                updateInstructions('ru');
+                updateInstructions('ru'); // Язык по умолчанию, можно будет менять
                 checkUserRoleAndSetupEditor();
             } catch (error) { showToast(error.message, true); }
         }
@@ -335,6 +331,7 @@
             const applyTheme = (theme) => {
                 document.body.classList.toggle('dark-mode', theme === 'dark');
                 if(toggle) toggle.checked = (theme === 'dark');
+                // Переинициализируем редакторы, если они активны, с новой темой
                 if (document.getElementById('content-editor').style.display === 'block') {
                     tinymce.remove();
                     initInstructionsEditor();
@@ -347,21 +344,6 @@
                 setLocalStorage('chaterlabTheme', theme);
                 applyTheme(theme);
             });
-        }
-
-        function toggleMobileView(view) {
-            const main = document.querySelector('main');
-            const isMobile = window.innerWidth <= 768;
-            if (isMobile) {
-                main.classList.toggle('sidebar-visible', view === 'buttons');
-                main.classList.toggle('info-visible', view === 'instructions');
-                document.getElementById('switchButtons').classList.toggle('active', view === 'buttons');
-                document.getElementById('switchInstructions').classList.toggle('active', view === 'instructions');
-            } else {
-                 main.classList.remove('sidebar-visible', 'info-visible');
-                 document.getElementById('switchButtons').classList.remove('active');
-                 document.getElementById('switchInstructions').classList.remove('active');
-            }
         }
 
         // ===================================================================================
@@ -422,7 +404,7 @@
                 <div class="editor-section-header">
                     <input type="text" class="section-title-input" value="${section.title}" placeholder="Название раздела">
                     <div class="editor-controls">
-                        <button class="delete-btn" title="Удалить раздел">🗑️</button>
+                        <button class="delete-btn" title="Удалить раздел">&#x1F5D1;</button>
                     </div>
                 </div>
                 <div class="buttons-container"></div>
@@ -448,7 +430,7 @@
                 <div class="editor-button-header">
                     <input type="text" class="button-label-input" value="${button.label}" placeholder="Название кнопки">
                     <div class="editor-controls">
-                        <button class="delete-btn" title="Удалить кнопку">🗑️</button>
+                        <button class="delete-btn" title="Удалить кнопку">&#x1F5D1;</button>
                     </div>
                 </div>
                 <div class="variants-container"></div>
@@ -470,7 +452,7 @@
         function createVariantInput(text) {
             const variantDiv = document.createElement('div');
             variantDiv.className = 'template-variant';
-            variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" title="Удалить вариант">🗑️</button>`;
+            variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" title="Удалить вариант">&#x1F5D1;</button>`;
             variantDiv.querySelector('.delete-variant-btn').onclick = () => variantDiv.remove();
             return variantDiv;
         }
@@ -507,17 +489,17 @@
                     title: sectionNode.querySelector('.section-title-input').value.trim(),
                     buttons: []
                 };
-                if (!section.title) return;
+                if (!section.title) return; // Пропускаем разделы без названия
                 sectionNode.querySelectorAll('.editor-button-entry').forEach(buttonNode => {
                     const button = {
                         id: buttonNode.dataset.id,
                         label: buttonNode.querySelector('.button-label-input').value.trim(),
                         templates: Array.from(buttonNode.querySelectorAll('.template-variant textarea')).map(t => t.value.trim()).filter(v => v)
                     };
-                    if (button.label) section.buttons.push(button);
+                    if (button.label) section.buttons.push(button); // Добавляем кнопку только если у нее есть название
                 });
                 newLayout.push(section);
-});
+            });
             const newInstructions = {};
             for (const lang of ['ru', 'en', 'uk']) {
                 const editor = tinymce.get(`instructions-editor-${lang}`);
@@ -526,8 +508,13 @@
             const newContent = { layout: newLayout, instructionsContent: newInstructions };
             const token = getLocalStorage('chaterlabAuthToken', '');
             try {
-                const response = await fetch(`${API_BASE_URL}/update-content`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(newContent) });
+                const response = await fetch(`${API_BASE_URL}/update-content`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json', 'Authorization': token }, 
+                    body: JSON.stringify(newContent) 
+                });
                 if (!response.ok) throw new Error((await response.json()).message);
+                
                 appContent = newContent;
                 renderSidebar();
                 updateInstructions(getLocalStorage('chaterlabLang', 'ru'));
@@ -544,11 +531,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             checkLogin();
             document.getElementById('login-form').addEventListener('submit', handleLogin);
-            window.addEventListener('resize', () => {
-                const main = document.querySelector('main');
-                const activeView = main.classList.contains('info-visible') ? 'instructions' : 'buttons';
-                toggleMobileView(activeView);
-            });
         });
     </script>
 </body>
