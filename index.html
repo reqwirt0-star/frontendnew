@@ -105,6 +105,26 @@
         .template-variant textarea { width: 100%; min-height: 50px; resize: vertical; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--background-main); font-size: 14px; color: var(--text-primary); font-family: inherit; line-height: 1.5; }
         .delete-variant-btn { padding: 8px; background-color: #ff3b3020; border: none; border-radius: 8px; cursor: pointer; color: var(--error-color); line-height: 0; transition: background-color 0.2s; }
         .add-variant-btn, .add-btn { width: 100%; padding: 10px; background-color: #34c75920; color: var(--success-color); border: 1px dashed var(--success-color); border-radius: 8px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; margin-top: 10px; }
+        
+        /* НОВЫЕ СТИЛИ ДЛЯ ПЕРЕКЛЮЧАТЕЛЯ ЯЗЫКА */
+        .lang-btn.active, .lang-btn-app.active {
+            color: var(--primary-blue) !important;
+            border-color: var(--primary-blue) !important;
+            font-weight: 600;
+        }
+        #language-switcher-login button {
+            transition: all 0.2s ease;
+        }
+        #language-switcher-app button {
+            background: none; border: none; font-weight: 600; color: var(--text-secondary); cursor: pointer;
+            padding: 8px 15px;
+            margin: 0 5px;
+        }
+        #language-switcher-app .active {
+            color: var(--primary-blue) !important;
+            border-bottom: 2px solid var(--primary-blue);
+        }
+        /* Конец НОВЫХ СТИЛЕЙ */
     </style>
 </head>
 <body class="login-active">
@@ -114,10 +134,16 @@
         <div class="login-form-container">
             <h1 data-key="loginHeader">ChaterLab</h1>
             <p data-key="loginSubheader">Панель быстрых ответов</p>
+            
+            <div id="language-switcher-login" style="margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
+                <button data-lang="ru" class="lang-btn" style="padding: 8px 15px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--background-card); color: var(--text-primary); cursor: pointer;">RU</button>
+                <button data-lang="en" class="lang-btn" style="padding: 8px 15px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--background-card); color: var(--text-primary); cursor: pointer;">EN</button>
+                <button data-lang="uk" class="lang-btn" style="padding: 8px 15px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--background-card); color: var(--text-primary); cursor: pointer;">UA</button>
+            </div>
             <form id="login-form">
                 <input type="text" id="login-username" required placeholder="Логин">
                 <input type="password" id="login-password" required placeholder="Пароль">
-                <button type="submit">Войти</button>
+                <button type="submit">Войти</button> 
                 <div id="login-error"></div>
             </form>
         </div>
@@ -132,7 +158,12 @@
                     <div id="sidebar-content"></div>
                 </div>
                 <div class="sidebar-footer">
-                     <div class="theme-switch-wrapper">
+                    <div id="language-switcher-app" style="display: flex; justify-content: space-around; padding: 10px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 10px;">
+                        <button data-lang="ru">RU</button>
+                        <button data-lang="en">EN</button>
+                        <button data-lang="uk">UA</button>
+                    </div>
+                    <div class="theme-switch-wrapper">
                         <div class="theme-switch-label">Тёмная тема</div>
                         <label class="theme-switch" for="theme-checkbox">
                             <input type="checkbox" id="theme-checkbox" />
@@ -184,6 +215,69 @@
         function showToast(message, isError = false) { const t = document.getElementById('toast'); t.textContent = message; t.style.backgroundColor = isError ? 'var(--error-color)' : 'var(--success-color)'; t.classList.add('show'); if (navigator.vibrate && !isError) navigator.vibrate(50); setTimeout(() => t.classList.remove('show'), 2000); }
         function generateId(prefix) { return prefix + Date.now() + Math.random().toString(16).slice(2); }
         
+        // НОВАЯ ФУНКЦИЯ ДЛЯ ПЕРЕКЛЮЧЕНИЯ ЯЗЫКА
+        function switchLanguage(lang) {
+            setLocalStorage('chaterlabLang', lang);
+            updateLoginInterface(lang);
+            // Если пользователь залогинен, обновляем интерфейс приложения и инструкцию
+            if (document.getElementById('app-container').getAttribute('data-logged') === 'true') {
+                updateAppInterface(lang);
+                updateInstructions(lang);
+            }
+        }
+        
+        // НОВАЯ ФУНКЦИЯ: Обновление интерфейса логина
+        function updateLoginInterface(lang) {
+            const currentLang = getLocalStorage('chaterlabLang', 'ru');
+            
+            // 1. Обновление стилей кнопок
+            const langButtons = document.querySelectorAll('#language-switcher-login button');
+            langButtons.forEach(btn => {
+                const isActive = btn.dataset.lang === currentLang;
+                btn.classList.toggle('active', isActive);
+                if (isActive) {
+                    btn.style.backgroundColor = 'var(--primary-blue)';
+                    btn.style.color = '#fff';
+                    btn.style.borderColor = 'var(--primary-blue)';
+                } else {
+                    btn.style.backgroundColor = 'var(--background-card)';
+                    btn.style.color = 'var(--text-primary)';
+                    btn.style.borderColor = 'var(--border-color)';
+                }
+            });
+            
+            // 2. Обновление текстовых элементов (по data-key)
+            const texts = {
+                ru: { loginHeader: 'ChaterLab', loginSubheader: 'Панель быстрых ответов', loginUsername: 'Логин', loginPassword: 'Пароль', loginBtn: 'Войти' },
+                en: { loginHeader: 'ChaterLab', loginSubheader: 'Quick Replies Panel', loginUsername: 'Username', loginPassword: 'Password', loginBtn: 'Login' },
+                uk: { loginHeader: 'ChaterLab', loginSubheader: 'Панель швидких відповідей', loginUsername: 'Логін', loginPassword: 'Пароль', loginBtn: 'Увійти' }
+            };
+            const currentTexts = texts[currentLang];
+            document.querySelector('[data-key="loginHeader"]').textContent = currentTexts.loginHeader;
+            document.querySelector('[data-key="loginSubheader"]').textContent = currentTexts.loginSubheader;
+            document.getElementById('login-username').placeholder = currentTexts.loginUsername;
+            document.getElementById('login-password').placeholder = currentTexts.loginPassword;
+            document.querySelector('#login-form button[type="submit"]').textContent = currentTexts.loginBtn;
+        }
+        
+        // НОВАЯ ФУНКЦИЯ: Обновление интерфейса приложения
+        function updateAppInterface(lang) {
+            const currentLang = getLocalStorage('chaterlabLang', 'ru');
+            const langButtons = document.querySelectorAll('#language-switcher-app button');
+            
+            langButtons.forEach(btn => {
+                const isActive = btn.dataset.lang === currentLang;
+                btn.classList.toggle('active', isActive);
+                if (isActive) {
+                     btn.style.color = 'var(--primary-blue)';
+                     btn.style.borderBottom = '2px solid var(--primary-blue)';
+                } else {
+                    btn.style.color = 'var(--text-secondary)';
+                    btn.style.borderBottom = 'none';
+                }
+            });
+        }
+        
         async function checkLogin() {
             const authToken = getLocalStorage('chaterlabAuthToken', null);
             const savedRole = getLocalStorage('chaterlabUserRole', null);
@@ -197,6 +291,7 @@
                 appContainer.style.opacity = '1';
                 appContainer.style.display = 'flex';
                 await fetchContent();
+                setupDarkMode(); // Включаем темную тему после загрузки контента
                 return true;
             } else {
                 logout(false);
@@ -225,6 +320,8 @@
 
                 setLocalStorage('chaterlabAuthToken', data.token);
                 setLocalStorage('chaterlabUserRole', data.role);
+                // Если язык не был выбран, сохраняем русский как дефолтный
+                if (!getLocalStorage('chaterlabLang', null)) setLocalStorage('chaterlabLang', 'ru');
                 userRole = data.role;
                 
                 document.body.classList.remove('login-active');
@@ -264,6 +361,10 @@
                 document.getElementById('login-password').value = '';
                 document.getElementById('login-screen').style.display = 'flex';
                 document.body.classList.add('login-active');
+                
+                // Обновляем интерфейс логина после выхода
+                const currentLang = getLocalStorage('chaterlabLang', 'ru');
+                updateLoginInterface(currentLang); 
             }
         }
 
@@ -274,7 +375,11 @@
                 appContent = await response.json();
                 console.log('Контент загружен:', appContent);
                 renderSidebar(); 
-                updateInstructions('ru'); // Язык по умолчанию, можно будет менять
+                
+                // Получаем сохраненный или дефолтный язык и обновляем все
+                const currentLang = getLocalStorage('chaterlabLang', 'ru'); 
+                updateInstructions(currentLang); 
+                updateAppInterface(currentLang); // <-- Обновляем кнопки языка в панели
                 checkUserRoleAndSetupEditor();
             } catch (error) { showToast(error.message, true); }
         }
@@ -305,7 +410,15 @@
             const instructionsDiv = document.getElementById('instructions');
             if (appContent.instructionsContent && appContent.instructionsContent[lang]) {
                 instructionsDiv.innerHTML = appContent.instructionsContent[lang];
-            } else { instructionsDiv.innerHTML = '<h3>Инструкция не найдена</h3>'; }
+            } else { 
+                // Сообщение об ошибке в зависимости от выбранного языка (если нужно)
+                const fallbackMessage = {
+                    'ru': '<h3>Инструкция не найдена</h3><p>Для выбранного языка нет инструкции в базе данных.</p>',
+                    'en': '<h3>Instructions Not Found</h3><p>No instructions are available for the selected language in the database.</p>',
+                    'uk': '<h3>Інструкція не знайдена</h3><p>Для вибраної мови немає інструкції в базі даних.</p>'
+                };
+                instructionsDiv.innerHTML = fallbackMessage[lang] || fallbackMessage['ru'];
+            }
         }
         
         function copyDynamicTemplate(buttonId) {
@@ -529,6 +642,19 @@
         // ГЛАВНЫЙ СЛУШАТЕЛЬ СОБЫТИЙ
         // ===================================================================================
         document.addEventListener('DOMContentLoaded', () => {
+            const initialLang = getLocalStorage('chaterlabLang', 'ru');
+            updateLoginInterface(initialLang); // Обновляем интерфейс логина при загрузке
+            
+            // Обработчики для переключателя языка на экране логина
+            document.querySelectorAll('#language-switcher-login button').forEach(button => {
+                button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang));
+            });
+            
+            // Обработчики для переключателя языка в рабочей панели
+            document.querySelectorAll('#language-switcher-app button').forEach(button => {
+                button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang));
+            });
+            
             checkLogin();
             document.getElementById('login-form').addEventListener('submit', handleLogin);
         });
