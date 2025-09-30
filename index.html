@@ -854,6 +854,34 @@
         function generateId(prefix) { 
             return prefix + Date.now() + Math.random().toString(16).slice(2); 
         }
+
+        // НОВЫЙ ОБЪЕКТ С ПЕРЕВОДАМИ
+        const userStatusTexts = {
+            ru: {
+                user: 'Пользователь',
+                status: 'Статус',
+                admin: 'admin',
+                worker: 'worker',
+                access: 'Разрешено редактирование',
+                noAccess: 'Редактирование не доступно'
+            },
+            en: {
+                user: 'User',
+                status: 'Status',
+                admin: 'admin',
+                worker: 'worker',
+                access: 'Editing is allowed',
+                noAccess: 'Editing is not available'
+            },
+            uk: {
+                user: 'Користувач',
+                status: 'Статус',
+                admin: 'admin',
+                worker: 'worker',
+                access: 'Дозволено редагування',
+                noAccess: 'Редагування не доступно'
+            }
+        };
         
         // LANGUAGE SWITCHING
         function switchLanguage(lang) {
@@ -862,6 +890,7 @@
             if (document.getElementById('app-container').getAttribute('data-logged') === 'true') {
                 updateAppInterface(lang);
                 updateInstructions(lang);
+                renderUserStatusCard(); // ДОБАВЛЕНО
             }
         }
         
@@ -1047,32 +1076,35 @@
             });
         }
         
-        // НОВАЯ ФУНКЦИЯ
+        // НОВАЯ ФУНКЦИЯ (ОБНОВЛЕННАЯ)
         function renderUserStatusCard() {
             const card = document.getElementById('user-status-card');
             if (!card || !userName || !userRole) return;
             
+            const currentLang = getLocalStorage('chaterlabLang', 'ru'); // Получаем текущий язык
+            const texts = userStatusTexts[currentLang] || userStatusTexts.ru; // Выбираем переводы
+
             let statusText;
             let accessText;
             let statusColor;
             
             if (userRole === 'manager') {
-                statusText = 'admin';
-                accessText = 'Разрешено редактирование';
+                statusText = texts.admin;
+                accessText = texts.access;
                 statusColor = 'var(--accent-purple)'; // Фиолетовый
             } else {
-                statusText = 'worker';
-                accessText = 'Редактирование не доступно';
+                statusText = texts.worker;
+                accessText = texts.noAccess;
                 statusColor = 'var(--text-secondary)'; // Серый
             }
 
             card.innerHTML = `
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="font-weight: 600; color: var(--text-primary);">Пользователь:</span>
+                    <span style="font-weight: 600; color: var(--text-primary);">${texts.user}:</span>
                     <span style="font-weight: 700; color: var(--primary-blue);">${userName}</span>
                 </div>
                 <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <span style="font-weight: 600; color: var(--text-primary);">Статус:</span>
+                    <span style="font-weight: 600; color: var(--text-primary);">${texts.status}:</span>
                     <span style="font-weight: 700; color: ${statusColor};">${statusText}</span>
                 </div>
                 <div style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; text-align: center;">
