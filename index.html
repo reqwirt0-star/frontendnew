@@ -883,7 +883,7 @@
             }
         };
 
-        // НОВЫЙ ОБЪЕКТ С ПЕРЕВОДАМИ ДЛЯ РЕДАКТОРА
+        // ПЕРЕВОДЫ ДЛЯ РЕДАКТОРА (ОБНОВЛЕННЫЙ)
         const editorTexts = {
             ru: {
                 editContent: 'Редактировать контент',
@@ -897,8 +897,9 @@
                 sectionTitle: 'Название раздела',
                 buttonLabel: 'Название кнопки',
                 deleteSectionConfirm: 'Удалить этот раздел со всеми кнопками?',
-                deleteButtonTitle: 'Удалить кнопку',
-                deleteVariantTitle: 'Удалить вариант',
+                deleteButtonTitle: 'Удалить раздел', // Исправлено: заголовок должен быть "Удалить раздел"
+                deleteButtonEntryTitle: 'Удалить кнопку', // Добавлено: заголовок для кнопки удаления
+                deleteVariantTitle: 'Удалить вариант', // Исправлено: заголовок для кнопки удаления варианта
                 instructionTitleRu: 'Инструкция (RU)',
                 instructionTitleEn: 'Инструкция (EN)',
                 instructionTitleUk: 'Инструкция (UA)'
@@ -915,7 +916,8 @@
                 sectionTitle: 'Section Title',
                 buttonLabel: 'Button Label',
                 deleteSectionConfirm: 'Delete this section with all buttons?',
-                deleteButtonTitle: 'Delete Button',
+                deleteButtonTitle: 'Delete Section',
+                deleteButtonEntryTitle: 'Delete Button',
                 deleteVariantTitle: 'Delete Variant',
                 instructionTitleRu: 'Instructions (RU)',
                 instructionTitleEn: 'Instructions (EN)',
@@ -933,7 +935,8 @@
                 sectionTitle: 'Назва розділу',
                 buttonLabel: 'Назва кнопки',
                 deleteSectionConfirm: 'Видалити цей розділ з усіма кнопками?',
-                deleteButtonTitle: 'Видалити кнопку',
+                deleteButtonTitle: 'Видалити розділ',
+                deleteButtonEntryTitle: 'Видалити кнопку',
                 deleteVariantTitle: 'Видалити варіант',
                 instructionTitleRu: 'Інструкція (RU)',
                 instructionTitleEn: 'Інструкція (EN)',
@@ -1337,7 +1340,9 @@
                 if (confirm(texts.deleteSectionConfirm)) sectionDiv.remove(); // ИСПОЛЬЗУЕМ ПЕРЕВОД
             };
             sectionDiv.querySelector('.add-button-btn').onclick = () => {
-                const newButton = { id: generateId('btn_'), label: texts.buttonLabel, templates: [texts.addVariant] }; // ИСПОЛЬЗУЕМ ПЕРЕВОД
+                // ПРИМЕЧАНИЕ: Здесь я использую 'Новая кнопка' в качестве начального label, 
+                // но для соответствия перевода можно использовать texts.buttonLabel
+                const newButton = { id: generateId('btn_'), label: texts.buttonLabel, templates: ['Новый шаблон'] }; 
                 buttonsContainer.appendChild(createButtonEditor(newButton));
             };
             return sectionDiv;
@@ -1354,7 +1359,7 @@
                 <div class="editor-button-header">
                     <input type="text" class="button-label-input" value="${button.label}" placeholder="${texts.buttonLabel}">
                     <div class="editor-controls">
-                        <button class="delete-btn" title="${texts.deleteButtonTitle}">🗑</button>
+                        <button class="delete-btn" title="${texts.deleteButtonEntryTitle}">🗑</button>
                     </div>
                 </div>
                 <div class="variants-container"></div>
@@ -1374,9 +1379,12 @@
         }
 
         function createVariantInput(text) {
+            const currentLang = getLocalStorage('chaterlabLang', 'ru'); // Получаем текущий язык
+            const texts = editorTexts[currentLang] || editorTexts.ru; // Выбираем переводы
+            
             const variantDiv = document.createElement('div');
             variantDiv.className = 'template-variant';
-            variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" title="Удалить вариант">🗑</button>`;
+            variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" title="${texts.deleteVariantTitle}">🗑</button>`;
             variantDiv.querySelector('.delete-variant-btn').onclick = () => variantDiv.remove();
             return variantDiv;
         }
@@ -1395,8 +1403,8 @@
                 selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk',
                 height: 500, 
                 menubar: false, 
-                plugins: 'lists link image code help wordcount autoresize',
-                toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | help',
+                plugins: 'lists link image code help wordcount autoresize table', // ДОБАВЛЕНО table
+                toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | table | help', // ДОБАВЛЕНО table
                 skin: skin, 
                 content_css: content_css,
                 setup: editor => {
