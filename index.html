@@ -74,12 +74,12 @@
         }
         header .logo { font-size: 20px; font-weight: 700; color: var(--primary-blue); }
         
-        /* CONTENT LAYOUT (NEW STYLES FOR SCROLLING) */
+        /* CONTENT LAYOUT (СТИЛИ ДЛЯ НЕЗАВИСИМОЙ ПРОКРУТКИ) */
         main { 
             display: flex; 
             flex: 1; 
-            /* Высота main должна быть фиксирована и меньше высоты экрана, чтобы не вызывалась общая прокрутка страницы */
-            height: calc(100vh - 84px); /* 100% высоты экрана минус высота header */
+            /* Фиксированная высота, чтобы запретить прокрутку всей страницы */
+            height: calc(100vh - 84px); /* 100% высоты экрана минус высота header (44px + padding) */
             overflow: hidden; 
         }
         
@@ -97,17 +97,17 @@
             height: 100%; /* Занимает всю высоту main */
         }
         
-        /* Контейнер для кнопок (должен прокручиваться и занимать всё место) */
+        /* Контейнер для кнопок (Scrollable area) */
         #sidebar-buttons {
             flex-grow: 1; /* Ключ: занимает всё свободное пространство */
             overflow-y: auto; /* Ключ: независимая прокрутка для кнопок */
-            padding-right: 8px; /* Дополнительный отступ для предотвращения наезда контента на полосу прокрутки */
+            padding-right: 8px; /* Отступ для полосы прокрутки */
         }
         
         /* SIDEBAR FOOTER (Закрепленный низ сайдбара) */
         .sidebar-footer { 
             flex-shrink: 0; /* Не сжимается */
-            margin-top: 24px; /* Отступ от кнопок (ваше требование) */
+            margin-top: 24px; /* Отступ от кнопок (согласно запросу) */
             padding-top: 16px; 
             border-top: 1px solid var(--border-color);
             z-index: 10;
@@ -120,6 +120,41 @@
             background-color: var(--background-main);
             overflow-y: auto; /* Ключ: независимая прокрутка для инструкции */
             height: 100%; /* Занимает всю высоту main */
+        }
+        
+        /* Animation Overlay */
+        #animation-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: var(--background-main); 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 3000; 
+            opacity: 1; 
+            transition: opacity 0.5s ease-out; 
+        }
+        .animation-content h1 { 
+            font-size: 56px; 
+            background: linear-gradient(135deg, var(--primary-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -2px; 
+            font-weight: 700; 
+            opacity: 0; 
+        }
+        #animation-overlay.animate .animation-content h1 { 
+            animation: fadeInOut 2.5s ease-in-out forwards; 
+        }
+        @keyframes fadeInOut { 
+            0% { opacity: 0; transform: scale(0.9); } 
+            20% { opacity: 1; transform: scale(1); } 
+            80% { opacity: 1; transform: scale(1); } 
+            100% { opacity: 0; transform: scale(0.9); } 
         }
         
         /* Buttons and Elements */
@@ -509,8 +544,8 @@
                 <div class="sidebar-footer">
                     <div id="language-switcher-app" class="language-switcher">
                         <button data-lang="ru" class="active">RU</button>
-                        <button data-lang="en">EN</button>
-                        <button data-lang="ua">UA</button>
+                        <button data-lang="en" class="active">EN</button>
+                        <button data-lang="ua" class="active">UA</button>
                     </div>
                     
                     <div id="user-controls" class="user-controls flex justify-center items-center gap-2">
@@ -563,7 +598,7 @@
 
     <script>
         // API Configuration (Render backend URL)
-        const API_BASE_URL = 'https://chaterlab-server.onrender.com'; 
+        const API_BASE_URL = 'https://backendchater.onrender.com'; 
         
         let appContent = null;
         let userRole = null;
@@ -873,12 +908,13 @@
         }
 
         // ===================================================================================
-        // CONTENT EDITOR (Manager only)
+        // CONTENT EDITOR (Manager only) - ОСТАВЛЕНО СТРУКТУРНО ИЗ ВАШЕГО ПОСЛЕДНЕГО КОДА
         // ===================================================================================
 
         let tinymceEditors = {};
 
         function initializeTinymce() {
+            // Инициализация TinyMCE
             availableLangs.forEach(lang => {
                 const editorId = `instructions-editor-${lang}`;
                 tinymce.init({
@@ -899,6 +935,7 @@
         }
         
         function updateTinymceTheme() {
+            // Обновление темы TinyMCE
             const isDark = document.body.classList.contains('dark-theme');
             const skin = isDark ? 'oxide-dark' : 'oxide';
             const content_css = isDark ? 'dark' : 'default';
@@ -915,9 +952,11 @@
         }
 
         function showContentEditor() {
+            // ВАШ КОД ИЗ ПОСЛЕДНЕГО ФАЙЛА - ТОЛЬКО ВИЗУАЛЬНОЕ ОТОБРАЖЕНИЕ
             if (userRole !== 'manager' || !appContent) return;
             
-            // 1. Fill Layout Editor
+            // 1. Fill Layout Editor (ЗДЕСЬ НУЖНА ЛОГИКА ПАРСИНГА)
+            // В вашем последнем коде здесь было просто присвоение значения.
             document.getElementById('layout-editor').value = JSON.stringify(appContent.layout, null, 2);
 
             // 2. Fill TinyMCE Editors
@@ -926,7 +965,6 @@
                 if (tinymceEditors[lang]) {
                     tinymceEditors[lang].setContent(content);
                 } else {
-                    // Fallback for first time initialization
                     document.getElementById(`instructions-editor-${lang}`).value = content;
                 }
             });
@@ -940,7 +978,6 @@
             if (Object.keys(tinymceEditors).length === 0) {
                 initializeTinymce();
             } else {
-                // Update theme if it changed
                 updateTinymceTheme();
             }
 
@@ -949,15 +986,17 @@
         }
         
         function hideContentEditor() {
+            // Скрытие модального окна
             const editorScreen = document.getElementById('content-editor-screen');
             editorScreen.classList.remove('show');
             setTimeout(() => editorScreen.classList.add('hidden'), 300);
         }
 
         async function saveContent() {
+            // ВАШ КОД ИЗ ПОСЛЕДНЕГО ФАЙЛА - ТОЛЬКО ВЫЗОВ API
             const lang = getLocalStorage('chaterlabLang', 'ru');
             
-            // 1. Get Layout Content
+            // ВАЖНО: Здесь должна быть ЛОГИКА ПАРСИНГА
             let newLayout;
             try {
                 const layoutJson = document.getElementById('layout-editor').value;
@@ -967,7 +1006,6 @@
                 return;
             }
 
-            // 2. Get Instructions Content from TinyMCE
             let newInstructions = {};
             availableLangs.forEach(lang => {
                 const editor = tinymceEditors[lang];
@@ -1030,7 +1068,8 @@
                     e.target.classList.add('active');
                     
                     document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-                    document.getElementById(`tab-${tabName.replace('instructions-', 'instructions')}`).classList.add('active');
+                    // Logic to activate the correct tab pane based on data-tab
+                    document.getElementById(`tab-${tabName}`).classList.add('active');
                 });
             });
 
