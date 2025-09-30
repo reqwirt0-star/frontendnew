@@ -50,9 +50,6 @@
             color: var(--text-primary); 
             transition: background-color 0.3s ease, color 0.3s ease;
             line-height: 1.6;
-            /* Добавлено для работы scroll */
-            height: 100vh;
-            overflow: hidden;
         }
         
         .login-active { overflow: hidden; height: 100vh; }
@@ -61,9 +58,7 @@
         #app-container { 
             display: flex;
             flex-direction: column; 
-            /* min-height: 100vh; */ /* Заменено на flex: 1 и height: 100% в main */
-            flex: 1;
-            height: 100%;
+            min-height: 100vh; 
             opacity: 0; 
             transition: opacity 0.5s ease-in-out; 
         }
@@ -115,17 +110,13 @@
             background-color: var(--background-card); 
             transition: all 0.3s ease;
             box-shadow: var(--shadow-sm);
-            /* Добавлено для расчета высоты main */
-            flex-shrink: 0;
-            height: 84px; /* Примерная высота header с padding */
         }
         
-        /* MAIN LAYOUT (ОСНОВНОЕ ИЗМЕНЕНИЕ ДЛЯ SCROLL) */
+        /* MAIN LAYOUT */
         main { 
             display: flex; 
             flex: 1; 
-            /* Вычисляем высоту main, чтобы она не превышала 100% окна */
-            height: calc(100vh - 84px); 
+            flex-wrap: wrap; 
             overflow: hidden; 
         }
         
@@ -138,15 +129,12 @@
             background-color: var(--background-card); 
             box-sizing: border-box; 
             display: flex; 
-            flex-direction: column; /* Ключ: вертикальный Flexbox */
+            flex-direction: column; 
             transition: all 0.3s ease;
-            height: 100%; /* Занимает всю высоту main */
         }
-        /* ВАЖНОЕ ИЗМЕНЕНИЕ: В вашем HTML контейнер для кнопок - это div:first-child */
         .sidebar > div:first-child { 
-            flex-grow: 1; /* Ключ: занимает всё свободное пространство */
-            overflow-y: auto; /* Ключ: независимая прокрутка для кнопок */
-            padding-right: 8px; /* Отступ для полосы прокрутки */
+            flex-grow: 1; 
+            overflow-y: auto; 
         }
         .sidebar h2 { 
             font-size: 13px; 
@@ -160,10 +148,9 @@
         }
         .sidebar h2:first-of-type { margin-top: 0; }
         
-        /* SIDEBAR FOOTER (ОСНОВНОЕ ИЗМЕНЕНИЕ ДЛЯ ОТСТУПА И ПОЗИЦИИ) */
         .sidebar-footer { 
-            margin-top: 24px; /* Увеличиваем отступ от кнопок (согласно запросу) */
-            flex-shrink: 0; /* Не сжимается */
+            margin-top: auto; 
+            flex-shrink: 0; 
             padding-top: 16px; 
             border-top: 1px solid var(--border-color);
         }
@@ -208,12 +195,11 @@
             color: var(--primary-blue);
         }
         
-        /* INFO PANEL (ОСНОВНОЕ ИЗМЕНЕНИЕ ДЛЯ SCROLL) */
+        /* INFO PANEL */
         .info { 
             flex: 1; 
             padding: 40px; 
-            overflow-y: auto; /* Ключ: независимая прокрутка для инструкции */
-            height: 100%; /* Занимает всю высоту main */
+            overflow-y: auto; 
             background-color: var(--background-main);
         }
         .instructions { 
@@ -737,8 +723,9 @@
         <header>ChaterLab Quick Replies</header>
         <main>
             <div class="sidebar">
-                <div id="sidebar-content"></div> 
-                
+                <div>
+                    <div id="sidebar-content"></div>
+                </div>
                 <div class="sidebar-footer">
                     <div id="language-switcher-app">
                         <button data-lang="ru" class="lang-btn-app">RU</button>
