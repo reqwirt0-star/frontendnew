@@ -186,7 +186,7 @@
             flex-direction: column; 
         }
         .sidebar-section .sidebar-button { 
-            position: relative; /* Для позиционирования звездочки */
+            position: relative;
             display: flex; 
             align-items: center; 
             gap: 12px; 
@@ -248,7 +248,6 @@
             box-shadow: var(--shadow-md);
         }
         
-        /* --- СТИЛИ ДЛЯ ИЗБРАННОГО --- */
         .favorite-star {
             position: absolute;
             top: 6px;
@@ -279,7 +278,6 @@
             padding-bottom: 8px;
             margin-bottom: 16px;
         }
-        /* --- КОНЕЦ СТИЛЕЙ --- */
 
         .info { 
             flex: 1; 
@@ -914,123 +912,12 @@
         let userName = null;
         let userFavorites = [];
 
-        // UTILITIES
-        function getLocalStorage(key, defaultValue) { 
-            try { 
-                const val = localStorage.getItem(key); 
-                return val ? JSON.parse(val) : defaultValue; 
-            } catch (e) { 
-                return defaultValue; 
-            } 
-        }
-        
-        function setLocalStorage(key, value) { 
-            try { 
-                localStorage.setItem(key, JSON.stringify(value)); 
-            } catch (e) { 
-                console.error(e); 
-            } 
-        }
-        
-        function showToast(message, isError = false) { 
-            const t = document.getElementById('toast'); 
-            t.textContent = message; 
-            t.style.backgroundColor = isError ? 'var(--error-color)' : 'var(--success-color)'; 
-            t.classList.add('show'); 
-            if (navigator.vibrate && !isError) navigator.vibrate(50); 
-            setTimeout(() => t.classList.remove('show'), 2000); 
-        }
-        
-        function generateId(prefix) { 
-            return prefix + Date.now() + Math.random().toString(16).slice(2); 
-        }
-
-        const userStatusTexts = {
-            ru: {
-                user: 'Пользователь',
-                status: 'Статус',
-                admin: 'Менеджер',
-                worker: 'Сотрудник',
-                access: 'Разрешено редактирование',
-                noAccess: 'Редактирование не доступно'
-            },
-            en: {
-                user: 'User',
-                status: 'Status',
-                admin: 'Manager',
-                worker: 'Employee',
-                access: 'Editing is allowed',
-                noAccess: 'Editing is not available'
-            },
-            uk: {
-                user: 'Користувач',
-                status: 'Статус',
-                admin: 'Менеджер',
-                worker: 'Співробітник',
-                access: 'Дозволено редагування',
-                noAccess: 'Редагування не доступно'
-            }
-        };
-
-        const editorTexts = {
-            ru: {
-                editContent: 'Редактировать контент',
-                saveAll: 'Сохранить всё',
-                cancel: 'Отмена',
-                tabLayout: 'Конструктор кнопок',
-                tabInstructions: 'Инструкция',
-                addSection: '+ Добавить новый раздел',
-                addButton: '+ Добавить кнопку в раздел',
-                addVariant: '+ Добавить вариант',
-                sectionTitle: 'Название раздела',
-                buttonLabel: 'Название кнопки',
-                deleteSectionConfirm: 'Удалить этот раздел со всеми кнопками?',
-                deleteButtonTitle: 'Удалить раздел',
-                deleteButtonEntryTitle: 'Удалить кнопку',
-                deleteVariantTitle: 'Удалить вариант',
-                instructionTitleRu: 'Инструкция (RU)',
-                instructionTitleEn: 'Инструкция (EN)',
-                instructionTitleUk: 'Инструкция (UA)'
-            },
-            en: {
-                editContent: 'Edit Content',
-                saveAll: 'Save All',
-                cancel: 'Cancel',
-                tabLayout: 'Button Builder',
-                tabInstructions: 'Instructions',
-                addSection: '+ Add New Section',
-                addButton: '+ Add Button to Section',
-                addVariant: '+ Add Variant',
-                sectionTitle: 'Section Title',
-                buttonLabel: 'Button Label',
-                deleteSectionConfirm: 'Delete this section with all buttons?',
-                deleteButtonTitle: 'Delete Section',
-                deleteButtonEntryTitle: 'Delete Button',
-                deleteVariantTitle: 'Delete Variant',
-                instructionTitleRu: 'Instructions (RU)',
-                instructionTitleEn: 'Instructions (EN)',
-                instructionTitleUk: 'Instructions (UA)'
-            },
-            uk: {
-                editContent: 'Редагувати контент',
-                saveAll: 'Зберегти все',
-                cancel: 'Скасувати',
-                tabLayout: 'Конструктор кнопок',
-                tabInstructions: 'Інструкція',
-                addSection: '+ Додати новий розділ',
-                addButton: '+ Додати кнопку до розділу',
-                addVariant: '+ Додати варіант',
-                sectionTitle: 'Назва розділу',
-                buttonLabel: 'Назва кнопки',
-                deleteSectionConfirm: 'Видалити цей розділ з усіма кнопками?',
-                deleteButtonTitle: 'Видалити розділ',
-                deleteButtonEntryTitle: 'Видалити кнопку',
-                deleteVariantTitle: 'Видалити варіант',
-                instructionTitleRu: 'Інструкція (RU)',
-                instructionTitleEn: 'Інструкція (EN)',
-                instructionTitleUk: 'Інструкція (UA)'
-            }
-        };
+        function getLocalStorage(key, defaultValue) { try { const val = localStorage.getItem(key); return val ? JSON.parse(val) : defaultValue; } catch (e) { return defaultValue; } }
+        function setLocalStorage(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.error(e); } }
+        function showToast(message, isError = false) { const t = document.getElementById('toast'); t.textContent = message; t.style.backgroundColor = isError ? 'var(--error-color)' : 'var(--success-color)'; t.classList.add('show'); if (navigator.vibrate && !isError) navigator.vibrate(50); setTimeout(() => t.classList.remove('show'), 2000); }
+        function generateId(prefix) { return prefix + Date.now() + Math.random().toString(16).slice(2); }
+        const userStatusTexts = { ru: { user: 'Пользователь', status: 'Статус', admin: 'Менеджер', worker: 'Сотрудник', access: 'Разрешено редактирование', noAccess: 'Редактирование не доступно' }, en: { user: 'User', status: 'Status', admin: 'Manager', worker: 'Employee', access: 'Editing is allowed', noAccess: 'Editing is not available' }, uk: { user: 'Користувач', status: 'Статус', admin: 'Менеджер', worker: 'Співробітник', access: 'Дозволено редагування', noAccess: 'Редагування не доступно' } };
+        const editorTexts = { ru: { editContent: 'Редактировать контент', saveAll: 'Сохранить всё', cancel: 'Отмена', tabLayout: 'Конструктор кнопок', tabInstructions: 'Инструкция', addSection: '+ Добавить новый раздел', addButton: '+ Добавить кнопку в раздел', addVariant: '+ Добавить вариант', sectionTitle: 'Название раздела', buttonLabel: 'Название кнопки', deleteSectionConfirm: 'Удалить этот раздел со всеми кнопками?', deleteButtonTitle: 'Удалить раздел', deleteButtonEntryTitle: 'Удалить кнопку', deleteVariantTitle: 'Удалить вариант', instructionTitleRu: 'Инструкция (RU)', instructionTitleEn: 'Инструкция (EN)', instructionTitleUk: 'Инструкция (UA)' }, en: { editContent: 'Edit Content', saveAll: 'Save All', cancel: 'Cancel', tabLayout: 'Button Builder', tabInstructions: 'Instructions', addSection: '+ Add New Section', addButton: '+ Add Button to Section', addVariant: '+ Add Variant', sectionTitle: 'Section Title', buttonLabel: 'Button Label', deleteSectionConfirm: 'Delete this section with all buttons?', deleteButtonTitle: 'Delete Section', deleteButtonEntryTitle: 'Delete Button', deleteVariantTitle: 'Delete Variant', instructionTitleRu: 'Instructions (RU)', instructionTitleEn: 'Instructions (EN)', instructionTitleUk: 'Instructions (UA)' }, uk: { editContent: 'Редагувати контент', saveAll: 'Зберегти все', cancel: 'Скасувати', tabLayout: 'Конструктор кнопок', tabInstructions: 'Інструкція', addSection: '+ Додати новий розділ', addButton: '+ Додати кнопку до розділу', addVariant: '+ Додати варіант', sectionTitle: 'Назва розділу', buttonLabel: 'Назва кнопки', deleteSectionConfirm: 'Видалити цей розділ з усіма кнопками?', deleteButtonTitle: 'Видалити розділ', deleteButtonEntryTitle: 'Видалити кнопку', deleteVariantTitle: 'Видалити варіант', instructionTitleRu: 'Інструкція (RU)', instructionTitleEn: 'Інструкція (EN)', instructionTitleUk: 'Інструкція (UA)' } };
         
         function switchLanguage(lang) {
             setLocalStorage('chaterlabLang', lang);
@@ -1054,36 +941,11 @@
         
         function updateLoginInterface(lang) {
             const currentLang = getLocalStorage('chaterlabLang', 'ru');
-            
             const langButtons = document.querySelectorAll('#language-switcher-login button');
             langButtons.forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.lang === currentLang);
             });
-            
-            const texts = {
-                ru: { 
-                    loginHeader: 'ChaterLab', 
-                    loginSubheader: 'Панель быстрых ответов', 
-                    loginUsername: 'Логин', 
-                    loginPassword: 'Пароль', 
-                    loginBtn: 'Войти' 
-                },
-                en: { 
-                    loginHeader: 'ChaterLab', 
-                    loginSubheader: 'Quick Replies Panel', 
-                    loginUsername: 'Username', 
-                    loginPassword: 'Password', 
-                    loginBtn: 'Login' 
-                },
-                uk: { 
-                    loginHeader: 'ChaterLab', 
-                    loginSubheader: 'Панель швидких відповідей', 
-                    loginUsername: 'Логін', 
-                    loginPassword: 'Пароль', 
-                    loginBtn: 'Увійти' 
-                }
-            };
-            
+            const texts = { ru: { loginHeader: 'ChaterLab', loginSubheader: 'Панель быстрых ответов', loginUsername: 'Логин', loginPassword: 'Пароль', loginBtn: 'Войти' }, en: { loginHeader: 'ChaterLab', loginSubheader: 'Quick Replies Panel', loginUsername: 'Username', loginPassword: 'Password', loginBtn: 'Login' }, uk: { loginHeader: 'ChaterLab', loginSubheader: 'Панель швидких відповідей', loginUsername: 'Логін', loginPassword: 'Пароль', loginBtn: 'Увійти' } };
             const currentTexts = texts[currentLang];
             document.querySelector('[data-key="loginHeader"]').textContent = currentTexts.loginHeader;
             document.querySelector('[data-key="loginSubheader"]').textContent = currentTexts.loginSubheader;
@@ -1095,7 +957,6 @@
         function updateAppInterface(lang) {
             const currentLang = getLocalStorage('chaterlabLang', 'ru');
             const langButtons = document.querySelectorAll('#language-switcher-app button');
-            
             langButtons.forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.lang === currentLang);
             });
@@ -1105,7 +966,6 @@
             const authToken = getLocalStorage('chaterlabAuthToken', null);
             const savedRole = getLocalStorage('chaterlabUserRole', null);
             const savedName = getLocalStorage('chaterlabUserName', null);
-            
             if (authToken && savedRole && savedName) {
                 userRole = savedRole;
                 userName = savedName;
@@ -1116,7 +976,7 @@
                 appContainer.style.opacity = '1';
                 appContainer.style.display = 'flex';
                 await fetchContent();
-                await fetchFavorites(); 
+                await fetchFavorites();
                 updateFavoritesUI();
                 setupDarkMode();
                 renderUserStatusCard();
@@ -1135,32 +995,22 @@
             const username = usernameInput.value.trim();
             const password = passwordInput.value.trim();
             errorDiv.classList.remove('show');
-
             try {
-                const response = await fetch(`${API_BASE_URL}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-
+                const response = await fetch(`${API_BASE_URL}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message);
-
                 setLocalStorage('chaterlabAuthToken', data.token);
                 setLocalStorage('chaterlabUserRole', data.role);
                 setLocalStorage('chaterlabUserName', username);
                 if (!getLocalStorage('chaterlabLang', null)) setLocalStorage('chaterlabLang', 'ru');
                 userRole = data.role;
                 userName = username;
-                
                 document.body.classList.remove('login-active');
                 document.getElementById('login-screen').style.display = 'none';
-                
                 const overlay = document.getElementById('animation-overlay');
                 overlay.style.display = 'flex';
                 void overlay.offsetHeight;
                 overlay.classList.add('animate');
-
                 setTimeout(async () => {
                     overlay.style.display = 'none';
                     overlay.classList.remove('animate');
@@ -1197,15 +1047,14 @@
                 if (!response.ok) throw new Error('Не удалось загрузить контент');
                 appContent = await response.json();
                 renderSidebar();
-                
                 const currentLang = getLocalStorage('chaterlabLang', 'ru');
                 updateInstructions(currentLang);
                 updateAppInterface(currentLang);
                 updateEditorInterface();
                 checkUserRoleAndSetupEditor();
                 setupSearch();
-            } catch (error) { 
-                showToast(error.message, true); 
+            } catch (error) {
+                showToast(error.message, true);
             }
         }
 
@@ -1218,7 +1067,6 @@
                 const title = document.createElement('h2');
                 title.textContent = section.title;
                 sectionDiv.appendChild(title);
-
                 section.buttons.forEach(buttonData => {
                     const button = document.createElement('button');
                     button.className = 'sidebar-button';
@@ -1235,20 +1083,15 @@
                 });
                 container.appendChild(sectionDiv);
             });
-             document.querySelector('.sidebar-scrollable-content').addEventListener('click', handleFavoriteClick);
+            document.querySelector('.sidebar-scrollable-content').addEventListener('click', handleFavoriteClick);
         }
         
         function renderUserStatusCard() {
             const card = document.getElementById('user-status-card');
             if (!card || !userName || !userRole) return;
-            
             const currentLang = getLocalStorage('chaterlabLang', 'ru');
             const texts = userStatusTexts[currentLang] || userStatusTexts.ru;
-
-            let statusText;
-            let accessText;
-            let statusColor;
-            
+            let statusText, accessText, statusColor;
             if (userRole === 'manager') {
                 statusText = texts.admin;
                 accessText = texts.access;
@@ -1258,22 +1101,7 @@
                 accessText = texts.noAccess;
                 statusColor = 'var(--text-secondary)';
             }
-
-            card.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="font-weight: 600; color: var(--text-primary);">${texts.user}:</span>
-                    <span style="font-weight: 700; color: var(--primary-blue);">${userName}</span>
-                </div>
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <span style="font-weight: 600; color: var(--text-primary);">${texts.status}:</span>
-                    <span style="font-weight: 700; color: ${statusColor};">${statusText}</span>
-                </div>
-                <div style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; text-align: center;">
-                    <span style="color: ${userRole === 'manager' ? 'var(--success-color)' : 'var(--text-secondary)'}; font-weight: 500;">
-                        ${accessText}
-                    </span>
-                </div>
-            `;
+            card.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;"><span style="font-weight: 600; color: var(--text-primary);">${texts.user}:</span><span style="font-weight: 700; color: var(--primary-blue);">${userName}</span></div><div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-weight: 600; color: var(--text-primary);">${texts.status}:</span><span style="font-weight: 700; color: ${statusColor};">${statusText}</span></div><div style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; text-align: center;"><span style="color: ${userRole === 'manager' ? 'var(--success-color)' : 'var(--text-secondary)'}; font-weight: 500;">${accessText}</span></div>`;
         }
 
         function updateInstructions(lang) {
@@ -1281,11 +1109,7 @@
             if (appContent.instructionsContent && appContent.instructionsContent[lang]) {
                 instructionsDiv.innerHTML = appContent.instructionsContent[lang];
             } else {
-                const fallbackMessage = {
-                    'ru': '<h3>Инструкция не найдена</h3><p>Для выбранного языка нет инструкции в базе данных.</p>',
-                    'en': '<h3>Instructions Not Found</h3><p>No instructions are available for the selected language in the database.</p>',
-                    'uk': '<h3>Інструкція не знайдена</h3><p>Для вибраної мови немає інструкції в базі даних.</p>'
-                };
+                const fallbackMessage = { 'ru': '<h3>Инструкция не найдена</h3><p>Для выбранного языка нет инструкции в базе данных.</p>', 'en': '<h3>Instructions Not Found</h3><p>No instructions are available for the selected language in the database.</p>', 'uk': '<h3>Інструкція не знайдена</h3><p>Для вибраної мови немає інструкції в базі даних.</p>' };
                 instructionsDiv.innerHTML = fallbackMessage[lang] || fallbackMessage['ru'];
             }
         }
@@ -1293,35 +1117,43 @@
         function updateEditorInterface() {
             const currentLang = getLocalStorage('chaterlabLang', 'ru');
             const texts = editorTexts[currentLang] || editorTexts.ru;
-
             const editBtn = document.getElementById('edit-mode-btn');
             if (editBtn) editBtn.textContent = texts.editContent;
-            
             const saveBtn = document.getElementById('save-content-btn');
             if (saveBtn) saveBtn.textContent = texts.saveAll;
             const cancelBtn = document.getElementById('cancel-edit-btn');
             if (cancelBtn) cancelBtn.textContent = texts.cancel;
-            
             const tabLayoutBtn = document.getElementById('tab-btn-layout');
             if (tabLayoutBtn) tabLayoutBtn.textContent = texts.tabLayout;
             const tabInstructionsBtn = document.getElementById('tab-btn-instructions');
             if (tabInstructionsBtn) tabInstructionsBtn.textContent = texts.tabInstructions;
-            
             const addSectionBtn = document.getElementById('add-section-btn');
             if (addSectionBtn) addSectionBtn.textContent = texts.addSection;
-
             const panelInstructions = document.getElementById('panel-instructions');
             if (panelInstructions) {
                 panelInstructions.querySelector('.editor-section:nth-child(1) h4').textContent = texts.instructionTitleRu;
                 panelInstructions.querySelector('.editor-section:nth-child(2) h4').textContent = texts.instructionTitleEn;
                 panelInstructions.querySelector('.editor-section:nth-child(3) h4').textContent = texts.instructionTitleUk;
             }
-            
             if (document.getElementById('content-editor').style.display === 'block' && document.getElementById('panel-layout').classList.contains('active')) {
                 buildLayoutEditor();
             }
         }
         
+        async function trackClick(buttonId) {
+            const token = getLocalStorage('chaterlabAuthToken', '');
+            if (!token) return;
+            try {
+                await fetch(`${API_BASE_URL}/api/track-click`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                    body: JSON.stringify({ buttonId: buttonId })
+                });
+            } catch (error) {
+                console.error('Failed to track click:', error);
+            }
+        }
+
         function copyDynamicTemplate(buttonId) {
             let targetButton = null;
             appContent.layout?.forEach(section => {
@@ -1336,6 +1168,7 @@
             const textToCopy = targetButton.templates[targetButton.currentIndex];
             navigator.clipboard.writeText(textToCopy).then(() => {
                 showToast(`Скопировано (${targetButton.currentIndex + 1}/${targetButton.templates.length})`);
+                trackClick(buttonId);
             });
             targetButton.currentIndex = (targetButton.currentIndex + 1) % targetButton.templates.length;
         }
@@ -1344,9 +1177,7 @@
             const token = getLocalStorage('chaterlabAuthToken', '');
             if (!token) return;
             try {
-                const response = await fetch(`${API_BASE_URL}/api/favorites`, {
-                    headers: { 'Authorization': token }
-                });
+                const response = await fetch(`${API_BASE_URL}/api/favorites`, { headers: { 'Authorization': token } });
                 if (!response.ok) throw new Error('Не удалось загрузить избранное');
                 const data = await response.json();
                 userFavorites = data.favorites || [];
@@ -1362,10 +1193,7 @@
             try {
                 await fetch(`${API_BASE_URL}/api/favorites`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': token
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': token },
                     body: JSON.stringify({ favorites: userFavorites })
                 });
             } catch (error) {
@@ -1376,17 +1204,14 @@
         function handleFavoriteClick(event) {
             const star = event.target;
             if (!star.classList.contains('favorite-star')) return;
-
             const buttonId = star.dataset.buttonId;
             if (!buttonId) return;
-
             const index = userFavorites.indexOf(buttonId);
             if (index > -1) {
                 userFavorites.splice(index, 1);
             } else {
                 userFavorites.push(buttonId);
             }
-            
             updateFavoritesUI();
             saveFavorites();
         }
@@ -1395,37 +1220,24 @@
             const favoritesContainer = document.getElementById('favorites-content');
             const favoritesSection = document.getElementById('favorites-section');
             if (!favoritesContainer || !favoritesSection) return;
-
-            favoritesContainer.innerHTML = ''; 
-
+            favoritesContainer.innerHTML = '';
             const allButtons = new Map();
-            appContent.layout?.forEach(section => {
-                section.buttons.forEach(btn => allButtons.set(btn.id, btn));
-            });
-            
+            appContent.layout?.forEach(section => { section.buttons.forEach(btn => allButtons.set(btn.id, btn)); });
             userFavorites.forEach(favId => {
                 const buttonData = allButtons.get(favId);
                 if (buttonData) {
                     const button = document.createElement('button');
                     button.className = 'sidebar-button';
-                    button.innerHTML = `
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg>
-                        <span>${buttonData.label}</span>
-                        <div class="favorite-star favorited" data-button-id="${buttonData.id}">★</div>`;
-                    button.onclick = (e) => {
-                        if (e.target.classList.contains('favorite-star')) return;
-                        copyDynamicTemplate(buttonData.id);
-                    };
+                    button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span><div class="favorite-star favorited" data-button-id="${buttonData.id}">★</div>`;
+                    button.onclick = (e) => { if (e.target.classList.contains('favorite-star')) return; copyDynamicTemplate(buttonData.id); };
                     favoritesContainer.appendChild(button);
                 }
             });
-
             if (userFavorites.length > 0) {
                 favoritesSection.style.display = 'block';
             } else {
                 favoritesSection.style.display = 'none';
             }
-
             document.querySelectorAll('.sidebar-button .favorite-star').forEach(star => {
                 const buttonId = star.dataset.buttonId;
                 if (userFavorites.includes(buttonId)) {
@@ -1460,17 +1272,14 @@
         function setupSearch() {
             const searchInput = document.getElementById('searchInput');
             if (!searchInput) return;
-
             searchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase().trim();
                 document.querySelectorAll('#sidebar-content .sidebar-section').forEach(section => {
                     const sectionTitle = section.querySelector('h2').textContent.toLowerCase();
                     const buttons = section.querySelectorAll('.sidebar-button');
                     let sectionHasVisibleButton = false;
-
                     buttons.forEach(button => {
                         const buttonLabel = button.querySelector('span').textContent.toLowerCase();
-                        
                         if (buttonLabel.includes(searchTerm) || sectionTitle.includes(searchTerm)) {
                             button.style.display = 'flex';
                             sectionHasVisibleButton = true;
@@ -1478,7 +1287,6 @@
                             button.style.display = 'none';
                         }
                     });
-
                     if (sectionHasVisibleButton) {
                         section.querySelector('h2').style.display = 'block';
                     } else {
@@ -1498,8 +1306,8 @@
                 document.getElementById('tab-btn-layout').addEventListener('click', () => switchEditorTab('layout'));
                 document.getElementById('tab-btn-instructions').addEventListener('click', () => switchEditorTab('instructions'));
                 document.getElementById('add-section-btn').addEventListener('click', addSection);
-            } else { 
-                editBtn.style.display = 'none'; 
+            } else {
+                editBtn.style.display = 'none';
             }
         }
 
@@ -1540,68 +1348,34 @@
         function createSectionEditor(section) {
             const currentLang = getLocalStorage('chaterlabLang', 'ru');
             const texts = editorTexts[currentLang] || editorTexts.ru;
-            
             const sectionDiv = document.createElement('div');
             sectionDiv.className = 'editor-section';
             sectionDiv.dataset.id = section.id;
-            sectionDiv.innerHTML = `
-                <div class="editor-section-header">
-                    <input type="text" class="section-title-input" value="${section.title}" placeholder="${texts.sectionTitle}">
-                    <div class="editor-controls">
-                        <button class="delete-btn" title="${texts.deleteButtonTitle}">🗑</button>
-                    </div>
-                </div>
-                <div class="buttons-container"></div>
-                <button class="add-btn add-button-btn">${texts.addButton}</button>
-            `;
+            sectionDiv.innerHTML = `<div class="editor-section-header"><input type="text" class="section-title-input" value="${section.title}" placeholder="${texts.sectionTitle}"><div class="editor-controls"><button class="delete-btn" title="${texts.deleteButtonTitle}">🗑</button></div></div><div class="buttons-container"></div><button class="add-btn add-button-btn">${texts.addButton}</button>`;
             const buttonsContainer = sectionDiv.querySelector('.buttons-container');
-            section.buttons.forEach(button => {
-                buttonsContainer.appendChild(createButtonEditor(button));
-            });
-            sectionDiv.querySelector('.delete-btn').onclick = () => { 
-                if (confirm(texts.deleteSectionConfirm)) sectionDiv.remove();
-            };
-            sectionDiv.querySelector('.add-button-btn').onclick = () => {
-                const newButton = { id: generateId('btn_'), label: texts.buttonLabel, templates: ['Новый шаблон'] }; 
-                buttonsContainer.appendChild(createButtonEditor(newButton));
-            };
+            section.buttons.forEach(button => { buttonsContainer.appendChild(createButtonEditor(button)); });
+            sectionDiv.querySelector('.delete-btn').onclick = () => { if (confirm(texts.deleteSectionConfirm)) sectionDiv.remove(); };
+            sectionDiv.querySelector('.add-button-btn').onclick = () => { const newButton = { id: generateId('btn_'), label: texts.buttonLabel, templates: ['Новый шаблон'] }; buttonsContainer.appendChild(createButtonEditor(newButton)); };
             return sectionDiv;
         }
 
         function createButtonEditor(button) {
             const currentLang = getLocalStorage('chaterlabLang', 'ru');
             const texts = editorTexts[currentLang] || editorTexts.ru;
-
             const buttonDiv = document.createElement('div');
             buttonDiv.className = 'editor-button-entry';
             buttonDiv.dataset.id = button.id;
-            buttonDiv.innerHTML = `
-                <div class="editor-button-header">
-                    <input type="text" class="button-label-input" value="${button.label}" placeholder="${texts.buttonLabel}">
-                    <div class="editor-controls">
-                        <button class="delete-btn" title="${texts.deleteButtonEntryTitle}">🗑</button>
-                    </div>
-                </div>
-                <div class="variants-container"></div>
-                <button class="add-variant-btn">${texts.addVariant}</button>
-            `;
+            buttonDiv.innerHTML = `<div class="editor-button-header"><input type="text" class="button-label-input" value="${button.label}" placeholder="${texts.buttonLabel}"><div class="editor-controls"><button class="delete-btn" title="${texts.deleteButtonEntryTitle}">🗑</button></div></div><div class="variants-container"></div><button class="add-variant-btn">${texts.addVariant}</button>`;
             const variantsContainer = buttonDiv.querySelector('.variants-container');
-            button.templates.forEach(template => {
-                variantsContainer.appendChild(createVariantInput(template));
-            });
+            button.templates.forEach(template => { variantsContainer.appendChild(createVariantInput(template)); });
             buttonDiv.querySelector('.delete-btn').onclick = () => buttonDiv.remove();
-            buttonDiv.querySelector('.add-variant-btn').onclick = () => {
-                const newVariant = createVariantInput('');
-                variantsContainer.appendChild(newVariant);
-                newVariant.querySelector('textarea').focus();
-            };
+            buttonDiv.querySelector('.add-variant-btn').onclick = () => { const newVariant = createVariantInput(''); variantsContainer.appendChild(newVariant); newVariant.querySelector('textarea').focus(); };
             return buttonDiv;
         }
 
         function createVariantInput(text) {
             const currentLang = getLocalStorage('chaterlabLang', 'ru');
             const texts = editorTexts[currentLang] || editorTexts.ru;
-            
             const variantDiv = document.createElement('div');
             variantDiv.className = 'template-variant';
             variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" title="${texts.deleteVariantTitle}">🗑</button>`;
@@ -1621,80 +1395,52 @@
             const content_css = document.body.classList.contains('dark-mode') ? 'dark' : 'default';
             tinymce.init({
                 selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk',
-                height: 500, 
-                menubar: false, 
+                height: 500,
+                menubar: false,
                 plugins: 'lists link image code help wordcount autoresize table',
                 toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | table | help',
-                skin: skin, 
+                skin: skin,
                 content_css: content_css,
-                setup: editor => {
-                    editor.on('init', () => {
-                        const langKey = editor.id.split('-')[2];
-                        editor.setContent(appContent.instructionsContent?.[langKey] || '');
-                    });
-                }
+                setup: editor => { editor.on('init', () => { const langKey = editor.id.split('-')[2]; editor.setContent(appContent.instructionsContent?.[langKey] || ''); }); }
             });
         }
 
         async function saveContent() {
             const newLayout = [];
             document.querySelectorAll('#panel-layout .editor-section').forEach(sectionNode => {
-                const section = {
-                    id: sectionNode.dataset.id,
-                    title: sectionNode.querySelector('.section-title-input').value.trim(),
-                    buttons: []
-                };
+                const section = { id: sectionNode.dataset.id, title: sectionNode.querySelector('.section-title-input').value.trim(), buttons: [] };
                 if (!section.title) return;
                 sectionNode.querySelectorAll('.editor-button-entry').forEach(buttonNode => {
-                    const button = {
-                        id: buttonNode.dataset.id,
-                        label: buttonNode.querySelector('.button-label-input').value.trim(),
-                        templates: Array.from(buttonNode.querySelectorAll('.template-variant textarea')).map(t => t.value.trim()).filter(v => v)
-                    };
+                    const button = { id: buttonNode.dataset.id, label: buttonNode.querySelector('.button-label-input').value.trim(), templates: Array.from(buttonNode.querySelectorAll('.template-variant textarea')).map(t => t.value.trim()).filter(v => v) };
                     if (button.label) section.buttons.push(button);
                 });
                 newLayout.push(section);
             });
-            
             const newInstructions = {};
             for (const lang of ['ru', 'en', 'uk']) {
                 const editor = tinymce.get(`instructions-editor-${lang}`);
                 if (editor) newInstructions[lang] = editor.getContent();
             }
-            
             const newContent = { layout: newLayout, instructionsContent: newInstructions };
             const token = getLocalStorage('chaterlabAuthToken', '');
-            
             try {
-                const response = await fetch(`${API_BASE_URL}/update-content`, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json', 'Authorization': token }, 
-                    body: JSON.stringify(newContent) 
-                });
+                const response = await fetch(`${API_BASE_URL}/update-content`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(newContent) });
                 if (!response.ok) throw new Error((await response.json()).message);
-                
                 appContent = newContent;
                 renderSidebar();
                 updateInstructions(getLocalStorage('chaterlabLang', 'ru'));
                 showToast('Контент успешно сохранен!');
                 hideContentEditor();
-            } catch (error) { 
-                showToast(error.message, true); 
+            } catch (error) {
+                showToast(error.message, true);
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             const initialLang = getLocalStorage('chaterlabLang', 'ru');
             switchLanguage(initialLang);
-            
-            document.querySelectorAll('#language-switcher-login button').forEach(button => {
-                button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang));
-            });
-            
-            document.querySelectorAll('#language-switcher-app button').forEach(button => {
-                button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang));
-            });
-            
+            document.querySelectorAll('#language-switcher-login button').forEach(button => { button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang)); });
+            document.querySelectorAll('#language-switcher-app button').forEach(button => { button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang)); });
             checkLogin();
             document.getElementById('login-form').addEventListener('submit', handleLogin);
         });
