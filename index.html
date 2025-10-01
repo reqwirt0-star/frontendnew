@@ -26,6 +26,8 @@
             --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
             --success-color: #10b981;
             --error-color: #ef4444;
+            /* Цвет для избранного */
+            --favorite-color: #facc15;
         }
         body.dark-mode {
             --primary-blue: #60a5fa;
@@ -40,6 +42,7 @@
             --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
             --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
             --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --favorite-color: #fde047;
         }
         
         * { box-sizing: border-box; }
@@ -50,24 +53,20 @@
             color: var(--text-primary); 
             transition: background-color 0.3s ease, color 0.3s ease;
             line-height: 1.6;
-            /* ИСПРАВЛЕНИЕ: Запрещаем прокрутку на уровне body */
             overflow: hidden;
         }
         
         .login-active { overflow: hidden; height: 100vh; }
         
-        /* APP CONTAINER */
         #app-container { 
             display: flex;
             flex-direction: column; 
-            /* ИСПРАВЛЕНИЕ: Высота строго по экрану */
             height: 100vh; 
             opacity: 0; 
             transition: opacity 0.5s ease-in-out; 
         }
         #app-container:not([data-logged="true"]) { display: none; }
         
-        /* ANIMATION OVERLAY */
         #animation-overlay { 
             position: fixed; 
             top: 0; 
@@ -102,7 +101,6 @@
             100% { opacity: 0; transform: scale(0.9); } 
         }
         
-        /* HEADER */
         header { 
             text-align: center; 
             padding: 24px 20px; 
@@ -113,19 +111,15 @@
             background-color: var(--background-card); 
             transition: all 0.3s ease;
             box-shadow: var(--shadow-sm);
-            /* ИСПРАВЛЕНИЕ: Убираем сжатие хедера */
             flex-shrink: 0;
         }
         
-        /* MAIN LAYOUT */
         main { 
             display: flex; 
             flex: 1; 
-            /* ИСПРАВЛЕНИЕ: Убираем overflow, чтобы дочерние элементы могли его использовать */
             overflow: hidden; 
         }
         
-        /* SIDEBAR */
         .sidebar { 
             width: 340px; 
             min-width: 300px; 
@@ -136,15 +130,12 @@
             display: flex; 
             flex-direction: column; 
             transition: all 0.3s ease;
-            /* ИСПРАВЛЕНИЕ: Добавляем overflow, чтобы скроллилась только эта колонка */
             overflow-y: hidden;
         }
         
-        /* ИСПРАВЛЕНИЕ: Создаем отдельный контейнер для прокручиваемого контента сайдбара */
         .sidebar-scrollable-content {
             overflow-y: auto;
             flex-grow: 1;
-            /* Небольшой отрицательный отступ, чтобы скроллбар был красивее */
             margin-right: -12px;
             padding-right: 12px;
         }
@@ -184,10 +175,9 @@
         }
 
         .sidebar-footer { 
-            /* ИСПРАВЛЕНИЕ: margin-top: auto больше не нужен, т.к. футер вне зоны скролла */
             flex-shrink: 0; 
             padding-top: 16px; 
-            margin-top: 16px; /* Небольшой отступ сверху */
+            margin-top: 16px;
             border-top: 1px solid var(--border-color);
             background-color: var(--background-card);
         }
@@ -195,7 +185,8 @@
             display: flex; 
             flex-direction: column; 
         }
-        .sidebar button { 
+        .sidebar-section .sidebar-button { 
+            position: relative; /* Для позиционирования звездочки */
             display: flex; 
             align-items: center; 
             gap: 12px; 
@@ -213,14 +204,14 @@
             transition: all 0.2s ease;
             box-shadow: var(--shadow-sm);
         }
-        .sidebar button:hover { 
+        .sidebar-section .sidebar-button:hover { 
             border-color: var(--primary-blue); 
             color: var(--primary-blue); 
             background-color: var(--light-blue-bg); 
             transform: translateY(-2px); 
             box-shadow: var(--shadow-md);
         }
-        .sidebar button svg { 
+        .sidebar-section .sidebar-button svg { 
             width: 20px; 
             height: 20px; 
             flex-shrink: 0; 
@@ -228,15 +219,71 @@
             color: var(--text-secondary); 
             transition: color 0.2s ease; 
         }
-        .sidebar button:hover svg {
+        .sidebar-section .sidebar-button:hover svg {
             color: var(--primary-blue);
         }
+        .sidebar-footer button {
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            width: 100%; 
+            padding: 14px 16px; 
+            margin-bottom: 8px; 
+            background-color: var(--background-main); 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
+            font-size: 15px; 
+            font-weight: 500; 
+            text-align: left; 
+            color: var(--text-primary); 
+            cursor: pointer; 
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+         .sidebar-footer button:hover {
+            border-color: var(--primary-blue); 
+            color: var(--primary-blue); 
+            background-color: var(--light-blue-bg); 
+            transform: translateY(-2px); 
+            box-shadow: var(--shadow-md);
+        }
         
-        /* INFO PANEL */
+        /* --- СТИЛИ ДЛЯ ИЗБРАННОГО --- */
+        .favorite-star {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            font-size: 24px;
+            color: var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 4px;
+            line-height: 1;
+            border-radius: 50%;
+        }
+        .sidebar-button:hover .favorite-star {
+            color: var(--text-secondary);
+        }
+        .favorite-star:hover {
+            transform: scale(1.2);
+            color: var(--favorite-color) !important;
+            background-color: var(--light-blue-bg);
+        }
+        .favorite-star.favorited {
+            color: var(--favorite-color) !important;
+            text-shadow: 0 0 8px var(--favorite-color);
+        }
+        #favorites-section h2 {
+            color: var(--favorite-color);
+            border-bottom: 1px solid var(--favorite-color);
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+        /* --- КОНЕЦ СТИЛЕЙ --- */
+
         .info { 
             flex: 1; 
             padding: 40px; 
-            /* ИСПРАВЛЕНИЕ: Главная зона прокрутки для инструкций */
             overflow-y: auto; 
             background-color: var(--background-main);
         }
@@ -272,7 +319,6 @@
             margin-bottom: 8px;
         }
         
-        /* TOAST NOTIFICATION */
         .toast-notification { 
             position: fixed; 
             bottom: 24px; 
@@ -296,7 +342,6 @@
             transform: translateX(-50%) translateY(0); 
         }
         
-        /* LOGIN SCREEN */
         #login-screen { 
             position: fixed; 
             top: 0; 
@@ -452,7 +497,6 @@
             pointer-events: auto; 
         }
         
-        /* THEME SWITCH */
         .theme-switch-wrapper { 
             display: flex; 
             align-items: center; 
@@ -501,7 +545,6 @@
         .slider.round { border-radius: 34px; }
         .slider.round:before { border-radius: 50%; }
         
-        /* LANGUAGE SWITCHER APP */
         #language-switcher-app {
             display: flex;
             justify-content: space-around;
@@ -530,7 +573,6 @@
             background-color: var(--light-blue-bg);
         }
         
-        /* EDITOR STYLES */
         .editor-main-controls { 
             display: flex; 
             justify-content: space-between; 
@@ -723,7 +765,6 @@
             border-style: solid;
         }
         
-        /* RESPONSIVE */
         @media (max-width: 768px) {
             main {
                 flex-direction: column;
@@ -733,7 +774,6 @@
                 width: 100%;
                 border-right: none;
                 border-bottom: 1px solid var(--border-color);
-                /* Убираем независимый скролл на мобильных */
                 overflow-y: visible; 
                 height: auto;
             }
@@ -784,6 +824,10 @@
                 <div class="sidebar-scrollable-content">
                     <div class="search-wrapper">
                         <input type="search" id="searchInput" placeholder="🔎 Поиск по шаблонам...">
+                    </div>
+                    <div id="favorites-section" class="sidebar-section" style="display: none;">
+                        <h2>⭐ Избранное</h2>
+                        <div id="favorites-content"></div>
                     </div>
                     <div id="sidebar-content"></div>
                 </div>
@@ -864,11 +908,11 @@
 
     <script>
         "use strict";
-        // ... (весь остальной JavaScript код остается без изменений) ...
         const API_BASE_URL = 'https://backendchater.onrender.com';
         let userRole = null;
         let appContent = {};
         let userName = null;
+        let userFavorites = [];
 
         // UTILITIES
         function getLocalStorage(key, defaultValue) { 
@@ -1072,6 +1116,8 @@
                 appContainer.style.opacity = '1';
                 appContainer.style.display = 'flex';
                 await fetchContent();
+                await fetchFavorites(); 
+                updateFavoritesUI();
                 setupDarkMode();
                 renderUserStatusCard();
                 return true;
@@ -1123,6 +1169,8 @@
                     appContainer.setAttribute('data-logged', 'true');
                     appContainer.style.opacity = '1';
                     await fetchContent();
+                    await fetchFavorites();
+                    updateFavoritesUI();
                     setupDarkMode();
                     renderUserStatusCard();
                 }, 2500);
@@ -1139,17 +1187,7 @@
             userRole = null;
             userName = null;
             if (doUIRefresh) {
-                const appContainer = document.getElementById('app-container');
-                appContainer.style.opacity = '0';
-                appContainer.setAttribute('data-logged', 'false');
-                appContainer.style.display = 'none';
-                document.getElementById('login-username').value = '';
-                document.getElementById('login-password').value = '';
-                document.getElementById('login-screen').style.display = 'flex';
-                document.body.classList.add('login-active');
-                
-                const currentLang = getLocalStorage('chaterlabLang', 'ru');
-                updateLoginInterface(currentLang);
+                location.reload();
             }
         }
 
@@ -1180,14 +1218,24 @@
                 const title = document.createElement('h2');
                 title.textContent = section.title;
                 sectionDiv.appendChild(title);
+
                 section.buttons.forEach(buttonData => {
                     const button = document.createElement('button');
-                    button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span>`;
-                    button.onclick = () => copyDynamicTemplate(buttonData.id);
+                    button.className = 'sidebar-button';
+                    button.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg>
+                        <span>${buttonData.label}</span>
+                        <div class="favorite-star" data-button-id="${buttonData.id}">☆</div>
+                    `;
+                    button.onclick = (e) => {
+                        if (e.target.classList.contains('favorite-star')) return;
+                        copyDynamicTemplate(buttonData.id);
+                    };
                     sectionDiv.appendChild(button);
                 });
                 container.appendChild(sectionDiv);
             });
+             document.querySelector('.sidebar-scrollable-content').addEventListener('click', handleFavoriteClick);
         }
         
         function renderUserStatusCard() {
@@ -1292,6 +1340,104 @@
             targetButton.currentIndex = (targetButton.currentIndex + 1) % targetButton.templates.length;
         }
 
+        async function fetchFavorites() {
+            const token = getLocalStorage('chaterlabAuthToken', '');
+            if (!token) return;
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/favorites`, {
+                    headers: { 'Authorization': token }
+                });
+                if (!response.ok) throw new Error('Не удалось загрузить избранное');
+                const data = await response.json();
+                userFavorites = data.favorites || [];
+            } catch (error) {
+                showToast(error.message, true);
+                userFavorites = [];
+            }
+        }
+
+        async function saveFavorites() {
+            const token = getLocalStorage('chaterlabAuthToken', '');
+            if (!token) return;
+            try {
+                await fetch(`${API_BASE_URL}/api/favorites`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token
+                    },
+                    body: JSON.stringify({ favorites: userFavorites })
+                });
+            } catch (error) {
+                showToast('Ошибка сохранения избранного', true);
+            }
+        }
+
+        function handleFavoriteClick(event) {
+            const star = event.target;
+            if (!star.classList.contains('favorite-star')) return;
+
+            const buttonId = star.dataset.buttonId;
+            if (!buttonId) return;
+
+            const index = userFavorites.indexOf(buttonId);
+            if (index > -1) {
+                userFavorites.splice(index, 1);
+            } else {
+                userFavorites.push(buttonId);
+            }
+            
+            updateFavoritesUI();
+            saveFavorites();
+        }
+
+        function updateFavoritesUI() {
+            const favoritesContainer = document.getElementById('favorites-content');
+            const favoritesSection = document.getElementById('favorites-section');
+            if (!favoritesContainer || !favoritesSection) return;
+
+            favoritesContainer.innerHTML = ''; 
+
+            const allButtons = new Map();
+            appContent.layout?.forEach(section => {
+                section.buttons.forEach(btn => allButtons.set(btn.id, btn));
+            });
+            
+            userFavorites.forEach(favId => {
+                const buttonData = allButtons.get(favId);
+                if (buttonData) {
+                    const button = document.createElement('button');
+                    button.className = 'sidebar-button';
+                    button.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg>
+                        <span>${buttonData.label}</span>
+                        <div class="favorite-star favorited" data-button-id="${buttonData.id}">★</div>`;
+                    button.onclick = (e) => {
+                        if (e.target.classList.contains('favorite-star')) return;
+                        copyDynamicTemplate(buttonData.id);
+                    };
+                    favoritesContainer.appendChild(button);
+                }
+            });
+
+            if (userFavorites.length > 0) {
+                favoritesSection.style.display = 'block';
+            } else {
+                favoritesSection.style.display = 'none';
+            }
+
+            document.querySelectorAll('.sidebar-button .favorite-star').forEach(star => {
+                const buttonId = star.dataset.buttonId;
+                if (userFavorites.includes(buttonId)) {
+                    star.classList.add('favorited');
+                    star.innerHTML = '★';
+                } else {
+                    star.classList.remove('favorited');
+                    star.innerHTML = '☆';
+                }
+            });
+        }
+        
         function setupDarkMode() {
             const toggle = document.getElementById('theme-checkbox');
             const applyTheme = (theme) => {
@@ -1317,11 +1463,9 @@
 
             searchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase().trim();
-                const sections = document.querySelectorAll('#sidebar-content .sidebar-section');
-
-                sections.forEach(section => {
+                document.querySelectorAll('#sidebar-content .sidebar-section').forEach(section => {
                     const sectionTitle = section.querySelector('h2').textContent.toLowerCase();
-                    const buttons = section.querySelectorAll('button');
+                    const buttons = section.querySelectorAll('.sidebar-button');
                     let sectionHasVisibleButton = false;
 
                     buttons.forEach(button => {
