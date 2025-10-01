@@ -26,7 +26,6 @@
             --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
             --success-color: #10b981;
             --error-color: #ef4444;
-            /* Цвет для избранного */
             --favorite-color: #facc15;
         }
         body.dark-mode {
@@ -285,6 +284,7 @@
             overflow-y: auto; 
             background-color: var(--background-main);
         }
+        
         .info-header-controls {
             display: flex;
             justify-content: space-between;
@@ -292,499 +292,221 @@
             margin-bottom: 24px;
             gap: 20px;
         }
-        #user-status-card {
-            flex-grow: 1;
-            max-width: 400px;
-        }
         
-        .instructions { 
-            margin-top: 20px; 
-        }
-        .instructions h3 { 
-            font-size: 32px; 
-            font-weight: 700; 
-            margin-bottom: 16px; 
-            color: var(--text-primary);
-            letter-spacing: -1px;
-        }
-        .instructions ul, .instructions ol { 
-            padding-left: 24px; 
-            margin: 12px 0; 
-            color: var(--text-secondary); 
-            line-height: 1.8;
-        }
-        .instructions li {
-            margin-bottom: 8px;
-        }
-        
-        .toast-notification { 
-            position: fixed; 
-            bottom: 24px; 
-            left: 50%; 
-            transform: translateX(-50%) translateY(100px); 
-            background-color: var(--success-color); 
-            color: white; 
-            padding: 14px 24px; 
-            border-radius: 12px; 
-            opacity: 0; 
-            box-shadow: var(--shadow-lg); 
-            transition: all 0.3s ease; 
-            z-index: 2000; 
-            font-size: 15px; 
-            font-weight: 500; 
-            pointer-events: none; 
-            white-space: nowrap; 
-        }
-        .toast-notification.show { 
-            opacity: 1; 
-            transform: translateX(-50%) translateY(0); 
-        }
-        
-        #login-screen { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            z-index: 2000; 
-            overflow: hidden; 
-        }
-        .login-background { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
-            background-size: 400% 400%; 
-            animation: gradientAnimation 15s ease infinite; 
-            z-index: 1; 
-        }
-        @keyframes gradientAnimation { 
-            0% { background-position: 0% 50%; } 
-            50% { background-position: 100% 50%; } 
-            100% { background-position: 0% 50%; } 
-        }
-        
-        .login-form-container { 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px); 
-            padding: 48px 40px; 
-            border-radius: 24px; 
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); 
-            width: 400px; 
-            max-width: 90%; 
-            text-align: center; 
-            transition: all 0.4s ease; 
-            z-index: 2; 
-            border: 1px solid rgba(255, 255, 255, 0.3); 
-        }
-        .dark-mode .login-form-container { 
-            background: rgba(15, 23, 42, 0.95); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-        }
-        
-        .login-form-container h1 { 
-            font-size: 36px; 
-            font-weight: 700; 
-            background: linear-gradient(135deg, var(--primary-blue), var(--accent-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-top: 0; 
-            margin-bottom: 8px;
-            letter-spacing: -1px;
-        }
-        .login-form-container p { 
-            margin-top: 0; 
-            margin-bottom: 32px; 
-            color: var(--text-secondary);
-            font-size: 15px;
-        }
-        
-        #language-switcher-login {
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            padding: 6px;
-            background-color: rgba(0, 0, 0, 0.05);
-            border-radius: 12px;
-        }
-        .dark-mode #language-switcher-login {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-        #language-switcher-login button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background-color: transparent;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            flex: 1;
-        }
-        #language-switcher-login button:hover {
-            background-color: rgba(59, 130, 246, 0.1);
-            color: var(--primary-blue);
-        }
-        #language-switcher-login button.active {
-            background-color: var(--primary-blue);
-            color: white;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-        }
-        
-        .login-form-container input { 
-            width: 100%; 
-            padding: 16px; 
-            margin-bottom: 16px; 
-            border: 2px solid var(--border-color); 
-            border-radius: 12px; 
-            box-sizing: border-box; 
-            font-size: 16px; 
-            transition: all 0.2s ease; 
-            background-color: var(--background-card); 
-            color: var(--text-primary);
-            font-family: inherit;
-        }
-        .login-form-container input:focus { 
-            border-color: var(--primary-blue); 
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); 
-            outline: none; 
-        }
-        .login-form-container button[type="submit"] { 
-            width: 100%; 
-            padding: 16px; 
-            background: linear-gradient(135deg, var(--primary-blue), var(--accent-purple));
-            color: #fff; 
-            border: none; 
-            border-radius: 12px; 
-            font-size: 16px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-        .login-form-container button[type="submit"]:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-        }
-        
-        #login-error { 
-            color: #fff; 
-            background-color: var(--error-color); 
-            padding: 14px; 
-            border-radius: 12px; 
-            margin-top: 20px; 
-            font-size: 14px; 
-            font-weight: 500; 
-            opacity: 0; 
-            transform: translateY(10px); 
-            transition: all 0.3s ease; 
-            pointer-events: none; 
-        }
-        #login-error.show { 
-            opacity: 1; 
-            transform: translateY(0); 
-            pointer-events: auto; 
-        }
-        
-        .theme-switch-wrapper { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 12px 8px; 
-        }
-        .theme-switch-label { 
-            font-weight: 500; 
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-        .theme-switch { 
-            display: inline-block; 
-            height: 28px; 
-            position: relative; 
-            width: 52px; 
-        }
-        .theme-switch input { display: none; }
-        .slider { 
-            background-color: #cbd5e1; 
-            bottom: 0; 
-            cursor: pointer; 
-            left: 0; 
-            position: absolute; 
-            right: 0; 
-            top: 0; 
-            transition: 0.3s; 
-        }
-        .slider:before { 
-            background-color: #fff; 
-            bottom: 4px; 
-            content: ""; 
-            height: 20px; 
-            left: 4px; 
-            position: absolute; 
-            transition: 0.3s; 
-            width: 20px; 
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        input:checked + .slider { 
-            background-color: var(--primary-blue); 
-        }
-        input:checked + .slider:before { 
-            transform: translateX(24px); 
-        }
-        .slider.round { border-radius: 34px; }
-        .slider.round:before { border-radius: 50%; }
-        
-        #language-switcher-app {
-            display: flex;
-            justify-content: space-around;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 12px;
-        }
-        #language-switcher-app button {
-            background: none;
-            border: none;
-            font-weight: 600;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 8px 16px;
-            margin: 0;
-            font-size: 14px;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-        #language-switcher-app button:hover {
-            background-color: var(--light-blue-bg);
-            color: var(--primary-blue);
-        }
-        #language-switcher-app button.active {
-            color: var(--primary-blue);
-            background-color: var(--light-blue-bg);
-        }
-        
-        .editor-main-controls { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 24px; 
-            flex-wrap: wrap; 
-            gap: 16px; 
-        }
-        .editor-tabs { 
-            display: flex; 
-            gap: 8px; 
-            background-color: var(--background-card); 
-            padding: 6px; 
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-        }
-        .editor-tabs button { 
-            padding: 10px 20px; 
-            border: none; 
-            background-color: transparent; 
-            font-size: 15px; 
-            font-weight: 600; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            color: var(--text-secondary);
-            transition: all 0.2s ease;
-        }
-        .editor-tabs button.active { 
-            background-color: var(--primary-blue); 
-            color: white;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-        }
-        .editor-panel { display: none; }
-        .editor-panel.active { display: block; }
-        
-        .editor-buttons { 
-            display: flex; 
-            gap: 12px; 
-        }
-        .editor-buttons button { 
-            padding: 12px 24px; 
-            font-size: 15px; 
-            font-weight: 600; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            border: none;
-            transition: all 0.2s ease;
-        }
-        #save-content-btn { 
-            background-color: var(--primary-blue); 
-            color: #fff;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-        }
-        #save-content-btn:hover {
-            background-color: var(--primary-blue-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-        }
-        #cancel-edit-btn { 
-            background-color: var(--background-card); 
+        #show-analytics-btn {
+            background-color: var(--background-card);
             color: var(--text-primary);
             border: 1px solid var(--border-color);
-        }
-        #cancel-edit-btn:hover {
-            background-color: var(--background-main);
-        }
-        
-        #edit-mode-btn {
-            background: linear-gradient(135deg, var(--primary-blue), var(--accent-purple));
-            color: white;
-            border: none;
             padding: 14px 28px;
             border-radius: 12px;
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            transition: all .3s ease;
         }
-        #edit-mode-btn:hover {
+        #show-analytics-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
         }
         
-        .editor-section, .editor-button-entry { 
-            border: 1px solid var(--border-color); 
-            border-radius: 16px; 
-            padding: 20px; 
-            background-color: var(--background-card); 
-            margin-bottom: 16px;
-            box-shadow: var(--shadow-sm);
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
-        .editor-section-header, .editor-button-header { 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            margin-bottom: 16px; 
+        .modal-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
         }
-        .editor-section-header input, .editor-button-header input { 
-            font-size: 18px; 
-            font-weight: 600; 
-            color: var(--primary-blue); 
-            border: none; 
-            background: transparent; 
-            width: 100%; 
-            border-bottom: 2px dashed var(--border-color); 
-            padding: 8px;
-            font-family: inherit;
+        .analytics-modal {
+            background-color: var(--background-card);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
         }
-        .editor-section-header input:focus, .editor-button-header input:focus { 
-            outline: none; 
-            border-bottom-style: solid;
-            border-bottom-color: var(--primary-blue);
+        .modal-overlay.visible .analytics-modal {
+            transform: scale(1);
         }
-        .editor-controls { 
-            margin-left: auto; 
-            display: flex; 
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
         }
-        .editor-controls button { 
-            background-color: transparent; 
-            border: none; 
-            cursor: pointer; 
-            padding: 8px;
+        .modal-header h3 {
+            margin: 0;
+            font-size: 20px;
+        }
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+        }
+        .analytics-tabs, .analytics-period-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .analytics-tabs button, .analytics-period-selector button {
+            padding: 8px 16px;
             border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
             transition: all 0.2s ease;
         }
-        .editor-controls button:hover {
-            background-color: rgba(239, 68, 68, 0.1);
-        }
-        .delete-btn { 
-            color: var(--error-color);
-            font-size: 18px;
-        }
-        
-        .template-variant { 
-            display: flex; 
-            align-items: flex-start; 
-            gap: 12px; 
-            margin-bottom: 12px; 
-        }
-        .template-variant textarea { 
-            width: 100%; 
-            min-height: 60px; 
-            resize: vertical; 
-            padding: 12px; 
-            border-radius: 12px; 
-            border: 2px solid var(--border-color); 
-            background-color: var(--background-main); 
-            font-size: 14px; 
-            color: var(--text-primary); 
-            font-family: inherit; 
-            line-height: 1.6;
-            transition: all 0.2s ease;
-        }
-        .template-variant textarea:focus {
-            outline: none;
+        .analytics-tabs button.active, .analytics-period-selector button.active {
+            background-color: var(--primary-blue);
+            color: #fff;
             border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
-        .delete-variant-btn { 
-            padding: 10px; 
-            background-color: rgba(239, 68, 68, 0.1); 
-            border: none; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            color: var(--error-color); 
-            line-height: 0; 
-            transition: all 0.2s ease;
-            font-size: 18px;
+        .analytics-panel {
+            display: none;
         }
-        .delete-variant-btn:hover {
-            background-color: rgba(239, 68, 68, 0.2);
+        .analytics-panel.active {
+            display: block;
         }
-        
-        .add-variant-btn, .add-btn { 
-            width: 100%; 
-            padding: 12px; 
-            background-color: rgba(16, 185, 129, 0.1); 
-            color: var(--success-color); 
-            border: 2px dashed var(--success-color); 
-            border-radius: 12px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: all 0.2s ease; 
-            margin-top: 12px;
+        .analytics-table {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 15px;
         }
-        .add-variant-btn:hover, .add-btn:hover {
-            background-color: rgba(16, 185, 129, 0.2);
-            border-style: solid;
+        .analytics-table th, .analytics-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .analytics-table th {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .analytics-table tr:last-child td {
+            border-bottom: none;
+        }
+        .analytics-table td:last-child {
+            text-align: right;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+        #analytics-loader {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
         }
         
-        @media (max-width: 768px) {
-            main {
-                flex-direction: column;
-                height: auto;
-            }
-            .sidebar {
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-                overflow-y: visible; 
-                height: auto;
-            }
-            .info {
-                padding: 24px;
-                overflow-y: visible;
-                height: auto;
-            }
-            header {
-                font-size: 24px;
-                padding: 20px;
-            }
-        }
+        #user-status-card{flex-grow:1;max-width:400px}
+        
+        .instructions{margin-top:20px}
+        .instructions h3{font-size:32px;font-weight:700;margin-bottom:16px;color:var(--text-primary);letter-spacing:-1px}
+        .instructions ul,.instructions ol{padding-left:24px;margin:12px 0;color:var(--text-secondary);line-height:1.8}
+        .instructions li{margin-bottom:8px}
+        
+        .toast-notification{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background-color:var(--success-color);color:#fff;padding:14px 24px;border-radius:12px;opacity:0;box-shadow:var(--shadow-lg);transition:all .3s ease;z-index:2000;font-size:15px;font-weight:500;pointer-events:none;white-space:nowrap}
+        .toast-notification.show{opacity:1;transform:translateX(-50%) translateY(0)}
+        
+        #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:2000;overflow:hidden}
+        .login-background{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#667eea 0%,#764ba2 25%,#f093fb 50%,#4facfe 75%,#00f2fe 100%);background-size:400% 400%;animation:gradientAnimation 15s ease infinite;z-index:1}
+        @keyframes gradientAnimation{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
+        
+        .login-form-container{background:rgba(255,255,255,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:48px 40px;border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:400px;max-width:90%;text-align:center;transition:all .4s ease;z-index:2;border:1px solid rgba(255,255,255,.3)}
+        .dark-mode .login-form-container{background:rgba(15,23,42,.95);border:1px solid rgba(255,255,255,.1)}
+        
+        .login-form-container h1{font-size:36px;font-weight:700;background:linear-gradient(135deg,var(--primary-blue),var(--accent-purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-top:0;margin-bottom:8px;letter-spacing:-1px}
+        .login-form-container p{margin-top:0;margin-bottom:32px;color:var(--text-secondary);font-size:15px}
+        
+        #language-switcher-login{margin-bottom:24px;display:flex;justify-content:center;gap:8px;padding:6px;background-color:rgba(0,0,0,.05);border-radius:12px}
+        .dark-mode #language-switcher-login{background-color:rgba(255,255,255,.05)}
+        #language-switcher-login button{padding:10px 20px;border:none;border-radius:8px;background-color:transparent;color:var(--text-secondary);cursor:pointer;font-weight:600;font-size:14px;transition:all .2s ease;flex:1}
+        #language-switcher-login button:hover{background-color:rgba(59,130,246,.1);color:var(--primary-blue)}
+        #language-switcher-login button.active{background-color:var(--primary-blue);color:#fff;box-shadow:0 2px 8px rgba(59,130,246,.3)}
+        
+        .login-form-container input{width:100%;padding:16px;margin-bottom:16px;border:2px solid var(--border-color);border-radius:12px;box-sizing:border-box;font-size:16px;transition:all .2s ease;background-color:var(--background-card);color:var(--text-primary);font-family:inherit}
+        .login-form-container input:focus{border-color:var(--primary-blue);box-shadow:0 0 0 4px rgba(59,130,246,.1);outline:none}
+        .login-form-container button[type=submit]{width:100%;padding:16px;background:linear-gradient(135deg,var(--primary-blue),var(--accent-purple));color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;transition:all .3s ease;box-shadow:0 4px 12px rgba(59,130,246,.3)}
+        .login-form-container button[type=submit]:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(59,130,246,.4)}
+        
+        #login-error{color:#fff;background-color:var(--error-color);padding:14px;border-radius:12px;margin-top:20px;font-size:14px;font-weight:500;opacity:0;transform:translateY(10px);transition:all .3s ease;pointer-events:none}
+        #login-error.show{opacity:1;transform:translateY(0);pointer-events:auto}
+        
+        .theme-switch-wrapper{display:flex;align-items:center;justify-content:space-between;padding:12px 8px}
+        .theme-switch-label{font-weight:500;color:var(--text-secondary);font-size:14px}
+        .theme-switch{display:inline-block;height:28px;position:relative;width:52px}
+        .theme-switch input{display:none}
+        .slider{background-color:#cbd5e1;bottom:0;cursor:pointer;left:0;position:absolute;right:0;top:0;transition:.3s}
+        .slider:before{background-color:#fff;bottom:4px;content:"";height:20px;left:4px;position:absolute;transition:.3s;width:20px;box-shadow:0 2px 4px rgba(0,0,0,.2)}
+        input:checked+.slider{background-color:var(--primary-blue)}
+        input:checked+.slider:before{transform:translateX(24px)}
+        .slider.round{border-radius:34px}
+        .slider.round:before{border-radius:50%}
+        
+        #language-switcher-app{display:flex;justify-content:space-around;padding:12px 0;border-bottom:1px solid var(--border-color);margin-bottom:12px}
+        #language-switcher-app button{background:none;border:none;font-weight:600;color:var(--text-secondary);cursor:pointer;padding:8px 16px;margin:0;font-size:14px;border-radius:8px;transition:all .2s ease}
+        #language-switcher-app button:hover{background-color:var(--light-blue-bg);color:var(--primary-blue)}
+        #language-switcher-app button.active{color:var(--primary-blue);background-color:var(--light-blue-bg)}
+        
+        .editor-main-controls{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:16px}
+        .editor-tabs{display:flex;gap:8px;background-color:var(--background-card);padding:6px;border-radius:12px;border:1px solid var(--border-color)}
+        .editor-tabs button{padding:10px 20px;border:none;background-color:transparent;font-size:15px;font-weight:600;border-radius:8px;cursor:pointer;color:var(--text-secondary);transition:all .2s ease}
+        .editor-tabs button.active{background-color:var(--primary-blue);color:#fff;box-shadow:0 2px 8px rgba(59,130,246,.3)}
+        .editor-panel{display:none}
+        .editor-panel.active{display:block}
+        
+        .editor-buttons{display:flex;gap:12px}
+        .editor-buttons button{padding:12px 24px;font-size:15px;font-weight:600;border-radius:12px;cursor:pointer;border:none;transition:all .2s ease}
+        #save-content-btn{background-color:var(--primary-blue);color:#fff;box-shadow:0 2px 8px rgba(59,130,246,.3)}
+        #save-content-btn:hover{background-color:var(--primary-blue-hover);transform:translateY(-2px);box-shadow:0 4px 12px rgba(59,130,246,.4)}
+        #cancel-edit-btn{background-color:var(--background-card);color:var(--text-primary);border:1px solid var(--border-color)}
+        #cancel-edit-btn:hover{background-color:var(--background-main)}
+        
+        #edit-mode-btn{background:linear-gradient(135deg,var(--primary-blue),var(--accent-purple));color:#fff;border:none;padding:14px 28px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;transition:all .3s ease;box-shadow:0 4px 12px rgba(59,130,246,.3)}
+        #edit-mode-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(59,130,246,.4)}
+        
+        .editor-section,.editor-button-entry{border:1px solid var(--border-color);border-radius:16px;padding:20px;background-color:var(--background-card);margin-bottom:16px;box-shadow:var(--shadow-sm)}
+        .editor-section-header,.editor-button-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+        .editor-section-header input,.editor-button-header input{font-size:18px;font-weight:600;color:var(--primary-blue);border:none;background:transparent;width:100%;border-bottom:2px dashed var(--border-color);padding:8px;font-family:inherit}
+        .editor-section-header input:focus,.editor-button-header input:focus{outline:none;border-bottom-style:solid;border-bottom-color:var(--primary-blue)}
+        .editor-controls{margin-left:auto;display:flex}
+        .editor-controls button{background-color:transparent;border:none;cursor:pointer;padding:8px;border-radius:8px;transition:all .2s ease}
+        .editor-controls button:hover{background-color:rgba(239,68,68,.1)}
+        .delete-btn{color:var(--error-color);font-size:18px}
+        
+        .template-variant{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+        .template-variant textarea{width:100%;min-height:60px;resize:vertical;padding:12px;border-radius:12px;border:2px solid var(--border-color);background-color:var(--background-main);font-size:14px;color:var(--text-primary);font-family:inherit;line-height:1.6;transition:all .2s ease}
+        .template-variant textarea:focus{outline:none;border-color:var(--primary-blue);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+        .delete-variant-btn{padding:10px;background-color:rgba(239,68,68,.1);border:none;border-radius:10px;cursor:pointer;color:var(--error-color);line-height:0;transition:all .2s ease;font-size:18px}
+        .delete-variant-btn:hover{background-color:rgba(239,68,68,.2)}
+        
+        .add-variant-btn,.add-btn{width:100%;padding:12px;background-color:rgba(16,185,129,.1);color:var(--success-color);border:2px dashed var(--success-color);border-radius:12px;font-weight:600;cursor:pointer;transition:all .2s ease;margin-top:12px;font-size:15px}
+        .add-variant-btn:hover,.add-btn:hover{background-color:rgba(16,185,129,.2);border-style:solid}
+        
+        @media (max-width:768px){main{flex-direction:column;height:auto}.sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border-color);overflow-y:visible;height:auto}.info{padding:24px;overflow-y:visible;height:auto}header{font-size:24px;padding:20px}}
     </style>
 </head>
 <body class="login-active">
@@ -854,18 +576,8 @@
             </div>
             <div class="info" id="infoBlock">
                 <div class="info-header-controls">
-                    <div id="user-status-card" style="
-                        background-color: var(--background-card);
-                        border: 1px solid var(--border-color);
-                        border-radius: 12px;
-                        padding: 16px;
-                        font-size: 14px;
-                        line-height: 1.6;
-                        box-shadow: var(--shadow-sm);
-                        flex-grow: 1;
-                        max-width: 400px;
-                    ">
-                        </div>
+                    <div id="user-status-card"></div>
+                    <button id="show-analytics-btn" style="display: none;">📊 Статистика</button>
                     <button id="edit-mode-btn" style="display: none;">Редактировать контент</button>
                 </div>
                 <div class="instructions" id="instructions"></div>
@@ -902,6 +614,36 @@
         </main>
     </div>
     
+    <div id="analytics-modal-overlay" class="modal-overlay">
+        <div class="analytics-modal">
+            <div class="modal-header">
+                <h3>Статистика использования</h3>
+                <button id="modal-close-btn" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="analytics-period-selector">
+                    <button data-period="day" class="active">За день</button>
+                    <button data-period="week">За неделю</button>
+                    <button data-period="month">За месяц</button>
+                    <button data-period="all">За все время</button>
+                </div>
+                <div class="analytics-tabs">
+                    <button data-tab="employees" class="active">Активность сотрудников</button>
+                    <button data-tab="templates">Популярность шаблонов</button>
+                </div>
+                <div id="analytics-content">
+                    <div id="panel-employees" class="analytics-panel active">
+                        <table class="analytics-table" id="employee-stats-table"></table>
+                    </div>
+                    <div id="panel-templates" class="analytics-panel">
+                        <table class="analytics-table" id="template-stats-table"></table>
+                    </div>
+                    <div id="analytics-loader" style="display: none;">Загрузка...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div id="toast" class="toast-notification"></div>
 
     <script>
@@ -911,7 +653,7 @@
         let appContent = {};
         let userName = null;
         let userFavorites = [];
-
+        
         function getLocalStorage(key, defaultValue) { try { const val = localStorage.getItem(key); return val ? JSON.parse(val) : defaultValue; } catch (e) { return defaultValue; } }
         function setLocalStorage(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.error(e); } }
         function showToast(message, isError = false) { const t = document.getElementById('toast'); t.textContent = message; t.style.backgroundColor = isError ? 'var(--error-color)' : 'var(--success-color)'; t.classList.add('show'); if (navigator.vibrate && !isError) navigator.vibrate(50); setTimeout(() => t.classList.remove('show'), 2000); }
@@ -1160,7 +902,7 @@
                 const found = section.buttons.find(b => b.id === buttonId);
                 if (found) targetButton = found;
             });
-            if (!targetButton || !targetButton.templates || targetButton.templates.length === 0) {
+            if (!targetButton || !targetButton.templates || !targetButton.templates.length === 0) {
                 showToast('Нет шаблонов для этой кнопки', true);
                 return;
             }
@@ -1298,144 +1040,139 @@
         
         function checkUserRoleAndSetupEditor() {
             const editBtn = document.getElementById('edit-mode-btn');
+            const analyticsBtn = document.getElementById('show-analytics-btn');
             if (userRole === 'manager') {
                 editBtn.style.display = 'inline-block';
+                analyticsBtn.style.display = 'inline-block';
                 editBtn.addEventListener('click', showContentEditor);
-                document.getElementById('save-content-btn').addEventListener('click', saveContent);
-                document.getElementById('cancel-edit-btn').addEventListener('click', hideContentEditor);
-                document.getElementById('tab-btn-layout').addEventListener('click', () => switchEditorTab('layout'));
-                document.getElementById('tab-btn-instructions').addEventListener('click', () => switchEditorTab('instructions'));
-                document.getElementById('add-section-btn').addEventListener('click', addSection);
-            } else {
-                editBtn.style.display = 'none';
+                setupAnalytics();
+            } else { 
+                editBtn.style.display = 'none'; 
+                analyticsBtn.style.display = 'none'; 
             }
+            document.getElementById('save-content-btn').addEventListener('click', saveContent);
+            document.getElementById('cancel-edit-btn').addEventListener('click', hideContentEditor);
+            document.getElementById('tab-btn-layout').addEventListener('click', () => switchEditorTab('layout'));
+            document.getElementById('tab-btn-instructions').addEventListener('click', () => switchEditorTab('instructions'));
+            document.getElementById('add-section-btn').addEventListener('click', addSection);
         }
 
-        function switchEditorTab(tabName) {
-            document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.editor-tabs button').forEach(b => b.classList.remove('active'));
-            document.getElementById(`panel-${tabName}`).classList.add('active');
-            document.getElementById(`tab-btn-${tabName}`).classList.add('active');
-        }
-        
-        function showContentEditor() {
-            document.getElementById('instructions').style.display = 'none';
-            document.getElementById('edit-mode-btn').style.display = 'none';
-            document.getElementById('content-editor').style.display = 'block';
-            buildLayoutEditor();
-            initInstructionsEditor();
-            switchEditorTab('layout');
-        }
+        function setupAnalytics() {
+            const modalOverlay = document.getElementById('analytics-modal-overlay');
+            const showBtn = document.getElementById('show-analytics-btn');
+            const closeBtn = document.getElementById('modal-close-btn');
+            const periodSelector = document.querySelector('.analytics-period-selector');
+            const tabSelector = document.querySelector('.analytics-tabs');
+            
+            let currentPeriod = 'day';
+            let currentTab = 'employees';
 
-        function hideContentEditor() {
-            document.getElementById('instructions').style.display = 'block';
-            document.getElementById('edit-mode-btn').style.display = 'inline-block';
-            document.getElementById('content-editor').style.display = 'none';
-            tinymce.remove();
-        }
-        
-        function buildLayoutEditor() {
-            const container = document.getElementById('panel-layout');
-            while (container.firstChild && container.firstChild.id !== 'add-section-btn') {
-                container.removeChild(container.firstChild);
+            showBtn.addEventListener('click', () => {
+                modalOverlay.classList.add('visible');
+                fetchAndRenderAnalytics();
+            });
+
+            closeBtn.addEventListener('click', () => {
+                modalOverlay.classList.remove('visible');
+            });
+
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    modalOverlay.classList.remove('visible');
+                }
+            });
+
+            periodSelector.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    periodSelector.querySelector('.active').classList.remove('active');
+                    e.target.classList.add('active');
+                    currentPeriod = e.target.dataset.period;
+                    fetchAndRenderAnalytics();
+                }
+            });
+
+            tabSelector.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    tabSelector.querySelector('.active').classList.remove('active');
+                    e.target.classList.add('active');
+                    currentTab = e.target.dataset.tab;
+                    document.querySelectorAll('.analytics-panel').forEach(p => p.classList.remove('active'));
+                    document.getElementById(`panel-${currentTab}`).classList.add('active');
+                }
+            });
+
+            async function fetchAndRenderAnalytics() {
+                const loader = document.getElementById('analytics-loader');
+                const content = document.getElementById('analytics-content');
+                const token = getLocalStorage('chaterlabAuthToken', '');
+                
+                loader.style.display = 'block';
+                content.style.display = 'none';
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/analytics?period=${currentPeriod}`, {
+                        headers: { 'Authorization': token }
+                    });
+                    if (!response.ok) throw new Error('Ошибка загрузки статистики');
+                    
+                    const stats = await response.json();
+                    renderEmployeeStats(stats.employeeStats);
+                    renderTemplateStats(stats.templateStats);
+
+                } catch (error) {
+                    showToast(error.message, true);
+                } finally {
+                    loader.style.display = 'none';
+                    content.style.display = 'block';
+                }
             }
-            appContent.layout?.forEach(section => {
-                const sectionNode = createSectionEditor(section);
-                container.insertBefore(sectionNode, document.getElementById('add-section-btn'));
-            });
-        }
+            
+            function renderEmployeeStats(data) {
+                const table = document.getElementById('employee-stats-table');
+                let html = '<thead><tr><th>Сотрудник</th><th>Копирований</th></tr></thead><tbody>';
+                if (data && data.length > 0) {
+                    data.forEach(item => {
+                        html += `<tr><td>${item.username}</td><td>${item.count}</td></tr>`;
+                    });
+                } else {
+                    html += '<tr><td colspan="2">Нет данных за этот период.</td></tr>';
+                }
+                html += '</tbody>';
+                table.innerHTML = html;
+            }
 
-        function createSectionEditor(section) {
-            const currentLang = getLocalStorage('chaterlabLang', 'ru');
-            const texts = editorTexts[currentLang] || editorTexts.ru;
-            const sectionDiv = document.createElement('div');
-            sectionDiv.className = 'editor-section';
-            sectionDiv.dataset.id = section.id;
-            sectionDiv.innerHTML = `<div class="editor-section-header"><input type="text" class="section-title-input" value="${section.title}" placeholder="${texts.sectionTitle}"><div class="editor-controls"><button class="delete-btn" title="${texts.deleteButtonTitle}">🗑</button></div></div><div class="buttons-container"></div><button class="add-btn add-button-btn">${texts.addButton}</button>`;
-            const buttonsContainer = sectionDiv.querySelector('.buttons-container');
-            section.buttons.forEach(button => { buttonsContainer.appendChild(createButtonEditor(button)); });
-            sectionDiv.querySelector('.delete-btn').onclick = () => { if (confirm(texts.deleteSectionConfirm)) sectionDiv.remove(); };
-            sectionDiv.querySelector('.add-button-btn').onclick = () => { const newButton = { id: generateId('btn_'), label: texts.buttonLabel, templates: ['Новый шаблон'] }; buttonsContainer.appendChild(createButtonEditor(newButton)); };
-            return sectionDiv;
-        }
-
-        function createButtonEditor(button) {
-            const currentLang = getLocalStorage('chaterlabLang', 'ru');
-            const texts = editorTexts[currentLang] || editorTexts.ru;
-            const buttonDiv = document.createElement('div');
-            buttonDiv.className = 'editor-button-entry';
-            buttonDiv.dataset.id = button.id;
-            buttonDiv.innerHTML = `<div class="editor-button-header"><input type="text" class="button-label-input" value="${button.label}" placeholder="${texts.buttonLabel}"><div class="editor-controls"><button class="delete-btn" title="${texts.deleteButtonEntryTitle}">🗑</button></div></div><div class="variants-container"></div><button class="add-variant-btn">${texts.addVariant}</button>`;
-            const variantsContainer = buttonDiv.querySelector('.variants-container');
-            button.templates.forEach(template => { variantsContainer.appendChild(createVariantInput(template)); });
-            buttonDiv.querySelector('.delete-btn').onclick = () => buttonDiv.remove();
-            buttonDiv.querySelector('.add-variant-btn').onclick = () => { const newVariant = createVariantInput(''); variantsContainer.appendChild(newVariant); newVariant.querySelector('textarea').focus(); };
-            return buttonDiv;
-        }
-
-        function createVariantInput(text) {
-            const currentLang = getLocalStorage('chaterlabLang', 'ru');
-            const texts = editorTexts[currentLang] || editorTexts.ru;
-            const variantDiv = document.createElement('div');
-            variantDiv.className = 'template-variant';
-            variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" title="${texts.deleteVariantTitle}">🗑</button>`;
-            variantDiv.querySelector('.delete-variant-btn').onclick = () => variantDiv.remove();
-            return variantDiv;
-        }
-
-        function addSection() {
-            const newSection = { id: generateId('sec_'), title: 'Новый раздел', buttons: [] };
-            const sectionNode = createSectionEditor(newSection);
-            const container = document.getElementById('panel-layout');
-            container.insertBefore(sectionNode, document.getElementById('add-section-btn'));
-        }
-
-        function initInstructionsEditor() {
-            const skin = document.body.classList.contains('dark-mode') ? 'oxide-dark' : 'oxide';
-            const content_css = document.body.classList.contains('dark-mode') ? 'dark' : 'default';
-            tinymce.init({
-                selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk',
-                height: 500,
-                menubar: false,
-                plugins: 'lists link image code help wordcount autoresize table',
-                toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | table | help',
-                skin: skin,
-                content_css: content_css,
-                setup: editor => { editor.on('init', () => { const langKey = editor.id.split('-')[2]; editor.setContent(appContent.instructionsContent?.[langKey] || ''); }); }
-            });
-        }
-
-        async function saveContent() {
-            const newLayout = [];
-            document.querySelectorAll('#panel-layout .editor-section').forEach(sectionNode => {
-                const section = { id: sectionNode.dataset.id, title: sectionNode.querySelector('.section-title-input').value.trim(), buttons: [] };
-                if (!section.title) return;
-                sectionNode.querySelectorAll('.editor-button-entry').forEach(buttonNode => {
-                    const button = { id: buttonNode.dataset.id, label: buttonNode.querySelector('.button-label-input').value.trim(), templates: Array.from(buttonNode.querySelectorAll('.template-variant textarea')).map(t => t.value.trim()).filter(v => v) };
-                    if (button.label) section.buttons.push(button);
+            function renderTemplateStats(data) {
+                const table = document.getElementById('template-stats-table');
+                const allButtons = new Map();
+                appContent.layout?.forEach(section => {
+                    section.buttons.forEach(btn => allButtons.set(btn.id, btn.label));
                 });
-                newLayout.push(section);
-            });
-            const newInstructions = {};
-            for (const lang of ['ru', 'en', 'uk']) {
-                const editor = tinymce.get(`instructions-editor-${lang}`);
-                if (editor) newInstructions[lang] = editor.getContent();
-            }
-            const newContent = { layout: newLayout, instructionsContent: newInstructions };
-            const token = getLocalStorage('chaterlabAuthToken', '');
-            try {
-                const response = await fetch(`${API_BASE_URL}/update-content`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(newContent) });
-                if (!response.ok) throw new Error((await response.json()).message);
-                appContent = newContent;
-                renderSidebar();
-                updateInstructions(getLocalStorage('chaterlabLang', 'ru'));
-                showToast('Контент успешно сохранен!');
-                hideContentEditor();
-            } catch (error) {
-                showToast(error.message, true);
+                
+                let html = '<thead><tr><th>Шаблон</th><th>Копирований</th></tr></thead><tbody>';
+                if (data && data.length > 0) {
+                    data.forEach(item => {
+                        const buttonLabel = allButtons.get(item.button_id) || `(удаленный шаблон: ${item.button_id})`;
+                        html += `<tr><td>${buttonLabel}</td><td>${item.count}</td></tr>`;
+                    });
+                } else {
+                    html += '<tr><td colspan="2">Нет данных за этот период.</td></tr>';
+                }
+                html += '</tbody>';
+                table.innerHTML = html;
             }
         }
 
+        function switchEditorTab(tabName) { document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active')); document.querySelectorAll('.editor-tabs button').forEach(b => b.classList.remove('active')); document.getElementById(`panel-${tabName}`).classList.add('active'); document.getElementById(`tab-btn-${tabName}`).classList.add('active'); }
+        function showContentEditor() { document.getElementById('instructions').style.display = 'none'; document.getElementById('edit-mode-btn').style.display = 'none'; document.getElementById('content-editor').style.display = 'block'; buildLayoutEditor(); initInstructionsEditor(); switchEditorTab('layout'); }
+        function hideContentEditor() { document.getElementById('instructions').style.display = 'block'; document.getElementById('edit-mode-btn').style.display = 'inline-block'; document.getElementById('content-editor').style.display = 'none'; tinymce.remove(); }
+        function buildLayoutEditor() { const container = document.getElementById('panel-layout'); while (container.firstChild && container.firstChild.id !== 'add-section-btn') { container.removeChild(container.firstChild); } appContent.layout?.forEach(section => { const sectionNode = createSectionEditor(section); container.insertBefore(sectionNode, document.getElementById('add-section-btn')); }); }
+        function createSectionEditor(section) { const currentLang = getLocalStorage('chaterlabLang', 'ru'); const texts = editorTexts[currentLang] || editorTexts.ru; const sectionDiv = document.createElement('div'); sectionDiv.className = 'editor-section'; sectionDiv.dataset.id = section.id; sectionDiv.innerHTML = `<div class="editor-section-header"><input type="text" class="section-title-input" value="${section.title}" placeholder="${texts.sectionTitle}"><div class="editor-controls"><button class="delete-btn" title="${texts.deleteButtonTitle}">🗑</button></div></div><div class="buttons-container"></div><button class="add-btn add-button-btn">${texts.addButton}</button>`; const buttonsContainer = sectionDiv.querySelector('.buttons-container'); section.buttons.forEach(button => { buttonsContainer.appendChild(createButtonEditor(button)); }); sectionDiv.querySelector('.delete-btn').onclick = () => { if (confirm(texts.deleteSectionConfirm)) sectionDiv.remove(); }; sectionDiv.querySelector('.add-button-btn').onclick = () => { const newButton = { id: generateId('btn_'), label: texts.buttonLabel, templates: ['Новый шаблон'] }; buttonsContainer.appendChild(createButtonEditor(newButton)); }; return sectionDiv; }
+        function createButtonEditor(button) { const currentLang = getLocalStorage('chaterlabLang', 'ru'); const texts = editorTexts[currentLang] || editorTexts.ru; const buttonDiv = document.createElement('div'); buttonDiv.className = 'editor-button-entry'; buttonDiv.dataset.id = button.id; buttonDiv.innerHTML = `<div class="editor-button-header"><input type="text" class="button-label-input" value="${button.label}" placeholder="${texts.buttonLabel}"><div class="editor-controls"><button class="delete-btn" title="${texts.deleteButtonEntryTitle}">🗑</button></div></div><div class="variants-container"></div><button class="add-variant-btn">${texts.addVariant}</button>`; const variantsContainer = buttonDiv.querySelector('.variants-container'); button.templates.forEach(template => { variantsContainer.appendChild(createVariantInput(template)); }); buttonDiv.querySelector('.delete-btn').onclick = () => buttonDiv.remove(); buttonDiv.querySelector('.add-variant-btn').onclick = () => { const newVariant = createVariantInput(''); variantsContainer.appendChild(newVariant); newVariant.querySelector('textarea').focus(); }; return buttonDiv; }
+        function createVariantInput(text) { const currentLang = getLocalStorage('chaterlabLang', 'ru'); const texts = editorTexts[currentLang] || editorTexts.ru; const variantDiv = document.createElement('div'); variantDiv.className = 'template-variant'; variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" title="${texts.deleteVariantTitle}">🗑</button>`; variantDiv.querySelector('.delete-variant-btn').onclick = () => variantDiv.remove(); return variantDiv; }
+        function addSection() { const newSection = { id: generateId('sec_'), title: 'Новый раздел', buttons: [] }; const sectionNode = createSectionEditor(newSection); const container = document.getElementById('panel-layout'); container.insertBefore(sectionNode, document.getElementById('add-section-btn')); }
+        function initInstructionsEditor() { const skin = document.body.classList.contains('dark-mode') ? 'oxide-dark' : 'oxide'; const content_css = document.body.classList.contains('dark-mode') ? 'dark' : 'default'; tinymce.init({ selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk', height: 500, menubar: false, plugins: 'lists link image code help wordcount autoresize table', toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | table | help', skin: skin, content_css: content_css, setup: editor => { editor.on('init', () => { const langKey = editor.id.split('-')[2]; editor.setContent(appContent.instructionsContent?.[langKey] || ''); }); } }); }
+        async function saveContent() { const newLayout = []; document.querySelectorAll('#panel-layout .editor-section').forEach(sectionNode => { const section = { id: sectionNode.dataset.id, title: sectionNode.querySelector('.section-title-input').value.trim(), buttons: [] }; if (!section.title) return; sectionNode.querySelectorAll('.editor-button-entry').forEach(buttonNode => { const button = { id: buttonNode.dataset.id, label: buttonNode.querySelector('.button-label-input').value.trim(), templates: Array.from(buttonNode.querySelectorAll('.template-variant textarea')).map(t => t.value.trim()).filter(v => v) }; if (button.label) section.buttons.push(button); }); newLayout.push(section); }); const newInstructions = {}; for (const lang of ['ru', 'en', 'uk']) { const editor = tinymce.get(`instructions-editor-${lang}`); if (editor) newInstructions[lang] = editor.getContent(); } const newContent = { layout: newLayout, instructionsContent: newInstructions }; const token = getLocalStorage('chaterlabAuthToken', ''); try { const response = await fetch(`${API_BASE_URL}/update-content`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(newContent) }); if (!response.ok) throw new Error((await response.json()).message); appContent = newContent; renderSidebar(); updateInstructions(getLocalStorage('chaterlabLang', 'ru')); showToast('Контент успешно сохранен!'); hideContentEditor(); } catch (error) { showToast(error.message, true); } }
+        
         document.addEventListener('DOMContentLoaded', () => {
             const initialLang = getLocalStorage('chaterlabLang', 'ru');
             switchLanguage(initialLang);
