@@ -284,7 +284,6 @@
             overflow-y: auto; 
             background-color: var(--background-main);
         }
-        
         .info-header-controls {
             display: flex;
             justify-content: space-between;
@@ -292,7 +291,20 @@
             margin-bottom: 24px;
             gap: 20px;
         }
-        
+
+        /* ИСПРАВЛЕНИЕ: ВОЗВРАЩАЕМ СТИЛИ ДЛЯ КАРТОЧКИ ПОЛЬЗОВАТЕЛЯ */
+        #user-status-card {
+            background-color: var(--background-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            box-shadow: var(--shadow-sm);
+            flex-grow: 1;
+            max-width: 400px;
+        }
+
         #show-analytics-btn {
             background-color: var(--background-card);
             color: var(--text-primary);
@@ -421,8 +433,6 @@
             color: var(--text-secondary);
         }
         
-        #user-status-card{flex-grow:1;max-width:400px}
-        
         .instructions{margin-top:20px}
         .instructions h3{font-size:32px;font-weight:700;margin-bottom:16px;color:var(--text-primary);letter-spacing:-1px}
         .instructions ul,.instructions ol{padding-left:24px;margin:12px 0;color:var(--text-secondary);line-height:1.8}
@@ -510,68 +520,21 @@
     </style>
 </head>
 <body class="login-active">
-    <div id="animation-overlay">
-        <div class="animation-content">
-            <h1>ChaterLab</h1>
-        </div>
-    </div>
-    
-    <div id="login-screen">
-        <div class="login-background"></div>
-        <div class="login-form-container">
-            <h1 data-key="loginHeader">ChaterLab</h1>
-            <p data-key="loginSubheader">Панель быстрых ответов</p>
-            
-            <div id="language-switcher-login">
-                <button data-lang="ru" class="lang-btn">RU</button>
-                <button data-lang="en" class="lang-btn">EN</button>
-                <button data-lang="uk" class="lang-btn">UA</button>
-            </div>
-            
-            <form id="login-form">
-                <input type="text" id="login-username" required placeholder="Логин">
-                <input type="password" id="login-password" required placeholder="Пароль">
-                <button type="submit">Войти</button>
-                <div id="login-error"></div>
-            </form>
-        </div>
-    </div>
-
+    <div id="animation-overlay"><div class="animation-content"><h1>ChaterLab</h1></div></div>
+    <div id="login-screen"><div class="login-background"></div><div class="login-form-container"><h1 data-key="loginHeader">ChaterLab</h1><p data-key="loginSubheader">Панель быстрых ответов</p><div id="language-switcher-login"><button data-lang="ru" class="lang-btn">RU</button><button data-lang="en" class="lang-btn">EN</button><button data-lang="uk" class="lang-btn">UA</button></div><form id="login-form"><input type="text" id="login-username" required placeholder="Логин"><input type="password" id="login-password" required placeholder="Пароль"><button type="submit">Войти</button><div id="login-error"></div></form></div></div>
     <div id="app-container" data-logged="false">
         <header>ChaterLab Quick Replies</header>
         <main>
             <div class="sidebar">
                 <div class="sidebar-scrollable-content">
-                    <div class="search-wrapper">
-                        <input type="search" id="searchInput" placeholder="🔎 Поиск по шаблонам...">
-                    </div>
-                    <div id="favorites-section" class="sidebar-section" style="display: none;">
-                        <h2>⭐ Избранное</h2>
-                        <div id="favorites-content"></div>
-                    </div>
+                    <div class="search-wrapper"><input type="search" id="searchInput" placeholder="🔎 Поиск по шаблонам..."></div>
+                    <div id="favorites-section" class="sidebar-section" style="display: none;"><h2>⭐ Избранное</h2><div id="favorites-content"></div></div>
                     <div id="sidebar-content"></div>
                 </div>
                 <div class="sidebar-footer">
-                    <div id="language-switcher-app">
-                        <button data-lang="ru" class="lang-btn-app">RU</button>
-                        <button data-lang="en" class="lang-btn-app">EN</button>
-                        <button data-lang="uk" class="lang-btn-app">UA</button>
-                    </div>
-                    <div class="theme-switch-wrapper">
-                        <div class="theme-switch-label">Тёмная тема</div>
-                        <label class="theme-switch" for="theme-checkbox">
-                            <input type="checkbox" id="theme-checkbox" />
-                            <div class="slider round"></div>
-                        </label>
-                    </div>
-                    <button onclick="logout()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                            <path d="M16 17l5-5-5-5"/>
-                            <path d="M21 12H9"/>
-                        </svg>
-                        <span>Выйти</span>
-                    </button>
+                    <div id="language-switcher-app"><button data-lang="ru" class="lang-btn-app">RU</button><button data-lang="en" class="lang-btn-app">EN</button><button data-lang="uk" class="lang-btn-app">UA</button></div>
+                    <div class="theme-switch-wrapper"><div class="theme-switch-label">Тёмная тема</div><label class="theme-switch" for="theme-checkbox"><input type="checkbox" id="theme-checkbox" /><div class="slider round"></div></label></div>
+                    <button onclick="logout()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Выйти</span></button>
                 </div>
             </div>
             <div class="info" id="infoBlock">
@@ -596,18 +559,9 @@
                         <button class="add-btn" id="add-section-btn">+ Добавить новый раздел</button>
                     </div>
                     <div id="panel-instructions" class="editor-panel">
-                        <div class="editor-section">
-                            <h4>Инструкция (RU)</h4>
-                            <textarea id="instructions-editor-ru" style="width: 100%; min-height: 300px;"></textarea>
-                        </div>
-                        <div class="editor-section">
-                            <h4>Инструкция (EN)</h4>
-                            <textarea id="instructions-editor-en" style="width: 100%; min-height: 300px;"></textarea>
-                        </div>
-                        <div class="editor-section">
-                            <h4>Инструкция (UA)</h4>
-                            <textarea id="instructions-editor-uk" style="width: 100%; min-height: 300px;"></textarea>
-                        </div>
+                        <div class="editor-section"><h4>Инструкция (RU)</h4><textarea id="instructions-editor-ru" style="width: 100%; min-height: 300px;"></textarea></div>
+                        <div class="editor-section"><h4>Инструкция (EN)</h4><textarea id="instructions-editor-en" style="width: 100%; min-height: 300px;"></textarea></div>
+                        <div class="editor-section"><h4>Инструкция (UA)</h4><textarea id="instructions-editor-uk" style="width: 100%; min-height: 300px;"></textarea></div>
                     </div>
                 </div>
             </div>
