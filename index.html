@@ -24,37 +24,37 @@
             <div class="sidebar">
                 <div class="sidebar-scrollable-content">
                     <div class="search-wrapper"><input type="search" id="searchInput" placeholder="🔎 Поиск по шаблонам..."></div>
-                    <div id="favorites-section" class="sidebar-section" style="display: none;"><h2>⭐ Избранное</h2><div id="favorites-content"></div></div>
+                    <div id="favorites-section" class="sidebar-section" style="display: none;"><h2 data-key="favoritesTitle">⭐ Избранное</h2><div id="favorites-content"></div></div>
                     <div id="sidebar-content"></div>
                 </div>
                 <div class="sidebar-footer">
                     <div id="language-switcher-app"><button data-lang="ru" class="lang-btn-app">RU</button><button data-lang="en" class="lang-btn-app">EN</button><button data-lang="uk" class="lang-btn-app">UA</button></div>
-                    <div class="theme-switch-wrapper"><div class="theme-switch-label">Тёмная тема</div><label class="theme-switch" for="theme-checkbox"><input type="checkbox" id="theme-checkbox" /><div class="slider round"></div></label></div>
-                    <button onclick="logout()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Выйти</span></button>
+                    <div class="theme-switch-wrapper"><div class="theme-switch-label" data-key="darkMode">Тёмная тема</div><label class="theme-switch" for="theme-checkbox"><input type="checkbox" id="theme-checkbox" /><div class="slider round"></div></label></div>
+                    <button onclick="logout()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span data-key="logout">Выйти</span></button>
                 </div>
             </div>
             <div class="info" id="infoBlock">
                 <div class="info-header-controls">
                     <div id="user-status-card"></div>
                     <div class="manager-controls" style="display: none; gap: 10px;">
-                         <button id="show-instructions-btn" class="active">📖 Инструкция</button>
-                        <button id="show-analytics-btn">📊 Аналитика</button>
-                        <button id="edit-mode-btn">⚙️ Редактор</button>
+                         <button id="show-instructions-btn" data-key="navInstructions" class="active">📖 Инструкция</button>
+                        <button id="show-analytics-btn" data-key="navAnalytics">📊 Аналитика</button>
+                        <button id="edit-mode-btn" data-key="navEditor">⚙️ Редактор</button>
                     </div>
                 </div>
                 <div id="main-content-wrapper">
                     <div class="instructions" id="instructions"></div>
                     <div id="content-editor" style="display: none;">
-                        <div class="editor-main-controls"><div class="editor-tabs"><button id="tab-btn-layout" class="active">Конструктор кнопок</button><button id="tab-btn-instructions">Инструкция</button></div><div class="editor-buttons"><button id="save-content-btn">Сохранить всё</button><button id="cancel-edit-btn">Отмена</button></div></div>
-                        <div id="panel-layout" class="editor-panel active"><button class="add-btn" id="add-section-btn">+ Добавить новый раздел</button></div>
-                        <div id="panel-instructions" class="editor-panel"><div class="editor-section"><h4>Инструкция (RU)</h4><textarea id="instructions-editor-ru" style="width:100%;min-height:300px"></textarea></div><div class="editor-section"><h4>Инструкция (EN)</h4><textarea id="instructions-editor-en" style="width:100%;min-height:300px"></textarea></div><div class="editor-section"><h4>Инструкция (UA)</h4><textarea id="instructions-editor-uk" style="width:100%;min-height:300px"></textarea></div></div>
+                        <div class="editor-main-controls"><div class="editor-tabs"><button id="tab-btn-layout" class="active" data-key="tabLayout">Конструктор кнопок</button><button id="tab-btn-instructions" data-key="tabInstructions">Инструкция</button></div><div class="editor-buttons"><button id="save-content-btn" data-key="saveAll">Сохранить всё</button><button id="cancel-edit-btn" data-key="cancel">Отмена</button></div></div>
+                        <div id="panel-layout" class="editor-panel active"><button class="add-btn" id="add-section-btn" data-key="addSection">+ Добавить новый раздел</button></div>
+                        <div id="panel-instructions" class="editor-panel"><div class="editor-section"><h4 data-key="instructionTitleRu">Инструкция (RU)</h4><textarea id="instructions-editor-ru" style="width:100%;min-height:300px"></textarea></div><div class="editor-section"><h4 data-key="instructionTitleEn">Инструкция (EN)</h4><textarea id="instructions-editor-en" style="width:100%;min-height:300px"></textarea></div><div class="editor-section"><h4 data-key="instructionTitleUk">Инструкция (UA)</h4><textarea id="instructions-editor-uk" style="width:100%;min-height:300px"></textarea></div></div>
                     </div>
                 </div>
                 <div id="analytics-panel">
                     <div class="analytics-container">
                         <div class="analytics-sidebar">
                             <div class="analytics-sidebar-header">
-                                <div class="analytics-period-selector"><button data-period="day" class="active">День</button><button data-period="week">Неделя</button><button data-period="month">Месяц</button></div>
+                                <div class="analytics-period-selector"><button data-period="day" class="active" data-key="periodDay">День</button><button data-period="week" data-key="periodWeek">Неделя</button><button data-period="month" data-key="periodMonth">Месяц</button></div>
                             </div>
                             <ul id="employee-list" class="employee-list"></ul>
                         </div>
@@ -74,46 +74,219 @@
         let userName = null;
         let userFavorites = [];
         
+        // --- ОБЪЕКТЫ С ПЕРЕВОДАМИ ---
+        const uiTexts = {
+            ru: {
+                // For login screen
+                loginHeader: 'ChaterLab', 
+                loginSubheader: 'Панель быстрых ответов', 
+                loginUsername: 'Логин', 
+                loginPassword: 'Пароль', 
+                loginBtn: 'Войти',
+                // For sidebar
+                favoritesTitle: '⭐ Избранное',
+                darkMode: 'Тёмная тема',
+                logout: 'Выйти',
+                // Manager navigation
+                navInstructions: '📖 Инструкция',
+                navAnalytics: '📊 Аналитика',
+                navEditor: '⚙️ Редактор',
+                // Editor
+                tabLayout: 'Конструктор кнопок',
+                tabInstructions: 'Инструкция',
+                saveAll: 'Сохранить всё',
+                cancel: 'Отмена',
+                addSection: '+ Добавить новый раздел',
+                addButton: '+ Добавить кнопку в раздел',
+                addVariant: '+ Добавить вариант',
+                sectionTitle: 'Название раздела',
+                buttonLabel: 'Название кнопки',
+                deleteSectionConfirm: 'Удалить этот раздел со всеми кнопками?',
+                deleteButtonTitle: 'Удалить раздел',
+                deleteButtonEntryTitle: 'Удалить кнопку',
+                deleteVariantTitle: 'Удалить вариант',
+                instructionTitleRu: 'Инструкция (RU)',
+                instructionTitleEn: 'Инструкция (EN)',
+                instructionTitleUk: 'Инструкция (UA)',
+                // Analytics Panel
+                analyticsTitle: 'Аналитика',
+                periodDay: 'День',
+                periodWeek: 'Неделя',
+                periodMonth: 'Месяц',
+                overallStats: 'Общая статистика',
+                employeeListTitle: 'Общая статистика',
+                overallSummaryHeader: 'Общая статистика',
+                overallSummarySubheader: 'Сводный отчет по активности всей команды.',
+                kpiTotalClicks: 'Всего действий',
+                kpiMostActive: 'Самый активный',
+                kpiTopTemplate: 'Топ шаблон',
+                kpiPeakTime: 'Пик активности (UTC)',
+                top5Employees: 'Топ-5 Сотрудников',
+                top5Templates: 'Топ-5 Шаблонов',
+                tableEmployee: 'Сотрудник',
+                tableActions: 'Действий',
+                tableTemplate: 'Шаблон',
+                tableUses: 'Использований',
+                userDetailHeader: 'Статистика:',
+                userDetailSubheader: 'Детальный отчет по активности выбранного сотрудника.',
+                kpiLastActivity: 'Последняя активность',
+                kpiFavTemplate: 'Любимый шаблон',
+                activityFeedTitle: 'Лента активности (последние 100 действий)',
+                tableTime: 'Время',
+                tableSection: 'Раздел',
+                noData: 'Нет данных за этот период.',
+                loading: 'Загрузка...'
+            },
+            en: {
+                loginHeader: 'ChaterLab', 
+                loginSubheader: 'Quick Replies Panel', 
+                loginUsername: 'Username', 
+                loginPassword: 'Password', 
+                loginBtn: 'Login',
+                favoritesTitle: '⭐ Favorites',
+                darkMode: 'Dark Mode',
+                logout: 'Logout',
+                navInstructions: '📖 Instructions',
+                navAnalytics: '📊 Analytics',
+                navEditor: '⚙️ Editor',
+                tabLayout: 'Button Builder',
+                tabInstructions: 'Instructions',
+                saveAll: 'Save All',
+                cancel: 'Cancel',
+                addSection: '+ Add New Section',
+                addButton: '+ Add Button to Section',
+                addVariant: '+ Add Variant',
+                sectionTitle: 'Section Title',
+                buttonLabel: 'Button Label',
+                deleteSectionConfirm: 'Delete this section with all buttons?',
+                deleteButtonTitle: 'Delete Section',
+                deleteButtonEntryTitle: 'Delete Button',
+                deleteVariantTitle: 'Delete Variant',
+                instructionTitleRu: 'Instructions (RU)',
+                instructionTitleEn: 'Instructions (EN)',
+                instructionTitleUk: 'Instructions (UA)',
+                analyticsTitle: 'Analytics',
+                periodDay: 'Day',
+                periodWeek: 'Week',
+                periodMonth: 'Month',
+                overallStats: 'Overall Statistics',
+                employeeListTitle: 'Overall Statistics',
+                overallSummaryHeader: 'Overall Statistics',
+                overallSummarySubheader: 'Summary report on the activity of the entire team.',
+                kpiTotalClicks: 'Total Actions',
+                kpiMostActive: 'Most Active',
+                kpiTopTemplate: 'Top Template',
+                kpiPeakTime: 'Peak Activity (UTC)',
+                top5Employees: 'Top 5 Employees',
+                top5Templates: 'Top 5 Templates',
+                tableEmployee: 'Employee',
+                tableActions: 'Actions',
+                tableTemplate: 'Template',
+                tableUses: 'Uses',
+                userDetailHeader: 'Statistics for:',
+                userDetailSubheader: 'Detailed activity report for the selected employee.',
+                kpiLastActivity: 'Last Activity',
+                kpiFavTemplate: 'Favorite Template',
+                activityFeedTitle: 'Activity Feed (last 100 actions)',
+                tableTime: 'Time',
+                tableSection: 'Section',
+                noData: 'No data for this period.',
+                loading: 'Loading...'
+            },
+            uk: {
+                loginHeader: 'ChaterLab', 
+                loginSubheader: 'Панель швидких відповідей', 
+                loginUsername: 'Логін', 
+                loginPassword: 'Пароль', 
+                loginBtn: 'Увійти',
+                favoritesTitle: '⭐ Обране',
+                darkMode: 'Темна тема',
+                logout: 'Вийти',
+                navInstructions: '📖 Інструкція',
+                navAnalytics: '📊 Аналітика',
+                navEditor: '⚙️ Редактор',
+                tabLayout: 'Конструктор кнопок',
+                tabInstructions: 'Інструкція',
+                saveAll: 'Зберегти все',
+                cancel: 'Скасувати',
+                addSection: '+ Додати новий розділ',
+                addButton: '+ Додати кнопку до розділу',
+                addVariant: '+ Додати варіант',
+                sectionTitle: 'Назва розділу',
+                buttonLabel: 'Назва кнопки',
+                deleteSectionConfirm: 'Видалити цей розділ з усіма кнопками?',
+                deleteButtonTitle: 'Видалити розділ',
+                deleteButtonEntryTitle: 'Видалити кнопку',
+                deleteVariantTitle: 'Видалити варіант',
+                instructionTitleRu: 'Інструкція (RU)',
+                instructionTitleEn: 'Інструкція (EN)',
+                instructionTitleUk: 'Інструкція (UA)',
+                analyticsTitle: 'Аналітика',
+                periodDay: 'День',
+                periodWeek: 'Тиждень',
+                periodMonth: 'Місяць',
+                overallStats: 'Загальна статистика',
+                employeeListTitle: 'Загальна статистика',
+                overallSummaryHeader: 'Загальна статистика',
+                overallSummarySubheader: 'Зведений звіт про активність всієї команди.',
+                kpiTotalClicks: 'Всього дій',
+                kpiMostActive: 'Найактивніший',
+                kpiTopTemplate: 'Топ шаблон',
+                kpiPeakTime: 'Пік активності (UTC)',
+                top5Employees: 'Топ-5 Співробітників',
+                top5Templates: 'Топ-5 Шаблонів',
+                tableEmployee: 'Співробітник',
+                tableActions: 'Дій',
+                tableTemplate: 'Шаблон',
+                tableUses: 'Використань',
+                userDetailHeader: 'Статистика:',
+                userDetailSubheader: 'Детальний звіт про активність обраного співробітника.',
+                kpiLastActivity: 'Остання активність',
+                kpiFavTemplate: 'Улюблений шаблон',
+                activityFeedTitle: 'Стрічка активності (останні 100 дій)',
+                tableTime: 'Час',
+                tableSection: 'Розділ',
+                noData: 'Немає даних за цей період.',
+                loading: 'Завантаження...'
+            }
+        };
+
         function getLocalStorage(key, defaultValue) { try { const val = localStorage.getItem(key); return val ? JSON.parse(val) : defaultValue; } catch (e) { return defaultValue; } }
         function setLocalStorage(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.error(e); } }
         function showToast(message, isError = false) { const t = document.getElementById('toast'); t.textContent = message; t.style.backgroundColor = isError ? 'var(--error-color)' : 'var(--success-color)'; t.classList.add('show'); if (navigator.vibrate && !isError) navigator.vibrate(50); setTimeout(() => t.classList.remove('show'), 2000); }
         function generateId(prefix) { return prefix + Date.now() + Math.random().toString(16).slice(2); }
         const userStatusTexts = { ru: { user: 'Пользователь', status: 'Статус', admin: 'Менеджер', worker: 'Сотрудник', access: 'Разрешено редактирование', noAccess: 'Редактирование не доступно' }, en: { user: 'User', status: 'Status', admin: 'Manager', worker: 'Employee', access: 'Editing is allowed', noAccess: 'Editing is not available' }, uk: { user: 'Користувач', status: 'Статус', admin: 'Менеджер', worker: 'Співробітник', access: 'Дозволено редагування', noAccess: 'Редагування не доступно' } };
-        const editorTexts = { ru: { editContent: 'Редактор', saveAll: 'Сохранить всё', cancel: 'Отмена', tabLayout: 'Конструктор кнопок', tabInstructions: 'Инструкция', addSection: '+ Добавить новый раздел', addButton: '+ Добавить кнопку в раздел', addVariant: '+ Добавить вариант', sectionTitle: 'Название раздела', buttonLabel: 'Название кнопки', deleteSectionConfirm: 'Удалить этот раздел со всеми кнопками?', deleteButtonTitle: 'Удалить раздел', deleteButtonEntryTitle: 'Удалить кнопку', deleteVariantTitle: 'Удалить вариант', instructionTitleRu: 'Инструкция (RU)', instructionTitleEn: 'Инструкция (EN)', instructionTitleUk: 'Инструкция (UA)' }, en: { editContent: 'Editor', saveAll: 'Save All', cancel: 'Cancel', tabLayout: 'Button Builder', tabInstructions: 'Instructions', addSection: '+ Add New Section', addButton: '+ Add Button to Section', addVariant: '+ Add Variant', sectionTitle: 'Section Title', buttonLabel: 'Button Label', deleteSectionConfirm: 'Delete this section with all buttons?', deleteButtonTitle: 'Delete Section', deleteButtonEntryTitle: 'Delete Button', deleteVariantTitle: 'Delete Variant', instructionTitleRu: 'Instructions (RU)', instructionTitleEn: 'Instructions (EN)', instructionTitleUk: 'Instructions (UA)' }, uk: { editContent: 'Редактор', saveAll: 'Зберегти все', cancel: 'Скасувати', tabLayout: 'Конструктор кнопок', tabInstructions: 'Інструкція', addSection: '+ Додати новий розділ', addButton: '+ Додати кнопку до розділу', addVariant: '+ Додати варіант', sectionTitle: 'Назва розділу', buttonLabel: 'Назва кнопки', deleteSectionConfirm: 'Видалити цей розділ з усіма кнопками?', deleteButtonTitle: 'Видалити розділ', deleteButtonEntryTitle: 'Видалити кнопку', deleteVariantTitle: 'Видалити варіант', instructionTitleRu: 'Інструкція (RU)', instructionTitleEn: 'Інструкція (EN)', instructionTitleUk: 'Інструкція (UA)' } };
         
+        function applyTranslations() {
+            const lang = getLocalStorage('chaterlabLang', 'ru');
+            const texts = uiTexts[lang] || uiTexts.ru;
+            
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.dataset.key;
+                if (texts[key]) {
+                    // Check if the element is an input to set placeholder
+                    if (el.tagName === 'INPUT' && (el.placeholder || el.placeholder === '')) {
+                        el.placeholder = texts[key];
+                    } else {
+                        el.textContent = texts[key];
+                    }
+                }
+            });
+        }
+
         function switchLanguage(lang) {
             setLocalStorage('chaterlabLang', lang);
-            updateLoginInterface(lang);
+            applyTranslations(); // Главная функция для перевода всего интерфейса
+
+            const langButtonsLogin = document.querySelectorAll('#language-switcher-login button');
+            langButtonsLogin.forEach(btn => { btn.classList.toggle('active', btn.dataset.lang === lang); });
+
             if (document.getElementById('app-container').getAttribute('data-logged') === 'true') {
-                updateAppInterface(lang);
+                const langButtonsApp = document.querySelectorAll('#language-switcher-app button');
+                langButtonsApp.forEach(btn => { btn.classList.toggle('active', btn.dataset.lang === lang); });
                 updateInstructions(lang);
                 renderUserStatusCard();
-                updateEditorInterface();
             }
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                const placeholderTexts = { ru: '🔎 Поиск по шаблонам...', en: '🔎 Search templates...', uk: '🔎 Пошук по шаблонах...' };
-                searchInput.placeholder = placeholderTexts[lang] || placeholderTexts.ru;
-            }
-        }
-        
-        function updateLoginInterface(lang) {
-            const currentLang = getLocalStorage('chaterlabLang', 'ru');
-            const langButtons = document.querySelectorAll('#language-switcher-login button');
-            langButtons.forEach(btn => { btn.classList.toggle('active', btn.dataset.lang === currentLang); });
-            const texts = { ru: { loginHeader: 'ChaterLab', loginSubheader: 'Панель быстрых ответов', loginUsername: 'Логин', loginPassword: 'Пароль', loginBtn: 'Войти' }, en: { loginHeader: 'ChaterLab', loginSubheader: 'Quick Replies Panel', loginUsername: 'Username', loginPassword: 'Password', loginBtn: 'Login' }, uk: { loginHeader: 'ChaterLab', loginSubheader: 'Панель швидких відповідей', loginUsername: 'Логін', loginPassword: 'Пароль', loginBtn: 'Увійти' } };
-            const currentTexts = texts[currentLang];
-            document.querySelector('[data-key="loginHeader"]').textContent = currentTexts.loginHeader;
-            document.querySelector('[data-key="loginSubheader"]').textContent = currentTexts.loginSubheader;
-            document.getElementById('login-username').placeholder = currentTexts.loginUsername;
-            document.getElementById('login-password').placeholder = currentTexts.loginPassword;
-            document.querySelector('#login-form button[type="submit"]').textContent = currentTexts.loginBtn;
-        }
-        
-        function updateAppInterface(lang) {
-            const currentLang = getLocalStorage('chaterlabLang', 'ru');
-            const langButtons = document.querySelectorAll('#language-switcher-app button');
-            langButtons.forEach(btn => { btn.classList.toggle('active', btn.dataset.lang === currentLang); });
         }
         
         async function checkLogin() {
@@ -203,10 +376,9 @@
                 renderSidebar();
                 const currentLang = getLocalStorage('chaterlabLang', 'ru');
                 updateInstructions(currentLang);
-                updateAppInterface(currentLang);
-                updateEditorInterface();
                 checkUserRoleAndSetupManagerUI();
                 setupSearch();
+                applyTranslations(); // Применяем переводы после загрузки контента
             } catch (error) {
                 showToast(error.message, true);
             }
@@ -262,29 +434,7 @@
         }
         
         function updateEditorInterface() {
-            const currentLang = getLocalStorage('chaterlabLang', 'ru');
-            const texts = editorTexts[currentLang] || editorTexts.ru;
-            const editBtn = document.getElementById('edit-mode-btn');
-            if (editBtn) editBtn.textContent = '⚙️ ' + texts.editContent;
-            const saveBtn = document.getElementById('save-content-btn');
-            if (saveBtn) saveBtn.textContent = texts.saveAll;
-            const cancelBtn = document.getElementById('cancel-edit-btn');
-            if (cancelBtn) cancelBtn.textContent = texts.cancel;
-            const tabLayoutBtn = document.getElementById('tab-btn-layout');
-            if (tabLayoutBtn) tabLayoutBtn.textContent = texts.tabLayout;
-            const tabInstructionsBtn = document.getElementById('tab-btn-instructions');
-            if (tabInstructionsBtn) tabInstructionsBtn.textContent = texts.tabInstructions;
-            const addSectionBtn = document.getElementById('add-section-btn');
-            if (addSectionBtn) addSectionBtn.textContent = texts.addSection;
-            const panelInstructions = document.getElementById('panel-instructions');
-            if (panelInstructions) {
-                panelInstructions.querySelector('.editor-section:nth-child(1) h4').textContent = texts.instructionTitleRu;
-                panelInstructions.querySelector('.editor-section:nth-child(2) h4').textContent = texts.instructionTitleEn;
-                panelInstructions.querySelector('.editor-section:nth-child(3) h4').textContent = texts.instructionTitleUk;
-            }
-            if (document.getElementById('content-editor').style.display === 'block' && document.getElementById('panel-layout').classList.contains('active')) {
-                buildLayoutEditor();
-            }
+            // Эта функция больше не нужна, т.к. applyTranslations делает все
         }
         
         async function trackClick(buttonId) {
@@ -447,7 +597,7 @@
             const managerControls = document.querySelector('.manager-controls');
             if (userRole === 'manager') {
                 managerControls.style.display = 'flex';
-                const triggerAnalytics = setupAnalytics();
+                const triggerAnalyticsLoad = setupAnalytics();
                 
                 const instructionsBtn = document.getElementById('show-instructions-btn');
                 const analyticsBtn = document.getElementById('show-analytics-btn');
@@ -476,7 +626,7 @@
                     } else if (view === 'analytics') {
                         analyticsPanel.style.display = 'block';
                         analyticsBtn.classList.add('active');
-                        triggerAnalytics();
+                        triggerAnalyticsLoad();
                     }
                 }
 
@@ -524,7 +674,7 @@
             });
 
             async function fetchAndRenderAnalytics() {
-                mainPanel.innerHTML = '<div id="analytics-loader">Загрузка...</div>';
+                mainPanel.innerHTML = `<div id="analytics-loader" data-key="loading">Загрузка...</div>`;
                 employeeList.innerHTML = '';
                 const token = getLocalStorage('chaterlabAuthToken', '');
                 
@@ -545,16 +695,18 @@
 
             function renderAnalytics() {
                 if (!fullData) return;
-                renderEmployeeList(fullData.employee_summary);
+                const lang = getLocalStorage('chaterlabLang', 'ru');
+                const texts = uiTexts[lang] || uiTexts.ru;
+                renderEmployeeList(fullData.employee_summary, texts);
                 if (selectedUser) {
-                    renderUserDetailView(selectedUser, fullData);
+                    renderUserDetailView(selectedUser, fullData, texts);
                 } else {
-                    renderOverallSummaryView(fullData);
+                    renderOverallSummaryView(fullData, texts);
                 }
             }
             
-            function renderEmployeeList(summary) {
-                employeeList.innerHTML = `<li data-username="all" class="${!selectedUser ? 'active' : ''}"><span class="employee-name">Общая статистика</span></li>`;
+            function renderEmployeeList(summary, texts) {
+                employeeList.innerHTML = `<li data-username="all" class="${!selectedUser ? 'active' : ''}"><span class="employee-name">${texts.employeeListTitle}</span></li>`;
                 if(summary) {
                     summary.forEach(emp => {
                         const li = document.createElement('li');
@@ -575,44 +727,44 @@
                  return { label: `(удален: ${buttonId})`, section: 'N/A' };
             }
 
-            function formatRelativeTime(isoString) {
+            function formatRelativeTime(isoString, lang) {
                 if (!isoString) return 'никогда';
-                return DateTime.fromISO(isoString).setLocale('ru').toRelative();
+                return DateTime.fromISO(isoString).setLocale(lang).toRelative();
             }
 
-            function renderOverallSummaryView(data) {
+            function renderOverallSummaryView(data, texts) {
                 const topEmployee = data.employee_summary?.[0]?.username || '—';
                 const topTemplateId = data.template_summary?.[0]?.button_id;
                 const topTemplateLabel = topTemplateId ? getButtonData(topTemplateId).label : '—';
                 const peakHour = data.peak_hour;
                 const peakTimeText = (peakHour !== null && peakHour !== undefined) ? `${String(peakHour).padStart(2, '0')}:00 - ${String(peakHour + 1).padStart(2, '0')}:00` : '—';
 
-                let topTemplatesHtml = data.template_summary?.slice(0, 5).map(t => `<tr><td>${getButtonData(t.button_id).label}</td><td class="count-cell">${t.count}</td></tr>`).join('') || '<tr><td colspan="2">Нет данных</td></tr>';
-                let topEmployeesHtml = data.employee_summary?.slice(0, 5).map(e => `<tr><td>${e.username}</td><td class="count-cell">${e.count}</td></tr>`).join('') || '<tr><td colspan="2">Нет данных</td></tr>';
+                let topTemplatesHtml = data.template_summary?.slice(0, 5).map(t => `<tr><td>${getButtonData(t.button_id).label}</td><td class="count-cell">${t.count}</td></tr>`).join('') || `<tr><td colspan="2">${texts.noData}</td></tr>`;
+                let topEmployeesHtml = data.employee_summary?.slice(0, 5).map(e => `<tr><td>${e.username}</td><td class="count-cell">${e.count}</td></tr>`).join('') || `<tr><td colspan="2">${texts.noData}</td></tr>`;
 
                 mainPanel.innerHTML = `
                     <div class="analytics-main-header">
-                        <h2>Общая статистика</h2>
-                        <p>Сводный отчет по активности всей команды.</p>
+                        <h2>${texts.overallSummaryHeader}</h2>
+                        <p>${texts.overallSummarySubheader}</p>
                     </div>
                     <div class="kpi-grid">
-                        <div class="kpi-card"><p class="kpi-card-title">Всего действий</p><h3 class="kpi-card-value">${data.detailed_log.length}</h3></div>
-                        <div class="kpi-card"><p class="kpi-card-title">Самый активный</p><h3 class="kpi-card-value">${topEmployee}</h3></div>
-                        <div class="kpi-card"><p class="kpi-card-title">Топ шаблон</p><h3 class="kpi-card-value">${topTemplateLabel}</h3></div>
-                        <div class="kpi-card"><p class="kpi-card-title">Пик активности (UTC)</p><h3 class="kpi-card-value">${peakTimeText}</h3></div>
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${data.detailed_log.length}</h3></div>
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiMostActive}</p><h3 class="kpi-card-value">${topEmployee}</h3></div>
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTopTemplate}</p><h3 class="kpi-card-value">${topTemplateLabel}</h3></div>
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiPeakTime}</p><h3 class="kpi-card-value">${peakTimeText}</h3></div>
                     </div>
                     <div class="analytics-section">
-                        <h4>Топ-5 Сотрудников</h4>
-                        <table class="analytics-table"><thead><tr><th>Сотрудник</th><th style="text-align:right;">Действий</th></tr></thead><tbody>${topEmployeesHtml}</tbody></table>
+                        <h4>${texts.top5Employees}</h4>
+                        <table class="analytics-table"><thead><tr><th>${texts.tableEmployee}</th><th style="text-align:right;">${texts.tableActions}</th></tr></thead><tbody>${topEmployeesHtml}</tbody></table>
                     </div>
                     <div class="analytics-section">
-                        <h4>Топ-5 Шаблонов</h4>
-                        <table class="analytics-table"><thead><tr><th>Шаблон</th><th style="text-align:right;">Использований</th></tr></thead><tbody>${topTemplatesHtml}</tbody></table>
+                        <h4>${texts.top5Templates}</h4>
+                        <table class="analytics-table"><thead><tr><th>${texts.tableTemplate}</th><th style="text-align:right;">${texts.tableUses}</th></tr></thead><tbody>${topTemplatesHtml}</tbody></table>
                     </div>
                 `;
             }
 
-            function renderUserDetailView(username, data) {
+            function renderUserDetailView(username, data, texts) {
                 const userData = data.employee_summary.find(e => e.username === username);
                 const userLog = data.detailed_log.filter(log => log.username === username);
                 
@@ -635,20 +787,20 @@
 
                 mainPanel.innerHTML = `
                     <div class="analytics-main-header">
-                        <h2>Статистика: ${username}</h2>
-                        <p>Детальный отчет по активности выбранного сотрудника.</p>
+                        <h2>${texts.userDetailHeader} ${username}</h2>
+                        <p>${texts.userDetailSubheader}</p>
                     </div>
                     <div class="kpi-grid">
-                        <div class="kpi-card"><p class="kpi-card-title">Всего действий</p><h3 class="kpi-card-value">${userData?.count || 0}</h3></div>
-                        <div class="kpi-card"><p class="kpi-card-title">Последняя активность</p><h3 class="kpi-card-value">${formatRelativeTime(userData?.last_activity)}</h3></div>
-                        <div class="kpi-card"><p class="kpi-card-title">Любимый шаблон</p><h3 class="kpi-card-value">${topTemplateLabel}</h3></div>
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${userData?.count || 0}</h3></div>
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiLastActivity}</p><h3 class="kpi-card-value">${formatRelativeTime(userData?.last_activity, texts.lang_locale || 'ru')}</h3></div>
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiFavTemplate}</p><h3 class="kpi-card-value">${topTemplateLabel}</h3></div>
                     </div>
                     <div class="analytics-section">
-                        <h4>Лента активности (последние 100 действий)</h4>
+                        <h4>${texts.activityFeedTitle}</h4>
                         <div style="max-height: 400px; overflow-y: auto;">
                             <table class="analytics-table">
-                                <thead><tr><th>Время</th><th>Шаблон</th><th>Раздел</th></tr></thead>
-                                <tbody>${logHtml || '<tr><td colspan="3" style="text-align:center;">Нет действий за этот период.</td></tr>'}</tbody>
+                                <thead><tr><th>${texts.tableTime}</th><th>${texts.tableTemplate}</th><th>${texts.tableSection}</th></tr></thead>
+                                <tbody>${logHtml || `<tr><td colspan="3" style="text-align:center;">${texts.noData}</td></tr>`}</tbody>
                             </table>
                         </div>
                     </div>
@@ -661,9 +813,9 @@
         function showContentEditor() { document.getElementById('main-content-wrapper').style.display = 'block'; document.getElementById('content-editor').style.display = 'block'; document.getElementById('instructions').style.display = 'none'; buildLayoutEditor(); initInstructionsEditor(); switchEditorTab('layout'); }
         function hideContentEditor() { document.getElementById('main-content-wrapper').style.display = 'block'; document.getElementById('content-editor').style.display = 'none'; document.getElementById('instructions').style.display = 'block'; tinymce.remove(); }
         function buildLayoutEditor() { const container = document.getElementById('panel-layout'); while (container.firstChild && container.firstChild.id !== 'add-section-btn') { container.removeChild(container.firstChild); } appContent.layout?.forEach(section => { const sectionNode = createSectionEditor(section); container.insertBefore(sectionNode, document.getElementById('add-section-btn')); }); }
-        function createSectionEditor(section) { const currentLang = getLocalStorage('chaterlabLang', 'ru'); const texts = editorTexts[currentLang] || editorTexts.ru; const sectionDiv = document.createElement('div'); sectionDiv.className = 'editor-section'; sectionDiv.dataset.id = section.id; sectionDiv.innerHTML = `<div class="editor-section-header"><input type="text" class="section-title-input" value="${section.title}" placeholder="${texts.sectionTitle}"><div class="editor-controls"><button class="delete-btn" title="${texts.deleteButtonTitle}">🗑</button></div></div><div class="buttons-container"></div><button class="add-btn add-button-btn">${texts.addButton}</button>`; const buttonsContainer = sectionDiv.querySelector('.buttons-container'); section.buttons.forEach(button => { buttonsContainer.appendChild(createButtonEditor(button)); }); sectionDiv.querySelector('.delete-btn').onclick = () => { if (confirm(texts.deleteSectionConfirm)) sectionDiv.remove(); }; sectionDiv.querySelector('.add-button-btn').onclick = () => { const newButton = { id: generateId('btn_'), label: texts.buttonLabel, templates: ['Новый шаблон'] }; buttonsContainer.appendChild(createButtonEditor(newButton)); }; return sectionDiv; }
-        function createButtonEditor(button) { const currentLang = getLocalStorage('chaterlabLang', 'ru'); const texts = editorTexts[currentLang] || editorTexts.ru; const buttonDiv = document.createElement('div'); buttonDiv.className = 'editor-button-entry'; buttonDiv.dataset.id = button.id; buttonDiv.innerHTML = `<div class="editor-button-header"><input type="text" class="button-label-input" value="${button.label}" placeholder="${texts.buttonLabel}"><div class="editor-controls"><button class="delete-btn" title="${texts.deleteButtonEntryTitle}">🗑</button></div></div><div class="variants-container"></div><button class="add-variant-btn">${texts.addVariant}</button>`; const variantsContainer = buttonDiv.querySelector('.variants-container'); button.templates.forEach(template => { variantsContainer.appendChild(createVariantInput(template)); }); buttonDiv.querySelector('.delete-btn').onclick = () => buttonDiv.remove(); buttonDiv.querySelector('.add-variant-btn').onclick = () => { const newVariant = createVariantInput(''); variantsContainer.appendChild(newVariant); newVariant.querySelector('textarea').focus(); }; return buttonDiv; }
-        function createVariantInput(text) { const currentLang = getLocalStorage('chaterlabLang', 'ru'); const texts = editorTexts[currentLang] || editorTexts.ru; const variantDiv = document.createElement('div'); variantDiv.className = 'template-variant'; variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" title="${texts.deleteVariantTitle}">🗑</button>`; variantDiv.querySelector('.delete-variant-btn').onclick = () => variantDiv.remove(); return variantDiv; }
+        function createSectionEditor(section) { const currentLang = getLocalStorage('chaterlabLang', 'ru'); const texts = uiTexts[currentLang] || uiTexts.ru; const sectionDiv = document.createElement('div'); sectionDiv.className = 'editor-section'; sectionDiv.dataset.id = section.id; sectionDiv.innerHTML = `<div class="editor-section-header"><input type="text" class="section-title-input" value="${section.title}" placeholder="${texts.sectionTitle}"><div class="editor-controls"><button class="delete-btn" title="${texts.deleteButtonTitle}">🗑</button></div></div><div class="buttons-container"></div><button class="add-btn add-button-btn">${texts.addButton}</button>`; const buttonsContainer = sectionDiv.querySelector('.buttons-container'); section.buttons.forEach(button => { buttonsContainer.appendChild(createButtonEditor(button)); }); sectionDiv.querySelector('.delete-btn').onclick = () => { if (confirm(texts.deleteSectionConfirm)) sectionDiv.remove(); }; sectionDiv.querySelector('.add-button-btn').onclick = () => { const newButton = { id: generateId('btn_'), label: texts.buttonLabel, templates: ['Новый шаблон'] }; buttonsContainer.appendChild(createButtonEditor(newButton)); }; return sectionDiv; }
+        function createButtonEditor(button) { const currentLang = getLocalStorage('chaterlabLang', 'ru'); const texts = uiTexts[currentLang] || uiTexts.ru; const buttonDiv = document.createElement('div'); buttonDiv.className = 'editor-button-entry'; buttonDiv.dataset.id = button.id; buttonDiv.innerHTML = `<div class="editor-button-header"><input type="text" class="button-label-input" value="${button.label}" placeholder="${texts.buttonLabel}"><div class="editor-controls"><button class="delete-btn" title="${texts.deleteButtonEntryTitle}">🗑</button></div></div><div class="variants-container"></div><button class="add-variant-btn">${texts.addVariant}</button>`; const variantsContainer = buttonDiv.querySelector('.variants-container'); button.templates.forEach(template => { variantsContainer.appendChild(createVariantInput(template)); }); buttonDiv.querySelector('.delete-btn').onclick = () => buttonDiv.remove(); buttonDiv.querySelector('.add-variant-btn').onclick = () => { const newVariant = createVariantInput(''); variantsContainer.appendChild(newVariant); newVariant.querySelector('textarea').focus(); }; return buttonDiv; }
+        function createVariantInput(text) { const currentLang = getLocalStorage('chaterlabLang', 'ru'); const texts = uiTexts[currentLang] || uiTexts.ru; const variantDiv = document.createElement('div'); variantDiv.className = 'template-variant'; variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" title="${texts.deleteVariantTitle}">🗑</button>`; variantDiv.querySelector('.delete-variant-btn').onclick = () => variantDiv.remove(); return variantDiv; }
         function addSection() { const newSection = { id: generateId('sec_'), title: 'Новый раздел', buttons: [] }; const sectionNode = createSectionEditor(newSection); const container = document.getElementById('panel-layout'); container.insertBefore(sectionNode, document.getElementById('add-section-btn')); }
         function initInstructionsEditor() { const skin = document.body.classList.contains('dark-mode') ? 'oxide-dark' : 'oxide'; const content_css = document.body.classList.contains('dark-mode') ? 'dark' : 'default'; tinymce.init({ selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk', height: 500, menubar: false, plugins: 'lists link image code help wordcount autoresize table', toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | table | help', skin: skin, content_css: content_css, setup: editor => { editor.on('init', () => { const langKey = editor.id.split('-')[2]; editor.setContent(appContent.instructionsContent?.[langKey] || ''); }); } }); }
         async function saveContent() { const newLayout = []; document.querySelectorAll('#panel-layout .editor-section').forEach(sectionNode => { const section = { id: sectionNode.dataset.id, title: sectionNode.querySelector('.section-title-input').value.trim(), buttons: [] }; if (!section.title) return; sectionNode.querySelectorAll('.editor-button-entry').forEach(buttonNode => { const button = { id: buttonNode.dataset.id, label: buttonNode.querySelector('.button-label-input').value.trim(), templates: Array.from(buttonNode.querySelectorAll('.template-variant textarea')).map(t => t.value.trim()).filter(v => v) }; if (button.label) section.buttons.push(button); }); newLayout.push(section); }); const newInstructions = {}; for (const lang of ['ru', 'en', 'uk']) { const editor = tinymce.get(`instructions-editor-${lang}`); if (editor) newInstructions[lang] = editor.getContent(); } const newContent = { layout: newLayout, instructionsContent: newInstructions }; const token = getLocalStorage('chaterlabAuthToken', ''); try { const response = await fetch(`${API_BASE_URL}/update-content`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(newContent) }); if (!response.ok) throw new Error((await response.json()).message); appContent = newContent; renderSidebar(); updateInstructions(getLocalStorage('chaterlabLang', 'ru')); showToast('Контент успешно сохранен!'); hideContentEditor(); } catch (error) { showToast(error.message, true); } }
