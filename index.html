@@ -50,6 +50,8 @@
             color: var(--text-primary); 
             transition: background-color 0.3s ease, color 0.3s ease;
             line-height: 1.6;
+            /* ИСПРАВЛЕНИЕ: Запрещаем прокрутку на уровне body */
+            overflow: hidden;
         }
         
         .login-active { overflow: hidden; height: 100vh; }
@@ -58,7 +60,8 @@
         #app-container { 
             display: flex;
             flex-direction: column; 
-            height: 100vh; /* <-- ИЗМЕНЕНИЕ: Задаем жесткую высоту в размер экрана */ 
+            /* ИСПРАВЛЕНИЕ: Высота строго по экрану */
+            height: 100vh; 
             opacity: 0; 
             transition: opacity 0.5s ease-in-out; 
         }
@@ -110,13 +113,15 @@
             background-color: var(--background-card); 
             transition: all 0.3s ease;
             box-shadow: var(--shadow-sm);
+            /* ИСПРАВЛЕНИЕ: Убираем сжатие хедера */
+            flex-shrink: 0;
         }
         
         /* MAIN LAYOUT */
         main { 
             display: flex; 
             flex: 1; 
-            flex-wrap: wrap; 
+            /* ИСПРАВЛЕНИЕ: Убираем overflow, чтобы дочерние элементы могли его использовать */
             overflow: hidden; 
         }
         
@@ -131,10 +136,19 @@
             display: flex; 
             flex-direction: column; 
             transition: all 0.3s ease;
-            overflow-y: auto; 
+            /* ИСПРАВЛЕНИЕ: Добавляем overflow, чтобы скроллилась только эта колонка */
+            overflow-y: hidden;
         }
-        .sidebar > div:first-child { 
+        
+        /* ИСПРАВЛЕНИЕ: Создаем отдельный контейнер для прокручиваемого контента сайдбара */
+        .sidebar-scrollable-content {
+            overflow-y: auto;
+            flex-grow: 1;
+            /* Небольшой отрицательный отступ, чтобы скроллбар был красивее */
+            margin-right: -12px;
+            padding-right: 12px;
         }
+
         .sidebar h2 { 
             font-size: 13px; 
             margin-bottom: 12px; 
@@ -147,7 +161,6 @@
         }
         .sidebar h2:first-of-type { margin-top: 0; }
         
-        /* --- НОВЫЕ СТИЛИ ДЛЯ ПОИСКА --- */
         .search-wrapper {
             padding-bottom: 16px;
             border-bottom: 1px solid var(--border-color);
@@ -169,14 +182,14 @@
             border-color: var(--primary-blue);
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
-        /* --- КОНЕЦ НОВЫХ СТИЛЕЙ --- */
 
         .sidebar-footer { 
-            margin-top: auto; /* Прижимает футер к низу */
-            flex-shrink: 0;
-            padding-top: 16px;
+            /* ИСПРАВЛЕНИЕ: margin-top: auto больше не нужен, т.к. футер вне зоны скролла */
+            flex-shrink: 0; 
+            padding-top: 16px; 
+            margin-top: 16px; /* Небольшой отступ сверху */
             border-top: 1px solid var(--border-color);
-            background-color: var(--background-card); /* <-- ДОБАВЛЕНО: Фон, чтобы контент не просвечивал при скролле */
+            background-color: var(--background-card);
         }
         .sidebar-section { 
             display: flex; 
@@ -223,6 +236,7 @@
         .info { 
             flex: 1; 
             padding: 40px; 
+            /* ИСПРАВЛЕНИЕ: Главная зона прокрутки для инструкций */
             overflow-y: auto; 
             background-color: var(--background-main);
         }
@@ -711,13 +725,22 @@
         
         /* RESPONSIVE */
         @media (max-width: 768px) {
+            main {
+                flex-direction: column;
+                height: auto;
+            }
             .sidebar {
                 width: 100%;
                 border-right: none;
                 border-bottom: 1px solid var(--border-color);
+                /* Убираем независимый скролл на мобильных */
+                overflow-y: visible; 
+                height: auto;
             }
             .info {
                 padding: 24px;
+                overflow-y: visible;
+                height: auto;
             }
             header {
                 font-size: 24px;
@@ -758,10 +781,10 @@
         <header>ChaterLab Quick Replies</header>
         <main>
             <div class="sidebar">
-                <div class="search-wrapper">
-                    <input type="search" id="searchInput" placeholder="🔎 Поиск по шаблонам...">
-                </div>
-                <div>
+                <div class="sidebar-scrollable-content">
+                    <div class="search-wrapper">
+                        <input type="search" id="searchInput" placeholder="🔎 Поиск по шаблонам...">
+                    </div>
                     <div id="sidebar-content"></div>
                 </div>
                 <div class="sidebar-footer">
@@ -778,7 +801,7 @@
                         </label>
                     </div>
                     <button onclick="logout()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                             <path d="M16 17l5-5-5-5"/>
                             <path d="M21 12H9"/>
@@ -841,6 +864,7 @@
 
     <script>
         "use strict";
+        // ... (весь остальной JavaScript код остается без изменений) ...
         const API_BASE_URL = 'https://backendchater.onrender.com';
         let userRole = null;
         let appContent = {};
@@ -964,7 +988,6 @@
             }
         };
         
-        // LANGUAGE SWITCHING
         function switchLanguage(lang) {
             setLocalStorage('chaterlabLang', lang);
             updateLoginInterface(lang);
@@ -974,7 +997,6 @@
                 renderUserStatusCard();
                 updateEditorInterface();
             }
-            // Обновление плейсхолдера для поиска
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
                 const placeholderTexts = {
@@ -1035,7 +1057,6 @@
             });
         }
         
-        // AUTHENTICATION
         async function checkLogin() {
             const authToken = getLocalStorage('chaterlabAuthToken', null);
             const savedRole = getLocalStorage('chaterlabUserRole', null);
@@ -1144,14 +1165,12 @@
                 updateAppInterface(currentLang);
                 updateEditorInterface();
                 checkUserRoleAndSetupEditor();
-                // Инициализируем поиск после загрузки контента
                 setupSearch();
             } catch (error) { 
                 showToast(error.message, true); 
             }
         }
 
-        // RENDERING
         function renderSidebar() {
             const container = document.getElementById('sidebar-content');
             container.innerHTML = '';
@@ -1292,7 +1311,6 @@
             });
         }
         
-        // ================== НАЧАЛО ЛОГИКИ ПОИСКА ==================
         function setupSearch() {
             const searchInput = document.getElementById('searchInput');
             if (!searchInput) return;
@@ -1309,7 +1327,6 @@
                     buttons.forEach(button => {
                         const buttonLabel = button.querySelector('span').textContent.toLowerCase();
                         
-                        // Поиск по названию кнопки ИЛИ по названию секции
                         if (buttonLabel.includes(searchTerm) || sectionTitle.includes(searchTerm)) {
                             button.style.display = 'flex';
                             sectionHasVisibleButton = true;
@@ -1318,7 +1335,6 @@
                         }
                     });
 
-                    // Скрываем заголовок секции, если в ней не осталось видимых кнопок
                     if (sectionHasVisibleButton) {
                         section.querySelector('h2').style.display = 'block';
                     } else {
@@ -1327,9 +1343,7 @@
                 });
             });
         }
-        // ================== КОНЕЦ ЛОГИКИ ПОИСКА ===================
-
-        // EDITOR
+        
         function checkUserRoleAndSetupEditor() {
             const editBtn = document.getElementById('edit-mode-btn');
             if (userRole === 'manager') {
@@ -1525,10 +1539,9 @@
             }
         }
 
-        // INITIALIZATION
         document.addEventListener('DOMContentLoaded', () => {
             const initialLang = getLocalStorage('chaterlabLang', 'ru');
-            switchLanguage(initialLang); // Обновляем плейсхолдер при первой загрузке
+            switchLanguage(initialLang);
             
             document.querySelectorAll('#language-switcher-login button').forEach(button => {
                 button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang));
