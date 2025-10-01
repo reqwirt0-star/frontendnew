@@ -131,12 +131,9 @@
             display: flex; 
             flex-direction: column; 
             transition: all 0.3s ease;
-            /* Вся панель должна иметь возможность прокрутки, если контента много */
             overflow-y: auto; 
         }
         .sidebar > div:first-child { 
-            /* Удалены flex-grow: 1 и overflow-y: auto, 
-               чтобы футер следовал сразу за контентом */
         }
         .sidebar h2 { 
             font-size: 13px; 
@@ -150,8 +147,32 @@
         }
         .sidebar h2:first-of-type { margin-top: 0; }
         
+        /* --- НОВЫЕ СТИЛИ ДЛЯ ПОИСКА --- */
+        .search-wrapper {
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+        #searchInput {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 15px;
+            background-color: var(--background-main);
+            color: var(--text-primary);
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        #searchInput:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+        /* --- КОНЕЦ НОВЫХ СТИЛЕЙ --- */
+
         .sidebar-footer { 
-            margin-top: 16px; /* Небольшой отступ от последних кнопок */
+            margin-top: auto; /* Прижимает футер к низу */
             flex-shrink: 0; 
             padding-top: 16px; 
             border-top: 1px solid var(--border-color);
@@ -204,20 +225,18 @@
             overflow-y: auto; 
             background-color: var(--background-main);
         }
-        /* ДОБАВЛЕННЫЙ КОНТЕЙНЕР ДЛЯ КАРТОЧКИ И КНОПКИ */
         .info-header-controls {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start; /* Выравнивание по верхнему краю */
+            align-items: flex-start;
             margin-bottom: 24px;
             gap: 20px;
         }
         #user-status-card {
             flex-grow: 1;
-            max-width: 400px; /* Ограничение ширины карточки */
+            max-width: 400px;
         }
-        /* Конец ДОБАВЛЕННОГО КОНТЕЙНЕРА */
-
+        
         .instructions { 
             margin-top: 20px; 
         }
@@ -329,7 +348,6 @@
             font-size: 15px;
         }
         
-        /* LANGUAGE SWITCHER LOGIN */
         #language-switcher-login {
             margin-bottom: 24px;
             display: flex;
@@ -739,6 +757,9 @@
         <header>ChaterLab Quick Replies</header>
         <main>
             <div class="sidebar">
+                <div class="search-wrapper">
+                    <input type="search" id="searchInput" placeholder="🔎 Поиск по шаблонам...">
+                </div>
                 <div>
                     <div id="sidebar-content"></div>
                 </div>
@@ -822,7 +843,7 @@
         const API_BASE_URL = 'https://backendchater.onrender.com';
         let userRole = null;
         let appContent = {};
-        let userName = null; // ДОБАВЛЕНО
+        let userName = null;
 
         // UTILITIES
         function getLocalStorage(key, defaultValue) { 
@@ -855,35 +876,33 @@
             return prefix + Date.now() + Math.random().toString(16).slice(2); 
         }
 
-        // ПЕРЕВОДЫ ДЛЯ КАРТОЧКИ СТАТУСА
         const userStatusTexts = {
             ru: {
                 user: 'Пользователь',
                 status: 'Статус',
-                admin: 'admin',
-                worker: 'worker',
+                admin: 'Менеджер',
+                worker: 'Сотрудник',
                 access: 'Разрешено редактирование',
                 noAccess: 'Редактирование не доступно'
             },
             en: {
                 user: 'User',
                 status: 'Status',
-                admin: 'admin',
-                worker: 'worker',
+                admin: 'Manager',
+                worker: 'Employee',
                 access: 'Editing is allowed',
                 noAccess: 'Editing is not available'
             },
             uk: {
                 user: 'Користувач',
                 status: 'Статус',
-                admin: 'admin',
-                worker: 'worker',
+                admin: 'Менеджер',
+                worker: 'Співробітник',
                 access: 'Дозволено редагування',
                 noAccess: 'Редагування не доступно'
             }
         };
 
-        // ПЕРЕВОДЫ ДЛЯ РЕДАКТОРА (ОБНОВЛЕННЫЙ)
         const editorTexts = {
             ru: {
                 editContent: 'Редактировать контент',
@@ -897,9 +916,9 @@
                 sectionTitle: 'Название раздела',
                 buttonLabel: 'Название кнопки',
                 deleteSectionConfirm: 'Удалить этот раздел со всеми кнопками?',
-                deleteButtonTitle: 'Удалить раздел', // Исправлено: заголовок должен быть "Удалить раздел"
-                deleteButtonEntryTitle: 'Удалить кнопку', // Добавлено: заголовок для кнопки удаления
-                deleteVariantTitle: 'Удалить вариант', // Исправлено: заголовок для кнопки удаления варианта
+                deleteButtonTitle: 'Удалить раздел',
+                deleteButtonEntryTitle: 'Удалить кнопку',
+                deleteVariantTitle: 'Удалить вариант',
                 instructionTitleRu: 'Инструкция (RU)',
                 instructionTitleEn: 'Инструкция (EN)',
                 instructionTitleUk: 'Инструкция (UA)'
@@ -952,7 +971,17 @@
                 updateAppInterface(lang);
                 updateInstructions(lang);
                 renderUserStatusCard();
-                updateEditorInterface(); // ДОБАВЛЕНО
+                updateEditorInterface();
+            }
+            // Обновление плейсхолдера для поиска
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                const placeholderTexts = {
+                    ru: '🔎 Поиск по шаблонам...',
+                    en: '🔎 Search templates...',
+                    uk: '🔎 Пошук по шаблонах...'
+                };
+                searchInput.placeholder = placeholderTexts[lang] || placeholderTexts.ru;
             }
         }
         
@@ -1009,11 +1038,11 @@
         async function checkLogin() {
             const authToken = getLocalStorage('chaterlabAuthToken', null);
             const savedRole = getLocalStorage('chaterlabUserRole', null);
-            const savedName = getLocalStorage('chaterlabUserName', null); // ДОБАВЛЕНО
+            const savedName = getLocalStorage('chaterlabUserName', null);
             
-            if (authToken && savedRole && savedName) { // ПРОВЕРКА ИМЕНИ
+            if (authToken && savedRole && savedName) {
                 userRole = savedRole;
-                userName = savedName; // СОХРАНЕНИЕ ИМЕНИ
+                userName = savedName;
                 document.getElementById('login-screen').style.display = 'none';
                 document.body.classList.remove('login-active');
                 const appContainer = document.getElementById('app-container');
@@ -1022,7 +1051,7 @@
                 appContainer.style.display = 'flex';
                 await fetchContent();
                 setupDarkMode();
-                renderUserStatusCard(); // ДОБАВЛЕНО
+                renderUserStatusCard();
                 return true;
             } else {
                 logout(false);
@@ -1051,10 +1080,10 @@
 
                 setLocalStorage('chaterlabAuthToken', data.token);
                 setLocalStorage('chaterlabUserRole', data.role);
-                setLocalStorage('chaterlabUserName', username); // ДОБАВЛЕНО
+                setLocalStorage('chaterlabUserName', username);
                 if (!getLocalStorage('chaterlabLang', null)) setLocalStorage('chaterlabLang', 'ru');
                 userRole = data.role;
-                userName = username; // ДОБАВЛЕНО
+                userName = username;
                 
                 document.body.classList.remove('login-active');
                 document.getElementById('login-screen').style.display = 'none';
@@ -1073,7 +1102,7 @@
                     appContainer.style.opacity = '1';
                     await fetchContent();
                     setupDarkMode();
-                    renderUserStatusCard(); // ДОБАВЛЕНО
+                    renderUserStatusCard();
                 }, 2500);
             } catch (error) {
                 errorDiv.textContent = error.message;
@@ -1084,9 +1113,9 @@
         function logout(doUIRefresh = true) {
             localStorage.removeItem('chaterlabAuthToken');
             localStorage.removeItem('chaterlabUserRole');
-            localStorage.removeItem('chaterlabUserName'); // УДАЛЕНО
+            localStorage.removeItem('chaterlabUserName');
             userRole = null;
-            userName = null; // СБРОС
+            userName = null;
             if (doUIRefresh) {
                 const appContainer = document.getElementById('app-container');
                 appContainer.style.opacity = '0';
@@ -1112,8 +1141,10 @@
                 const currentLang = getLocalStorage('chaterlabLang', 'ru');
                 updateInstructions(currentLang);
                 updateAppInterface(currentLang);
-                updateEditorInterface(); // ДОБАВЛЕНО
+                updateEditorInterface();
                 checkUserRoleAndSetupEditor();
+                // Инициализируем поиск после загрузки контента
+                setupSearch();
             } catch (error) { 
                 showToast(error.message, true); 
             }
@@ -1143,8 +1174,8 @@
             const card = document.getElementById('user-status-card');
             if (!card || !userName || !userRole) return;
             
-            const currentLang = getLocalStorage('chaterlabLang', 'ru'); // Получаем текущий язык
-            const texts = userStatusTexts[currentLang] || userStatusTexts.ru; // Выбираем переводы
+            const currentLang = getLocalStorage('chaterlabLang', 'ru');
+            const texts = userStatusTexts[currentLang] || userStatusTexts.ru;
 
             let statusText;
             let accessText;
@@ -1153,11 +1184,11 @@
             if (userRole === 'manager') {
                 statusText = texts.admin;
                 accessText = texts.access;
-                statusColor = 'var(--accent-purple)'; // Фиолетовый
+                statusColor = 'var(--accent-purple)';
             } else {
                 statusText = texts.worker;
                 accessText = texts.noAccess;
-                statusColor = 'var(--text-secondary)'; // Серый
+                statusColor = 'var(--text-secondary)';
             }
 
             card.innerHTML = `
@@ -1191,16 +1222,13 @@
             }
         }
         
-        // НОВАЯ ФУНКЦИЯ ДЛЯ ОБНОВЛЕНИЯ ИНТЕРФЕЙСА РЕДАКТОРА
         function updateEditorInterface() {
             const currentLang = getLocalStorage('chaterlabLang', 'ru');
             const texts = editorTexts[currentLang] || editorTexts.ru;
 
-            // Обновление главной кнопки (видна всегда для менеджера)
             const editBtn = document.getElementById('edit-mode-btn');
             if (editBtn) editBtn.textContent = texts.editContent;
             
-            // Обновление кнопок внутри редактора
             const saveBtn = document.getElementById('save-content-btn');
             if (saveBtn) saveBtn.textContent = texts.saveAll;
             const cancelBtn = document.getElementById('cancel-edit-btn');
@@ -1214,7 +1242,6 @@
             const addSectionBtn = document.getElementById('add-section-btn');
             if (addSectionBtn) addSectionBtn.textContent = texts.addSection;
 
-            // Обновление заголовков вкладок Инструкций
             const panelInstructions = document.getElementById('panel-instructions');
             if (panelInstructions) {
                 panelInstructions.querySelector('.editor-section:nth-child(1) h4').textContent = texts.instructionTitleRu;
@@ -1222,7 +1249,6 @@
                 panelInstructions.querySelector('.editor-section:nth-child(3) h4').textContent = texts.instructionTitleUk;
             }
             
-            // Если редактор кнопок открыт, нужно перерисовать его для обновления текста
             if (document.getElementById('content-editor').style.display === 'block' && document.getElementById('panel-layout').classList.contains('active')) {
                 buildLayoutEditor();
             }
@@ -1264,6 +1290,43 @@
                 applyTheme(theme);
             });
         }
+        
+        // ================== НАЧАЛО ЛОГИКИ ПОИСКА ==================
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            if (!searchInput) return;
+
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                const sections = document.querySelectorAll('#sidebar-content .sidebar-section');
+
+                sections.forEach(section => {
+                    const sectionTitle = section.querySelector('h2').textContent.toLowerCase();
+                    const buttons = section.querySelectorAll('button');
+                    let sectionHasVisibleButton = false;
+
+                    buttons.forEach(button => {
+                        const buttonLabel = button.querySelector('span').textContent.toLowerCase();
+                        
+                        // Поиск по названию кнопки ИЛИ по названию секции
+                        if (buttonLabel.includes(searchTerm) || sectionTitle.includes(searchTerm)) {
+                            button.style.display = 'flex';
+                            sectionHasVisibleButton = true;
+                        } else {
+                            button.style.display = 'none';
+                        }
+                    });
+
+                    // Скрываем заголовок секции, если в ней не осталось видимых кнопок
+                    if (sectionHasVisibleButton) {
+                        section.querySelector('h2').style.display = 'block';
+                    } else {
+                        section.querySelector('h2').style.display = 'none';
+                    }
+                });
+            });
+        }
+        // ================== КОНЕЦ ЛОГИКИ ПОИСКА ===================
 
         // EDITOR
         function checkUserRoleAndSetupEditor() {
@@ -1316,8 +1379,8 @@
         }
 
         function createSectionEditor(section) {
-            const currentLang = getLocalStorage('chaterlabLang', 'ru'); // Получаем текущий язык
-            const texts = editorTexts[currentLang] || editorTexts.ru; // Выбираем переводы
+            const currentLang = getLocalStorage('chaterlabLang', 'ru');
+            const texts = editorTexts[currentLang] || editorTexts.ru;
             
             const sectionDiv = document.createElement('div');
             sectionDiv.className = 'editor-section';
@@ -1337,11 +1400,9 @@
                 buttonsContainer.appendChild(createButtonEditor(button));
             });
             sectionDiv.querySelector('.delete-btn').onclick = () => { 
-                if (confirm(texts.deleteSectionConfirm)) sectionDiv.remove(); // ИСПОЛЬЗУЕМ ПЕРЕВОД
+                if (confirm(texts.deleteSectionConfirm)) sectionDiv.remove();
             };
             sectionDiv.querySelector('.add-button-btn').onclick = () => {
-                // ПРИМЕЧАНИЕ: Здесь я использую 'Новая кнопка' в качестве начального label, 
-                // но для соответствия перевода можно использовать texts.buttonLabel
                 const newButton = { id: generateId('btn_'), label: texts.buttonLabel, templates: ['Новый шаблон'] }; 
                 buttonsContainer.appendChild(createButtonEditor(newButton));
             };
@@ -1349,8 +1410,8 @@
         }
 
         function createButtonEditor(button) {
-            const currentLang = getLocalStorage('chaterlabLang', 'ru'); // Получаем текущий язык
-            const texts = editorTexts[currentLang] || editorTexts.ru; // Выбираем переводы
+            const currentLang = getLocalStorage('chaterlabLang', 'ru');
+            const texts = editorTexts[currentLang] || editorTexts.ru;
 
             const buttonDiv = document.createElement('div');
             buttonDiv.className = 'editor-button-entry';
@@ -1379,8 +1440,8 @@
         }
 
         function createVariantInput(text) {
-            const currentLang = getLocalStorage('chaterlabLang', 'ru'); // Получаем текущий язык
-            const texts = editorTexts[currentLang] || editorTexts.ru; // Выбираем переводы
+            const currentLang = getLocalStorage('chaterlabLang', 'ru');
+            const texts = editorTexts[currentLang] || editorTexts.ru;
             
             const variantDiv = document.createElement('div');
             variantDiv.className = 'template-variant';
@@ -1403,8 +1464,8 @@
                 selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk',
                 height: 500, 
                 menubar: false, 
-                plugins: 'lists link image code help wordcount autoresize table', // ДОБАВЛЕНО table
-                toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | table | help', // ДОБАВЛЕНО table
+                plugins: 'lists link image code help wordcount autoresize table',
+                toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | table | help',
                 skin: skin, 
                 content_css: content_css,
                 setup: editor => {
@@ -1466,7 +1527,7 @@
         // INITIALIZATION
         document.addEventListener('DOMContentLoaded', () => {
             const initialLang = getLocalStorage('chaterlabLang', 'ru');
-            updateLoginInterface(initialLang);
+            switchLanguage(initialLang); // Обновляем плейсхолдер при первой загрузке
             
             document.querySelectorAll('#language-switcher-login button').forEach(button => {
                 button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang));
