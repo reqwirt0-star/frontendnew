@@ -134,6 +134,29 @@
             /* Вся панель должна иметь возможность прокрутки, если контента много */
             overflow-y: auto; 
         }
+        .sidebar-search {
+            margin-bottom: 20px;
+            padding: 0 8px;
+            flex-shrink: 0;
+        }
+        .sidebar-search input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background-color: var(--background-main);
+            color: var(--text-primary);
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .sidebar-search input:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        .sidebar-content-wrapper { 
+            /* ДОБАВЛЕНО: обертка для прокручиваемого контента */
+        }
         .sidebar > div:first-child { 
             /* Удалены flex-grow: 1 и overflow-y: auto, 
                чтобы футер следовал сразу за контентом */
@@ -177,6 +200,7 @@
             cursor: pointer; 
             transition: all 0.2s ease;
             box-shadow: var(--shadow-sm);
+            justify-content: space-between; /* ДОБАВЛЕНО */
         }
         .sidebar button:hover { 
             border-color: var(--primary-blue); 
@@ -195,6 +219,19 @@
         }
         .sidebar button:hover svg {
             color: var(--primary-blue);
+        }
+        .favorite-btn-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: -4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+            fill: none;
+        }
+        .favorite-btn-icon.active {
+            fill: var(--error-color); /* Красная/Пурпурная звезда для избранного */
+            color: var(--error-color);
         }
         
         /* INFO PANEL */
@@ -739,7 +776,10 @@
         <header>ChaterLab Quick Replies</header>
         <main>
             <div class="sidebar">
-                <div>
+                <div class="sidebar-search">
+                    <input type="search" id="search-input" placeholder="Поиск по кнопкам...">
+                </div>
+                <div class="sidebar-content-wrapper">
                     <div id="sidebar-content"></div>
                 </div>
                 <div class="sidebar-footer">
@@ -823,12 +863,18 @@
         let userRole = null;
         let appContent = {};
         let userName = null; // ДОБАВЛЕНО
+        let favoriteButtons = getLocalStorage('chaterlabFavorites', []); // ДОБАВЛЕНО: Загрузка избранного
 
         // UTILITIES
         function getLocalStorage(key, defaultValue) { 
             try { 
                 const val = localStorage.getItem(key); 
-                return val ? JSON.parse(val) : defaultValue; 
+                // Специальная обработка для избранного и черновика (хранятся как JSON)
+                if (key === 'chaterlabFavorites' || key === 'chaterlabDraft') {
+                    return val ? JSON.parse(val) : defaultValue;
+                }
+                // Для остальных (строк)
+                return val !== null ? JSON.parse(val) : defaultValue; 
             } catch (e) { 
                 return defaultValue; 
             } 
@@ -836,7 +882,12 @@
         
         function setLocalStorage(key, value) { 
             try { 
-                localStorage.setItem(key, JSON.stringify(value)); 
+                // Сохраняем все как JSON, кроме 'chaterlabLang' и 'chaterlabDarkMode' (они строки)
+                if (key === 'chaterlabLang' || key === 'chaterlabDarkMode') {
+                    localStorage.setItem(key, value);
+                } else {
+                    localStorage.setItem(key, JSON.stringify(value)); 
+                }
             } catch (e) { 
                 console.error(e); 
             } 
@@ -897,12 +948,14 @@
                 sectionTitle: 'Название раздела',
                 buttonLabel: 'Название кнопки',
                 deleteSectionConfirm: 'Удалить этот раздел со всеми кнопками?',
-                deleteButtonTitle: 'Удалить раздел', // Исправлено: заголовок должен быть "Удалить раздел"
-                deleteButtonEntryTitle: 'Удалить кнопку', // Добавлено: заголовок для кнопки удаления
-                deleteVariantTitle: 'Удалить вариант', // Исправлено: заголовок для кнопки удаления варианта
+                deleteButtonTitle: 'Удалить раздел', 
+                deleteButtonEntryTitle: 'Удалить кнопку',
+                deleteVariantTitle: 'Удалить вариант',
                 instructionTitleRu: 'Инструкция (RU)',
                 instructionTitleEn: 'Инструкция (EN)',
-                instructionTitleUk: 'Инструкция (UA)'
+                instructionTitleUk: 'Инструкция (UA)',
+                searchPlaceholder: 'Поиск по кнопкам...', // ДОБАВЛЕНО
+                favoritesSection: '⭐ Избранное' // ДОБАВЛЕНО
             },
             en: {
                 editContent: 'Edit Content',
@@ -921,7 +974,9 @@
                 deleteVariantTitle: 'Delete Variant',
                 instructionTitleRu: 'Instructions (RU)',
                 instructionTitleEn: 'Instructions (EN)',
-                instructionTitleUk: 'Instructions (UA)'
+                instructionTitleUk: 'Instructions (UA)',
+                searchPlaceholder: 'Search buttons...', // ДОБАВЛЕНО
+                favoritesSection: '⭐ Favorites' // ДОБАВЛЕНО
             },
             uk: {
                 editContent: 'Редагувати контент',
@@ -940,10 +995,100 @@
                 deleteVariantTitle: 'Видалити варіант',
                 instructionTitleRu: 'Інструкція (RU)',
                 instructionTitleEn: 'Інструкція (EN)',
-                instructionTitleUk: 'Інструкція (UA)'
+                instructionTitleUk: 'Інструкція (UA)',
+                searchPlaceholder: 'Пошук кнопок...', // ДОБАВЛЕНО
+                favoritesSection: '⭐ Вибране' // ДОБАВЛЕНО
             }
         };
         
+        // UTILITY ДЛЯ ИЗБРАННОГО
+        function isFavorite(id) {
+            return favoriteButtons.includes(id);
+        }
+
+        // НОВАЯ ФУНКЦИЯ: Тоггл Избранного
+        function toggleFavorite(id) {
+            const index = favoriteButtons.indexOf(id);
+            if (index > -1) {
+                favoriteButtons.splice(index, 1);
+                showToast('Удалено из избранного');
+            } else {
+                favoriteButtons.push(id);
+                showToast('Добавлено в избранное!');
+            }
+            setLocalStorage('chaterlabFavorites', favoriteButtons);
+            renderSidebar(); // Перерисовка для обновления списка
+        }
+
+        // ЛОГИКА ЧЕРНОВИКОВ (DRAFT)
+        function saveDraft() {
+            if (userRole !== 'manager' || document.getElementById('content-editor').style.display !== 'block') return;
+
+            // 1. Сохранение Лэйаута
+            const currentLayout = [];
+            document.querySelectorAll('#panel-layout .editor-section').forEach(sectionNode => {
+                const section = {
+                    id: sectionNode.dataset.id,
+                    // ИСПОЛЬЗУЕМ ЗНАЧЕНИЕ ПОЛЯ ВВОДА ДЛЯ МГНОВЕННОГО ОБНОВЛЕНИЯ
+                    title: sectionNode.querySelector('.section-title-input').value.trim(), 
+                    buttons: []
+                };
+                sectionNode.querySelectorAll('.editor-button-entry').forEach(buttonNode => {
+                    const button = {
+                        id: buttonNode.dataset.id,
+                        label: buttonNode.querySelector('.button-label-input').value.trim(),
+                        templates: Array.from(buttonNode.querySelectorAll('.template-variant textarea')).map(t => t.value.trim())
+                    };
+                    section.buttons.push(button);
+                });
+                currentLayout.push(section);
+            });
+
+            // 2. Сохранение Инструкций (берем из TinyMCE или DOM)
+            const instructionsDraft = {};
+            for (const lang of ['ru', 'en', 'uk']) {
+                const editor = tinymce.get(`instructions-editor-${lang}`);
+                if (editor) {
+                    instructionsDraft[lang] = editor.getContent();
+                } else {
+                    instructionsDraft[lang] = document.getElementById(`instructions-editor-${lang}`)?.value || '';
+                }
+            }
+
+            const draft = {
+                layout: currentLayout,
+                instructionsContent: instructionsDraft,
+                timestamp: Date.now()
+            };
+            setLocalStorage('chaterlabDraft', draft);
+        }
+
+        function loadDraft() {
+            const draft = getLocalStorage('chaterlabDraft', null);
+            if (draft && userRole === 'manager') {
+                if (confirm(`Найдена несохраненная черновая версия от ${new Date(draft.timestamp).toLocaleString()}. Загрузить ее?`)) {
+                    // Обновляем appContent черновиком
+                    appContent.layout = draft.layout;
+                    
+                    // Объединяем инструкции: черновик инструкций перезаписывает только тот язык, который был открыт в редакторе
+                    appContent.instructionsContent = { 
+                        ...appContent.instructionsContent, 
+                        ...draft.instructionsContent 
+                    };
+                    
+                    renderSidebar();
+                    updateInstructions(getLocalStorage('chaterlabLang', 'ru'));
+                    showToast('Черновик успешно загружен.');
+                } else {
+                    clearDraft();
+                }
+            }
+        }
+        
+        function clearDraft() {
+            localStorage.removeItem('chaterlabDraft');
+        }
+
         // LANGUAGE SWITCHING
         function switchLanguage(lang) {
             setLocalStorage('chaterlabLang', lang);
@@ -1009,11 +1154,11 @@
         async function checkLogin() {
             const authToken = getLocalStorage('chaterlabAuthToken', null);
             const savedRole = getLocalStorage('chaterlabUserRole', null);
-            const savedName = getLocalStorage('chaterlabUserName', null); // ДОБАВЛЕНО
+            const savedName = getLocalStorage('chaterlabUserName', null);
             
-            if (authToken && savedRole && savedName) { // ПРОВЕРКА ИМЕНИ
+            if (authToken && savedRole && savedName) { 
                 userRole = savedRole;
-                userName = savedName; // СОХРАНЕНИЕ ИМЕНИ
+                userName = savedName; 
                 document.getElementById('login-screen').style.display = 'none';
                 document.body.classList.remove('login-active');
                 const appContainer = document.getElementById('app-container');
@@ -1022,7 +1167,7 @@
                 appContainer.style.display = 'flex';
                 await fetchContent();
                 setupDarkMode();
-                renderUserStatusCard(); // ДОБАВЛЕНО
+                renderUserStatusCard();
                 return true;
             } else {
                 logout(false);
@@ -1051,10 +1196,10 @@
 
                 setLocalStorage('chaterlabAuthToken', data.token);
                 setLocalStorage('chaterlabUserRole', data.role);
-                setLocalStorage('chaterlabUserName', username); // ДОБАВЛЕНО
+                setLocalStorage('chaterlabUserName', username);
                 if (!getLocalStorage('chaterlabLang', null)) setLocalStorage('chaterlabLang', 'ru');
                 userRole = data.role;
-                userName = username; // ДОБАВЛЕНО
+                userName = username;
                 
                 document.body.classList.remove('login-active');
                 document.getElementById('login-screen').style.display = 'none';
@@ -1073,7 +1218,7 @@
                     appContainer.style.opacity = '1';
                     await fetchContent();
                     setupDarkMode();
-                    renderUserStatusCard(); // ДОБАВЛЕНО
+                    renderUserStatusCard();
                 }, 2500);
             } catch (error) {
                 errorDiv.textContent = error.message;
@@ -1084,9 +1229,9 @@
         function logout(doUIRefresh = true) {
             localStorage.removeItem('chaterlabAuthToken');
             localStorage.removeItem('chaterlabUserRole');
-            localStorage.removeItem('chaterlabUserName'); // УДАЛЕНО
+            localStorage.removeItem('chaterlabUserName');
             userRole = null;
-            userName = null; // СБРОС
+            userName = null; 
             if (doUIRefresh) {
                 const appContainer = document.getElementById('app-container');
                 appContainer.style.opacity = '0';
@@ -1107,12 +1252,16 @@
                 const response = await fetch(`${API_BASE_URL}/content`);
                 if (!response.ok) throw new Error('Не удалось загрузить контент');
                 appContent = await response.json();
+                
+                // ДОБАВЛЕНО: Загрузка черновика после fetchContent, но до отрисовки
+                if (userRole === 'manager') loadDraft();
+
                 renderSidebar();
                 
                 const currentLang = getLocalStorage('chaterlabLang', 'ru');
                 updateInstructions(currentLang);
                 updateAppInterface(currentLang);
-                updateEditorInterface(); // ДОБАВЛЕНО
+                updateEditorInterface(); 
                 checkUserRoleAndSetupEditor();
             } catch (error) { 
                 showToast(error.message, true); 
@@ -1123,28 +1272,90 @@
         function renderSidebar() {
             const container = document.getElementById('sidebar-content');
             container.innerHTML = '';
+            const currentLang = getLocalStorage('chaterlabLang', 'ru');
+            const searchFilter = document.getElementById('search-input')?.value.toLowerCase() || '';
+            const texts = editorTexts[currentLang] || editorTexts.ru;
+
+            // --- 1. РАЗДЕЛ ИЗБРАННОГО ---
+            const favButtonsData = [];
+            
+            // Собираем данные для всех кнопок и применяем фильтр
             appContent.layout?.forEach(section => {
-                const sectionDiv = document.createElement('div');
-                sectionDiv.className = 'sidebar-section';
-                const title = document.createElement('h2');
-                title.textContent = section.title;
-                sectionDiv.appendChild(title);
                 section.buttons.forEach(buttonData => {
-                    const button = document.createElement('button');
-                    button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span>`;
-                    button.onclick = () => copyDynamicTemplate(buttonData.id);
-                    sectionDiv.appendChild(button);
+                    if (isFavorite(buttonData.id)) {
+                        favButtonsData.push({ ...buttonData, sectionTitle: section.title });
+                    }
                 });
-                container.appendChild(sectionDiv);
+            });
+
+            if (favButtonsData.length > 0) {
+                const favSectionDiv = document.createElement('div');
+                favSectionDiv.className = 'sidebar-section';
+                const favTitle = document.createElement('h2');
+                favTitle.textContent = texts.favoritesSection;
+                favSectionDiv.appendChild(favTitle);
+
+                favButtonsData
+                    .filter(buttonData => buttonData.label.toLowerCase().includes(searchFilter))
+                    .forEach(buttonData => {
+                        favSectionDiv.appendChild(createSidebarButton(buttonData));
+                    });
+                container.appendChild(favSectionDiv);
+            }
+            
+            // --- 2. ОСНОВНЫЕ РАЗДЕЛЫ ---
+            appContent.layout?.forEach(section => {
+                const sectionButtons = section.buttons.filter(buttonData => 
+                    buttonData.label.toLowerCase().includes(searchFilter)
+                );
+
+                if (sectionButtons.length > 0) {
+                    const sectionDiv = document.createElement('div');
+                    sectionDiv.className = 'sidebar-section';
+                    const title = document.createElement('h2');
+                    title.textContent = section.title;
+                    sectionDiv.appendChild(title);
+
+                    sectionButtons.forEach(buttonData => {
+                        sectionDiv.appendChild(createSidebarButton(buttonData));
+                    });
+                    container.appendChild(sectionDiv);
+                }
             });
         }
         
+        // НОВАЯ ФУНКЦИЯ: Создание кнопки в сайдбаре
+        function createSidebarButton(buttonData) {
+            const isFav = isFavorite(buttonData.id);
+            const button = document.createElement('button');
+            button.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/>
+                </svg>
+                <span>${buttonData.label}</span>
+                <svg class="favorite-btn-icon ${isFav ? 'active' : ''}" data-id="${buttonData.id}" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+            `;
+            // Копирование шаблона
+            button.querySelector('span').parentElement.onclick = () => copyDynamicTemplate(buttonData.id);
+            
+            // Тоггл Избранного
+            const favIcon = button.querySelector('.favorite-btn-icon');
+            favIcon.onclick = (e) => {
+                e.stopPropagation();
+                toggleFavorite(buttonData.id);
+            };
+
+            return button;
+        }
+
         function renderUserStatusCard() {
             const card = document.getElementById('user-status-card');
             if (!card || !userName || !userRole) return;
             
-            const currentLang = getLocalStorage('chaterlabLang', 'ru'); // Получаем текущий язык
-            const texts = userStatusTexts[currentLang] || userStatusTexts.ru; // Выбираем переводы
+            const currentLang = getLocalStorage('chaterlabLang', 'ru'); 
+            const texts = userStatusTexts[currentLang] || userStatusTexts.ru; 
 
             let statusText;
             let accessText;
@@ -1153,11 +1364,11 @@
             if (userRole === 'manager') {
                 statusText = texts.admin;
                 accessText = texts.access;
-                statusColor = 'var(--accent-purple)'; // Фиолетовый
+                statusColor = 'var(--accent-purple)'; 
             } else {
                 statusText = texts.worker;
                 accessText = texts.noAccess;
-                statusColor = 'var(--text-secondary)'; // Серый
+                statusColor = 'var(--text-secondary)'; 
             }
 
             card.innerHTML = `
@@ -1195,6 +1406,10 @@
         function updateEditorInterface() {
             const currentLang = getLocalStorage('chaterlabLang', 'ru');
             const texts = editorTexts[currentLang] || editorTexts.ru;
+
+            // Обновление placeholder для поиска
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) searchInput.placeholder = texts.searchPlaceholder;
 
             // Обновление главной кнопки (видна всегда для менеджера)
             const editBtn = document.getElementById('edit-mode-btn');
@@ -1282,10 +1497,18 @@
         }
 
         function switchEditorTab(tabName) {
+            // ДОБАВЛЕНО: Сохраняем черновик перед переключением вкладок
+            saveDraft();
+            
             document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.editor-tabs button').forEach(b => b.classList.remove('active'));
             document.getElementById(`panel-${tabName}`).classList.add('active');
             document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+            
+            // Если переключились на инструкции, нужно инициализировать TinyMCE
+            if (tabName === 'instructions' && !tinymce.get('instructions-editor-ru')) {
+                 initInstructionsEditor();
+            }
         }
         
         function showContentEditor() {
@@ -1295,12 +1518,24 @@
             buildLayoutEditor();
             initInstructionsEditor();
             switchEditorTab('layout');
+            
+            // ДОБАВЛЕНО: Привязка событий для сохранения черновика при вводе
+            document.getElementById('panel-layout').addEventListener('input', saveDraft);
+            document.getElementById('panel-instructions').addEventListener('input', saveDraft);
         }
 
         function hideContentEditor() {
+            // ДОБАВЛЕНО: Сохраняем черновик перед закрытием, чтобы не потерять изменения
+            saveDraft();
+            
             document.getElementById('instructions').style.display = 'block';
             document.getElementById('edit-mode-btn').style.display = 'inline-block';
             document.getElementById('content-editor').style.display = 'none';
+            
+            // Удаляем обработчики
+            document.getElementById('panel-layout').removeEventListener('input', saveDraft);
+            document.getElementById('panel-instructions').removeEventListener('input', saveDraft);
+
             tinymce.remove();
         }
         
@@ -1312,6 +1547,12 @@
             appContent.layout?.forEach(section => {
                 const sectionNode = createSectionEditor(section);
                 container.insertBefore(sectionNode, document.getElementById('add-section-btn'));
+            });
+            // ДОБАВЛЕНО: Добавление обработчика для немедленного обновления сайдбара
+            document.querySelectorAll('.section-title-input, .button-label-input').forEach(input => {
+                input.addEventListener('keyup', (e) => {
+                    renderSidebar(); // Перерисовка сайдбара для обновления метки
+                });
             });
         }
 
@@ -1340,8 +1581,6 @@
                 if (confirm(texts.deleteSectionConfirm)) sectionDiv.remove(); // ИСПОЛЬЗУЕМ ПЕРЕВОД
             };
             sectionDiv.querySelector('.add-button-btn').onclick = () => {
-                // ПРИМЕЧАНИЕ: Здесь я использую 'Новая кнопка' в качестве начального label, 
-                // но для соответствия перевода можно использовать texts.buttonLabel
                 const newButton = { id: generateId('btn_'), label: texts.buttonLabel, templates: ['Новый шаблон'] }; 
                 buttonsContainer.appendChild(createButtonEditor(newButton));
             };
@@ -1403,14 +1642,16 @@
                 selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk',
                 height: 500, 
                 menubar: false, 
-                plugins: 'lists link image code help wordcount autoresize table', // ДОБАВЛЕНО table
-                toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | table | help', // ДОБАВЛЕНО table
+                plugins: 'lists link image code help wordcount autoresize table',
+                toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | table | help',
                 skin: skin, 
                 content_css: content_css,
                 setup: editor => {
                     editor.on('init', () => {
                         const langKey = editor.id.split('-')[2];
                         editor.setContent(appContent.instructionsContent?.[langKey] || '');
+                        // ДОБАВЛЕНО: Сохранение черновика при изменении в TinyMCE
+                        editor.on('change', saveDraft); 
                     });
                 }
             });
@@ -1454,6 +1695,7 @@
                 if (!response.ok) throw new Error((await response.json()).message);
                 
                 appContent = newContent;
+                clearDraft(); // ДОБАВЛЕНО: Очищаем черновик после успешного сохранения
                 renderSidebar();
                 updateInstructions(getLocalStorage('chaterlabLang', 'ru'));
                 showToast('Контент успешно сохранен!');
@@ -1476,8 +1718,16 @@
                 button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang));
             });
             
+            // ДОБАВЛЕНО: Привязка поиска
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.addEventListener('keyup', renderSidebar);
+            }
+            
             checkLogin();
             document.getElementById('login-form').addEventListener('submit', handleLogin);
+            
+            // ДОБАВЛЕНО: Загрузка черновика после входа (вызов loadDraft перенесен в fetchContent)
         });
     </script>
 </body>
