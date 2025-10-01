@@ -17,7 +17,7 @@
 </head>
 <body class="login-active">
     <div id="animation-overlay"><div class="animation-content"><h1>ChaterLab</h1></div></div>
-    <div id="login-screen"><div class="login-background"></div><div class="login-form-container"><h1 data-key="loginHeader">ChaterLab</h1><p data-key="loginSubheader">Панель быстрых ответов</p><div id="language-switcher-login"><button data-lang="ru" class="lang-btn">RU</button><button data-lang="en" class="lang-btn">EN</button><button data-lang="uk" class="lang-btn">UA</button></div><form id="login-form"><input type="text" id="login-username" required placeholder="Логин"><input type="password" id="login-password" required placeholder="Пароль"><button type="submit">Войти</button><div id="login-error"></div></form></div></div>
+    <div id="login-screen"><div class="login-background"></div><div class="login-form-container"><h1 data-key="loginHeader">ChaterLab</h1><p data-key="loginSubheader">Панель быстрых ответов</p><div id="language-switcher-login"><button data-lang="ru" class="lang-btn">RU</button><button data-lang="en" class="lang-btn">EN</button><button data-lang="uk" class="lang-btn">UA</button></div><form id="login-form"><input type="text" id="login-username" required data-key="loginUsername" placeholder="Логин"><input type="password" id="login-password" required data-key="loginPassword" placeholder="Пароль"><button type="submit" data-key="loginBtn">Войти</button><div id="login-error"></div></form></div></div>
     <div id="app-container" data-logged="false">
         <header>ChaterLab Quick Replies</header>
         <main>
@@ -74,24 +74,20 @@
         let userName = null;
         let userFavorites = [];
         
-        // --- ОБЪЕКТЫ С ПЕРЕВОДАМИ ---
         const uiTexts = {
             ru: {
-                // For login screen
+                lang_locale: 'ru',
                 loginHeader: 'ChaterLab', 
                 loginSubheader: 'Панель быстрых ответов', 
                 loginUsername: 'Логин', 
                 loginPassword: 'Пароль', 
                 loginBtn: 'Войти',
-                // For sidebar
                 favoritesTitle: '⭐ Избранное',
                 darkMode: 'Тёмная тема',
                 logout: 'Выйти',
-                // Manager navigation
                 navInstructions: '📖 Инструкция',
                 navAnalytics: '📊 Аналитика',
                 navEditor: '⚙️ Редактор',
-                // Editor
                 tabLayout: 'Конструктор кнопок',
                 tabInstructions: 'Инструкция',
                 saveAll: 'Сохранить всё',
@@ -108,12 +104,10 @@
                 instructionTitleRu: 'Инструкция (RU)',
                 instructionTitleEn: 'Инструкция (EN)',
                 instructionTitleUk: 'Инструкция (UA)',
-                // Analytics Panel
                 analyticsTitle: 'Аналитика',
                 periodDay: 'День',
                 periodWeek: 'Неделя',
                 periodMonth: 'Месяц',
-                overallStats: 'Общая статистика',
                 employeeListTitle: 'Общая статистика',
                 overallSummaryHeader: 'Общая статистика',
                 overallSummarySubheader: 'Сводный отчет по активности всей команды.',
@@ -138,6 +132,7 @@
                 loading: 'Загрузка...'
             },
             en: {
+                lang_locale: 'en',
                 loginHeader: 'ChaterLab', 
                 loginSubheader: 'Quick Replies Panel', 
                 loginUsername: 'Username', 
@@ -169,7 +164,6 @@
                 periodDay: 'Day',
                 periodWeek: 'Week',
                 periodMonth: 'Month',
-                overallStats: 'Overall Statistics',
                 employeeListTitle: 'Overall Statistics',
                 overallSummaryHeader: 'Overall Statistics',
                 overallSummarySubheader: 'Summary report on the activity of the entire team.',
@@ -194,6 +188,7 @@
                 loading: 'Loading...'
             },
             uk: {
+                lang_locale: 'uk',
                 loginHeader: 'ChaterLab', 
                 loginSubheader: 'Панель швидких відповідей', 
                 loginUsername: 'Логін', 
@@ -225,7 +220,6 @@
                 periodDay: 'День',
                 periodWeek: 'Тиждень',
                 periodMonth: 'Місяць',
-                overallStats: 'Загальна статистика',
                 employeeListTitle: 'Загальна статистика',
                 overallSummaryHeader: 'Загальна статистика',
                 overallSummarySubheader: 'Зведений звіт про активність всієї команди.',
@@ -264,7 +258,6 @@
             document.querySelectorAll('[data-key]').forEach(el => {
                 const key = el.dataset.key;
                 if (texts[key]) {
-                    // Check if the element is an input to set placeholder
                     if (el.tagName === 'INPUT' && (el.placeholder || el.placeholder === '')) {
                         el.placeholder = texts[key];
                     } else {
@@ -276,7 +269,7 @@
 
         function switchLanguage(lang) {
             setLocalStorage('chaterlabLang', lang);
-            applyTranslations(); // Главная функция для перевода всего интерфейса
+            applyTranslations(); 
 
             const langButtonsLogin = document.querySelectorAll('#language-switcher-login button');
             langButtonsLogin.forEach(btn => { btn.classList.toggle('active', btn.dataset.lang === lang); });
@@ -286,6 +279,12 @@
                 langButtonsApp.forEach(btn => { btn.classList.toggle('active', btn.dataset.lang === lang); });
                 updateInstructions(lang);
                 renderUserStatusCard();
+                
+                // ИСПРАВЛЕНИЕ: Отправляем сигнал панели аналитики для перерисовки
+                const analyticsPanel = document.getElementById('analytics-panel');
+                if (analyticsPanel.style.display === 'block') {
+                    analyticsPanel.dispatchEvent(new Event('languageChange'));
+                }
             }
         }
         
@@ -378,7 +377,7 @@
                 updateInstructions(currentLang);
                 checkUserRoleAndSetupManagerUI();
                 setupSearch();
-                applyTranslations(); // Применяем переводы после загрузки контента
+                applyTranslations();
             } catch (error) {
                 showToast(error.message, true);
             }
@@ -433,9 +432,7 @@
             }
         }
         
-        function updateEditorInterface() {
-            // Эта функция больше не нужна, т.к. applyTranslations делает все
-        }
+        function updateEditorInterface() { /* DEPRECATED */ }
         
         async function trackClick(buttonId) {
             const token = getLocalStorage('chaterlabAuthToken', '');
@@ -649,12 +646,16 @@
             const mainPanel = document.getElementById('analytics-main');
             const employeeList = document.getElementById('employee-list');
             const periodSelector = document.querySelector('.analytics-period-selector');
+            const analyticsPanel = document.getElementById('analytics-panel');
             
             let currentPeriod = 'day';
             let selectedUser = null;
             let fullData = null;
             const DateTime = luxon.DateTime;
 
+            // ИСПРАВЛЕНИЕ: Слушаем событие смены языка
+            analyticsPanel.addEventListener('languageChange', renderAnalytics);
+            
             periodSelector.addEventListener('click', (e) => {
                 if (e.target.tagName === 'BUTTON' && !e.target.classList.contains('active')) {
                     periodSelector.querySelector('.active').classList.remove('active');
@@ -674,7 +675,9 @@
             });
 
             async function fetchAndRenderAnalytics() {
-                mainPanel.innerHTML = `<div id="analytics-loader" data-key="loading">Загрузка...</div>`;
+                const lang = getLocalStorage('chaterlabLang', 'ru');
+                const texts = uiTexts[lang] || uiTexts.ru;
+                mainPanel.innerHTML = `<div id="analytics-loader">${texts.loading}</div>`;
                 employeeList.innerHTML = '';
                 const token = getLocalStorage('chaterlabAuthToken', '');
                 
@@ -707,7 +710,7 @@
             
             function renderEmployeeList(summary, texts) {
                 employeeList.innerHTML = `<li data-username="all" class="${!selectedUser ? 'active' : ''}"><span class="employee-name">${texts.employeeListTitle}</span></li>`;
-                if(summary) {
+                if(summary && summary.length > 0) {
                     summary.forEach(emp => {
                         const li = document.createElement('li');
                         li.dataset.username = emp.username;
@@ -741,7 +744,12 @@
 
                 let topTemplatesHtml = data.template_summary?.slice(0, 5).map(t => `<tr><td>${getButtonData(t.button_id).label}</td><td class="count-cell">${t.count}</td></tr>`).join('') || `<tr><td colspan="2">${texts.noData}</td></tr>`;
                 let topEmployeesHtml = data.employee_summary?.slice(0, 5).map(e => `<tr><td>${e.username}</td><td class="count-cell">${e.count}</td></tr>`).join('') || `<tr><td colspan="2">${texts.noData}</td></tr>`;
-
+                
+                if (!data.detailed_log || data.detailed_log.length === 0) {
+                    mainPanel.innerHTML = `<div class="no-data-message">${texts.noData}</div>`;
+                    return;
+                }
+                
                 mainPanel.innerHTML = `
                     <div class="analytics-main-header">
                         <h2>${texts.overallSummaryHeader}</h2>
