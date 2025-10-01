@@ -23,7 +23,7 @@
         <main>
             <div class="sidebar">
                 <div class="sidebar-scrollable-content">
-                    <div class="search-wrapper"><input type="search" id="searchInput" placeholder="🔎 Поиск по шаблонам..."></div>
+                    <div class="search-wrapper"><input type="search" id="searchInput" data-key="searchPlaceholder"></div>
                     <div id="favorites-section" class="sidebar-section" style="display: none;"><h2 data-key="favoritesTitle">⭐ Избранное</h2><div id="favorites-content"></div></div>
                     <div id="sidebar-content"></div>
                 </div>
@@ -82,6 +82,7 @@
                 loginUsername: 'Логин', 
                 loginPassword: 'Пароль', 
                 loginBtn: 'Войти',
+                searchPlaceholder: '🔎 Поиск по шаблонам...',
                 favoritesTitle: '⭐ Избранное',
                 darkMode: 'Тёмная тема',
                 logout: 'Выйти',
@@ -138,6 +139,7 @@
                 loginUsername: 'Username', 
                 loginPassword: 'Password', 
                 loginBtn: 'Login',
+                searchPlaceholder: '🔎 Search templates...',
                 favoritesTitle: '⭐ Favorites',
                 darkMode: 'Dark Mode',
                 logout: 'Logout',
@@ -194,6 +196,7 @@
                 loginUsername: 'Логін', 
                 loginPassword: 'Пароль', 
                 loginBtn: 'Увійти',
+                searchPlaceholder: '🔎 Пошук по шаблонах...',
                 favoritesTitle: '⭐ Обране',
                 darkMode: 'Темна тема',
                 logout: 'Вийти',
@@ -258,7 +261,7 @@
             document.querySelectorAll('[data-key]').forEach(el => {
                 const key = el.dataset.key;
                 if (texts[key]) {
-                    if (el.tagName === 'INPUT' && (el.placeholder || el.placeholder === '')) {
+                    if (el.tagName === 'INPUT' && (el.placeholder !== undefined)) {
                         el.placeholder = texts[key];
                     } else {
                         el.textContent = texts[key];
@@ -280,7 +283,6 @@
                 updateInstructions(lang);
                 renderUserStatusCard();
                 
-                // ИСПРАВЛЕНИЕ: Отправляем сигнал панели аналитики для перерисовки
                 const analyticsPanel = document.getElementById('analytics-panel');
                 if (analyticsPanel.style.display === 'block') {
                     analyticsPanel.dispatchEvent(new Event('languageChange'));
@@ -431,8 +433,6 @@
                 instructionsDiv.innerHTML = fallbackMessage[lang] || fallbackMessage['ru'];
             }
         }
-        
-        function updateEditorInterface() { /* DEPRECATED */ }
         
         async function trackClick(buttonId) {
             const token = getLocalStorage('chaterlabAuthToken', '');
@@ -653,7 +653,6 @@
             let fullData = null;
             const DateTime = luxon.DateTime;
 
-            // ИСПРАВЛЕНИЕ: Слушаем событие смены языка
             analyticsPanel.addEventListener('languageChange', renderAnalytics);
             
             periodSelector.addEventListener('click', (e) => {
@@ -685,7 +684,7 @@
                     const response = await fetch(`${API_BASE_URL}/api/analytics?period=${currentPeriod}`, {
                         headers: { 'Authorization': token }
                     });
-                    if (!response.ok) throw new Error('Ошибка загрузки статистики');
+                    if (!response.ok) throw new Error(uiTexts[lang].noData || 'Ошибка загрузки статистики');
                     
                     fullData = await response.json();
                     renderAnalytics();
