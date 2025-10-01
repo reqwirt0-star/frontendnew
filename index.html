@@ -36,7 +36,7 @@
             <div class="info" id="infoBlock">
                 <div class="info-header-controls">
                     <div id="user-status-card"></div>
-                    <div class="manager-controls" style="display: none;">
+                    <div class="manager-controls" style="display: none; gap: 10px;">
                          <button id="show-instructions-btn" class="active">📖 Инструкция</button>
                         <button id="show-analytics-btn">📊 Аналитика</button>
                         <button id="edit-mode-btn">⚙️ Редактор</button>
@@ -265,7 +265,7 @@
             const currentLang = getLocalStorage('chaterlabLang', 'ru');
             const texts = editorTexts[currentLang] || editorTexts.ru;
             const editBtn = document.getElementById('edit-mode-btn');
-            if (editBtn) editBtn.textContent = texts.editContent;
+            if (editBtn) editBtn.textContent = '⚙️ ' + texts.editContent;
             const saveBtn = document.getElementById('save-content-btn');
             if (saveBtn) saveBtn.textContent = texts.saveAll;
             const cancelBtn = document.getElementById('cancel-edit-btn');
@@ -447,48 +447,49 @@
             const managerControls = document.querySelector('.manager-controls');
             if (userRole === 'manager') {
                 managerControls.style.display = 'flex';
-                setupAnalytics();
+                const triggerAnalytics = setupAnalytics();
+                
+                const instructionsBtn = document.getElementById('show-instructions-btn');
+                const analyticsBtn = document.getElementById('show-analytics-btn');
+                const editBtn = document.getElementById('edit-mode-btn');
+
+                const mainContentPanel = document.getElementById('main-content-wrapper');
+                const analyticsPanel = document.getElementById('analytics-panel');
+
+                function switchManagerView(view) {
+                    mainContentPanel.style.display = 'none';
+                    analyticsPanel.style.display = 'none';
+                    
+                    instructionsBtn.classList.remove('active');
+                    analyticsBtn.classList.remove('active');
+                    editBtn.classList.remove('active');
+
+                    if (view === 'instructions' || view === 'editor') {
+                        mainContentPanel.style.display = 'block';
+                        if (view === 'instructions') {
+                            instructionsBtn.classList.add('active');
+                            hideContentEditor();
+                        } else {
+                            editBtn.classList.add('active');
+                            showContentEditor();
+                        }
+                    } else if (view === 'analytics') {
+                        analyticsPanel.style.display = 'block';
+                        analyticsBtn.classList.add('active');
+                        triggerAnalytics();
+                    }
+                }
+
+                instructionsBtn.addEventListener('click', () => switchManagerView('instructions'));
+                analyticsBtn.addEventListener('click', () => switchManagerView('analytics'));
+                editBtn.addEventListener('click', () => switchManagerView('editor'));
+
+                document.getElementById('cancel-edit-btn').addEventListener('click', () => switchManagerView('instructions'));
             } else { 
                 managerControls.style.display = 'none';
             }
-            
-            const instructionsBtn = document.getElementById('show-instructions-btn');
-            const analyticsBtn = document.getElementById('show-analytics-btn');
-            const editBtn = document.getElementById('edit-mode-btn');
-
-            const mainContentPanel = document.getElementById('main-content-wrapper');
-            const analyticsPanel = document.getElementById('analytics-panel');
-
-            function switchManagerView(view) {
-                mainContentPanel.style.display = 'none';
-                analyticsPanel.style.display = 'none';
-                
-                instructionsBtn.classList.remove('active');
-                analyticsBtn.classList.remove('active');
-                editBtn.classList.remove('active');
-
-                if (view === 'instructions' || view === 'editor') {
-                    mainContentPanel.style.display = 'block';
-                    if (view === 'instructions') {
-                        instructionsBtn.classList.add('active');
-                        hideContentEditor();
-                    } else { // editor
-                        editBtn.classList.add('active');
-                        showContentEditor();
-                    }
-                } else if (view === 'analytics') {
-                    analyticsPanel.style.display = 'block';
-                    analyticsBtn.classList.add('active');
-                    document.querySelector('.analytics-period-selector button.active').click();
-                }
-            }
-
-            instructionsBtn.addEventListener('click', () => switchManagerView('instructions'));
-            analyticsBtn.addEventListener('click', () => switchManagerView('analytics'));
-            editBtn.addEventListener('click', () => switchManagerView('editor'));
 
             document.getElementById('save-content-btn').addEventListener('click', saveContent);
-            document.getElementById('cancel-edit-btn').addEventListener('click', () => switchManagerView('instructions'));
             document.getElementById('tab-btn-layout').addEventListener('click', () => switchEditorTab('layout'));
             document.getElementById('tab-btn-instructions').addEventListener('click', () => switchEditorTab('instructions'));
             document.getElementById('add-section-btn').addEventListener('click', addSection);
@@ -517,11 +518,7 @@
                 const li = e.target.closest('li');
                 if (li) {
                     const username = li.dataset.username;
-                    if (username === 'all') {
-                        selectedUser = null;
-                    } else {
-                        selectedUser = username;
-                    }
+                    selectedUser = (username === 'all') ? null : username;
                     renderAnalytics();
                 }
             });
@@ -627,7 +624,7 @@
                 const topTemplateId = Object.keys(userTemplateCounts).sort((a, b) => userTemplateCounts[b] - userTemplateCounts[a])[0];
                 const topTemplateLabel = topTemplateId ? getButtonData(topTemplateId).label : '—';
                 
-                let logHtml = userLog.slice(0, 100).map(log => { // Показываем последние 100 действий
+                let logHtml = userLog.slice(0, 100).map(log => {
                     const btnData = getButtonData(log.button_id);
                     return `<tr>
                         <td class="time-cell">${DateTime.fromISO(log.created_at).toFormat('HH:mm:ss')}</td>
@@ -657,6 +654,7 @@
                     </div>
                 `;
             }
+            return fetchAndRenderAnalytics;
         }
         
         function switchEditorTab(tabName) { document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active')); document.querySelectorAll('.editor-tabs button').forEach(b => b.classList.remove('active')); document.getElementById(`panel-${tabName}`).classList.add('active'); document.getElementById(`tab-btn-${tabName}`).classList.add('active'); }
