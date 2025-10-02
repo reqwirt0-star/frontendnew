@@ -130,7 +130,29 @@
                 tableTime: 'Время',
                 tableSection: 'Раздел',
                 noData: 'Нет данных за этот период.',
-                loading: 'Загрузка...'
+                loading: 'Загрузка...',
+                // Системные сообщения
+                username_and_password_required: 'Необходимо указать имя пользователя и пароль.',
+                invalid_credentials: 'Неверные данные.',
+                server_error: 'Ошибка на сервере.',
+                content_not_found: 'Контент не найден.',
+                content_read_error: 'Ошибка при чтении контента.',
+                invalid_token: 'Неверный токен.',
+                access_denied: 'Доступ запрещен.',
+                content_updated_successfully: 'Контент успешно обновлен!',
+                server_error_on_save: 'Ошибка на сервере при сохранении.',
+                user_not_found: 'Пользователь не найден.',
+                invalid_data_format: 'Неверный формат данных.',
+                favorites_updated: 'Избранное обновлено.',
+                button_id_not_specified: 'Не указан ID кнопки.',
+                click_tracking_error: 'Ошибка при записи клика.',
+                analytics_db_error: 'Ошибка при получении аналитики из БД.',
+                analytics_server_error: 'Ошибка на сервере при получении аналитики.',
+                analytics_load_error: 'Ошибка загрузки статистики',
+                no_templates_for_button: 'Нет шаблонов для этой кнопки',
+                copy_success: 'Скопировано ({current}/{total})',
+                favorites_load_error: 'Не удалось загрузить избранное',
+                favorites_save_error: 'Ошибка сохранения избранного'
             },
             en: {
                 lang_locale: 'en',
@@ -187,7 +209,29 @@
                 tableTime: 'Time',
                 tableSection: 'Section',
                 noData: 'No data for this period.',
-                loading: 'Loading...'
+                loading: 'Loading...',
+                // System Messages
+                username_and_password_required: 'Username and password are required.',
+                invalid_credentials: 'Invalid credentials.',
+                server_error: 'Server error.',
+                content_not_found: 'Content not found.',
+                content_read_error: 'Error reading content.',
+                invalid_token: 'Invalid token.',
+                access_denied: 'Access denied.',
+                content_updated_successfully: 'Content updated successfully!',
+                server_error_on_save: 'Server error on save.',
+                user_not_found: 'User not found.',
+                invalid_data_format: 'Invalid data format.',
+                favorites_updated: 'Favorites updated.',
+                button_id_not_specified: 'Button ID not specified.',
+                click_tracking_error: 'Error tracking click.',
+                analytics_db_error: 'Error getting analytics from DB.',
+                analytics_server_error: 'Server error while getting analytics.',
+                analytics_load_error: 'Error loading statistics',
+                no_templates_for_button: 'No templates for this button',
+                copy_success: 'Copied ({current}/{total})',
+                favorites_load_error: 'Failed to load favorites',
+                favorites_save_error: 'Error saving favorites'
             },
             uk: {
                 lang_locale: 'uk',
@@ -244,20 +288,56 @@
                 tableTime: 'Час',
                 tableSection: 'Розділ',
                 noData: 'Немає даних за цей період.',
-                loading: 'Завантаження...'
+                loading: 'Завантаження...',
+                // System Messages
+                username_and_password_required: 'Необхідно вказати ім\'я користувача та пароль.',
+                invalid_credentials: 'Невірні дані.',
+                server_error: 'Помилка на сервері.',
+                content_not_found: 'Контент не знайдено.',
+                content_read_error: 'Помилка читання контенту.',
+                invalid_token: 'Невірний токен.',
+                access_denied: 'Доступ заборонено.',
+                content_updated_successfully: 'Контент успішно оновлено!',
+                server_error_on_save: 'Помилка на сервері при збереженні.',
+                user_not_found: 'Користувача не знайдено.',
+                invalid_data_format: 'Невірний формат даних.',
+                favorites_updated: 'Обране оновлено.',
+                button_id_not_specified: 'Не вказано ID кнопки.',
+                click_tracking_error: 'Помилка запису кліку.',
+                analytics_db_error: 'Помилка при отриманні аналітики з БД.',
+                analytics_server_error: 'Помилка на сервері при отриманні аналітики.',
+                analytics_load_error: 'Помилка завантаження статистики',
+                no_templates_for_button: 'Немає шаблонів для цієї кнопки',
+                copy_success: 'Скопійовано ({current}/{total})',
+                favorites_load_error: 'Не вдалося завантажити обране',
+                favorites_save_error: 'Помилка збереження обраного'
             }
         };
 
         function getLocalStorage(key, defaultValue) { try { const val = localStorage.getItem(key); return val ? JSON.parse(val) : defaultValue; } catch (e) { return defaultValue; } }
         function setLocalStorage(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.error(e); } }
-        function showToast(message, isError = false) { const t = document.getElementById('toast'); t.textContent = message; t.style.backgroundColor = isError ? 'var(--error-color)' : 'var(--success-color)'; t.classList.add('show'); if (navigator.vibrate && !isError) navigator.vibrate(50); setTimeout(() => t.classList.remove('show'), 2000); }
+        
+        function getTranslatedText(key) {
+            const lang = getLocalStorage('chaterlabLang', 'ru');
+            const texts = uiTexts[lang] || uiTexts.ru;
+            return texts[key] || key;
+        }
+
+        function showToast(message, isError = false) { 
+            const t = document.getElementById('toast'); 
+            t.textContent = message; 
+            t.style.backgroundColor = isError ? 'var(--error-color)' : 'var(--success-color)'; 
+            t.classList.add('show'); 
+            if (navigator.vibrate && !isError) navigator.vibrate(50); 
+            setTimeout(() => t.classList.remove('show'), 2000); 
+        }
+        
         function generateId(prefix) { return prefix + Date.now() + Math.random().toString(16).slice(2); }
         const userStatusTexts = { ru: { user: 'Пользователь', status: 'Статус', admin: 'Менеджер', worker: 'Сотрудник', access: 'Разрешено редактирование', noAccess: 'Редактирование не доступно' }, en: { user: 'User', status: 'Status', admin: 'Manager', worker: 'Employee', access: 'Editing is allowed', noAccess: 'Editing is not available' }, uk: { user: 'Користувач', status: 'Статус', admin: 'Менеджер', worker: 'Співробітник', access: 'Дозволено редагування', noAccess: 'Редагування не доступно' } };
         
         function applyTranslations() {
             const lang = getLocalStorage('chaterlabLang', 'ru');
             const texts = uiTexts[lang] || uiTexts.ru;
-            
             document.querySelectorAll('[data-key]').forEach(el => {
                 const key = el.dataset.key;
                 if (texts[key]) {
@@ -273,16 +353,13 @@
         function switchLanguage(lang) {
             setLocalStorage('chaterlabLang', lang);
             applyTranslations(); 
-
             const langButtonsLogin = document.querySelectorAll('#language-switcher-login button');
             langButtonsLogin.forEach(btn => { btn.classList.toggle('active', btn.dataset.lang === lang); });
-
             if (document.getElementById('app-container').getAttribute('data-logged') === 'true') {
                 const langButtonsApp = document.querySelectorAll('#language-switcher-app button');
                 langButtonsApp.forEach(btn => { btn.classList.toggle('active', btn.dataset.lang === lang); });
                 updateInstructions(lang);
                 renderUserStatusCard();
-                
                 const analyticsPanel = document.getElementById('analytics-panel');
                 if (analyticsPanel.style.display === 'block') {
                     analyticsPanel.dispatchEvent(new Event('languageChange'));
@@ -353,8 +430,7 @@
                     renderUserStatusCard();
                 }, 2500);
             } catch (error) {
-                errorDiv.textContent = error.message;
-                errorDiv.classList.add('show');
+                errorDiv.textContent = getTranslatedText(error.message);
             }
         }
 
@@ -372,7 +448,10 @@
         async function fetchContent() {
             try {
                 const response = await fetch(`${API_BASE_URL}/content`);
-                if (!response.ok) throw new Error('Не удалось загрузить контент');
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.message);
+                };
                 appContent = await response.json();
                 renderSidebar();
                 const currentLang = getLocalStorage('chaterlabLang', 'ru');
@@ -381,7 +460,7 @@
                 setupSearch();
                 applyTranslations();
             } catch (error) {
-                showToast(error.message, true);
+                showToast(getTranslatedText(error.message), true);
             }
         }
 
@@ -455,13 +534,15 @@
                 if (found) targetButton = found;
             });
             if (!targetButton || !targetButton.templates || !targetButton.templates.length === 0) {
-                showToast('Нет шаблонов для этой кнопки', true);
+                showToast(getTranslatedText('no_templates_for_button'), true);
                 return;
             }
             if (targetButton.currentIndex === undefined) targetButton.currentIndex = 0;
             const textToCopy = targetButton.templates[targetButton.currentIndex];
             navigator.clipboard.writeText(textToCopy).then(() => {
-                showToast(`Скопировано (${targetButton.currentIndex + 1}/${targetButton.templates.length})`);
+                let message = getTranslatedText('copy_success');
+                message = message.replace('{current}', targetButton.currentIndex + 1).replace('{total}', targetButton.templates.length);
+                showToast(message);
                 trackClick(buttonId);
             });
             targetButton.currentIndex = (targetButton.currentIndex + 1) % targetButton.templates.length;
@@ -472,7 +553,7 @@
             if (!token) return;
             try {
                 const response = await fetch(`${API_BASE_URL}/api/favorites`, { headers: { 'Authorization': token } });
-                if (!response.ok) throw new Error('Не удалось загрузить избранное');
+                if (!response.ok) throw new Error(getTranslatedText('favorites_load_error'));
                 const data = await response.json();
                 userFavorites = data.favorites || [];
             } catch (error) {
@@ -491,7 +572,7 @@
                     body: JSON.stringify({ favorites: userFavorites })
                 });
             } catch (error) {
-                showToast('Ошибка сохранения избранного', true);
+                showToast(getTranslatedText('favorites_save_error'), true);
             }
         }
 
@@ -674,9 +755,7 @@
             });
 
             async function fetchAndRenderAnalytics() {
-                const lang = getLocalStorage('chaterlabLang', 'ru');
-                const texts = uiTexts[lang] || uiTexts.ru;
-                mainPanel.innerHTML = `<div id="analytics-loader">${texts.loading}</div>`;
+                mainPanel.innerHTML = `<div id="analytics-loader">${getTranslatedText('loading')}</div>`;
                 employeeList.innerHTML = '';
                 const token = getLocalStorage('chaterlabAuthToken', '');
                 
@@ -684,7 +763,7 @@
                     const response = await fetch(`${API_BASE_URL}/api/analytics?period=${currentPeriod}`, {
                         headers: { 'Authorization': token }
                     });
-                    if (!response.ok) throw new Error(uiTexts[lang].noData || 'Ошибка загрузки статистики');
+                    if (!response.ok) throw new Error(getTranslatedText('analytics_load_error'));
                     
                     fullData = await response.json();
                     renderAnalytics();
@@ -816,16 +895,16 @@
             return fetchAndRenderAnalytics;
         }
         
-        function switchEditorTab(tabName) { document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active')); document.querySelectorAll('.editor-tabs button').forEach(b => b.classList.remove('active')); document.getElementById(`panel-${tabName}`).classList.add('active'); document.getElementById(`tab-btn-${tabName}`).classList.add('active'); }
+        function switchEditorTab(tabName) { document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active')); document.querySelectorAll('.editor-tabs button').forEach(b => b.classList.remove('active')); document.getElementById(`panel-${tabName}`).classList.add('active'); document.getElementById(`tab-btn-${tabName}`).classList.add('active'); applyTranslations(); }
         function showContentEditor() { document.getElementById('main-content-wrapper').style.display = 'block'; document.getElementById('content-editor').style.display = 'block'; document.getElementById('instructions').style.display = 'none'; buildLayoutEditor(); initInstructionsEditor(); switchEditorTab('layout'); }
         function hideContentEditor() { document.getElementById('main-content-wrapper').style.display = 'block'; document.getElementById('content-editor').style.display = 'none'; document.getElementById('instructions').style.display = 'block'; tinymce.remove(); }
-        function buildLayoutEditor() { const container = document.getElementById('panel-layout'); while (container.firstChild && container.firstChild.id !== 'add-section-btn') { container.removeChild(container.firstChild); } appContent.layout?.forEach(section => { const sectionNode = createSectionEditor(section); container.insertBefore(sectionNode, document.getElementById('add-section-btn')); }); }
+        function buildLayoutEditor() { const container = document.getElementById('panel-layout'); while (container.firstChild && container.firstChild.id !== 'add-section-btn') { container.removeChild(container.firstChild); } appContent.layout?.forEach(section => { const sectionNode = createSectionEditor(section); container.insertBefore(sectionNode, document.getElementById('add-section-btn')); }); applyTranslations(); }
         function createSectionEditor(section) { const currentLang = getLocalStorage('chaterlabLang', 'ru'); const texts = uiTexts[currentLang] || uiTexts.ru; const sectionDiv = document.createElement('div'); sectionDiv.className = 'editor-section'; sectionDiv.dataset.id = section.id; sectionDiv.innerHTML = `<div class="editor-section-header"><input type="text" class="section-title-input" value="${section.title}" placeholder="${texts.sectionTitle}"><div class="editor-controls"><button class="delete-btn" title="${texts.deleteButtonTitle}">🗑</button></div></div><div class="buttons-container"></div><button class="add-btn add-button-btn">${texts.addButton}</button>`; const buttonsContainer = sectionDiv.querySelector('.buttons-container'); section.buttons.forEach(button => { buttonsContainer.appendChild(createButtonEditor(button)); }); sectionDiv.querySelector('.delete-btn').onclick = () => { if (confirm(texts.deleteSectionConfirm)) sectionDiv.remove(); }; sectionDiv.querySelector('.add-button-btn').onclick = () => { const newButton = { id: generateId('btn_'), label: texts.buttonLabel, templates: ['Новый шаблон'] }; buttonsContainer.appendChild(createButtonEditor(newButton)); }; return sectionDiv; }
         function createButtonEditor(button) { const currentLang = getLocalStorage('chaterlabLang', 'ru'); const texts = uiTexts[currentLang] || uiTexts.ru; const buttonDiv = document.createElement('div'); buttonDiv.className = 'editor-button-entry'; buttonDiv.dataset.id = button.id; buttonDiv.innerHTML = `<div class="editor-button-header"><input type="text" class="button-label-input" value="${button.label}" placeholder="${texts.buttonLabel}"><div class="editor-controls"><button class="delete-btn" title="${texts.deleteButtonEntryTitle}">🗑</button></div></div><div class="variants-container"></div><button class="add-variant-btn">${texts.addVariant}</button>`; const variantsContainer = buttonDiv.querySelector('.variants-container'); button.templates.forEach(template => { variantsContainer.appendChild(createVariantInput(template)); }); buttonDiv.querySelector('.delete-btn').onclick = () => buttonDiv.remove(); buttonDiv.querySelector('.add-variant-btn').onclick = () => { const newVariant = createVariantInput(''); variantsContainer.appendChild(newVariant); newVariant.querySelector('textarea').focus(); }; return buttonDiv; }
         function createVariantInput(text) { const currentLang = getLocalStorage('chaterlabLang', 'ru'); const texts = uiTexts[currentLang] || uiTexts.ru; const variantDiv = document.createElement('div'); variantDiv.className = 'template-variant'; variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" title="${texts.deleteVariantTitle}">🗑</button>`; variantDiv.querySelector('.delete-variant-btn').onclick = () => variantDiv.remove(); return variantDiv; }
-        function addSection() { const newSection = { id: generateId('sec_'), title: 'Новый раздел', buttons: [] }; const sectionNode = createSectionEditor(newSection); const container = document.getElementById('panel-layout'); container.insertBefore(sectionNode, document.getElementById('add-section-btn')); }
+        function addSection() { const newSection = { id: generateId('sec_'), title: 'Новый раздел', buttons: [] }; const sectionNode = createSectionEditor(newSection); const container = document.getElementById('panel-layout'); container.insertBefore(sectionNode, document.getElementById('add-section-btn')); applyTranslations();}
         function initInstructionsEditor() { const skin = document.body.classList.contains('dark-mode') ? 'oxide-dark' : 'oxide'; const content_css = document.body.classList.contains('dark-mode') ? 'dark' : 'default'; tinymce.init({ selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk', height: 500, menubar: false, plugins: 'lists link image code help wordcount autoresize table', toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | table | help', skin: skin, content_css: content_css, setup: editor => { editor.on('init', () => { const langKey = editor.id.split('-')[2]; editor.setContent(appContent.instructionsContent?.[langKey] || ''); }); } }); }
-        async function saveContent() { const newLayout = []; document.querySelectorAll('#panel-layout .editor-section').forEach(sectionNode => { const section = { id: sectionNode.dataset.id, title: sectionNode.querySelector('.section-title-input').value.trim(), buttons: [] }; if (!section.title) return; sectionNode.querySelectorAll('.editor-button-entry').forEach(buttonNode => { const button = { id: buttonNode.dataset.id, label: buttonNode.querySelector('.button-label-input').value.trim(), templates: Array.from(buttonNode.querySelectorAll('.template-variant textarea')).map(t => t.value.trim()).filter(v => v) }; if (button.label) section.buttons.push(button); }); newLayout.push(section); }); const newInstructions = {}; for (const lang of ['ru', 'en', 'uk']) { const editor = tinymce.get(`instructions-editor-${lang}`); if (editor) newInstructions[lang] = editor.getContent(); } const newContent = { layout: newLayout, instructionsContent: newInstructions }; const token = getLocalStorage('chaterlabAuthToken', ''); try { const response = await fetch(`${API_BASE_URL}/update-content`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(newContent) }); if (!response.ok) throw new Error((await response.json()).message); appContent = newContent; renderSidebar(); updateInstructions(getLocalStorage('chaterlabLang', 'ru')); showToast('Контент успешно сохранен!'); hideContentEditor(); } catch (error) { showToast(error.message, true); } }
+        async function saveContent() { const newLayout = []; document.querySelectorAll('#panel-layout .editor-section').forEach(sectionNode => { const section = { id: sectionNode.dataset.id, title: sectionNode.querySelector('.section-title-input').value.trim(), buttons: [] }; if (!section.title) return; sectionNode.querySelectorAll('.editor-button-entry').forEach(buttonNode => { const button = { id: buttonNode.dataset.id, label: buttonNode.querySelector('.button-label-input').value.trim(), templates: Array.from(buttonNode.querySelectorAll('.template-variant textarea')).map(t => t.value.trim()).filter(v => v) }; if (button.label) section.buttons.push(button); }); newLayout.push(section); }); const newInstructions = {}; for (const lang of ['ru', 'en', 'uk']) { const editor = tinymce.get(`instructions-editor-${lang}`); if (editor) newInstructions[lang] = editor.getContent(); } const newContent = { layout: newLayout, instructionsContent: newInstructions }; const token = getLocalStorage('chaterlabAuthToken', ''); try { const response = await fetch(`${API_BASE_URL}/update-content`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(newContent) }); const data = await response.json(); if (!response.ok) throw new Error(data.message); showToast(getTranslatedText(data.message)); appContent = newContent; renderSidebar(); updateInstructions(getLocalStorage('chaterlabLang', 'ru')); hideContentEditor(); } catch (error) { showToast(getTranslatedText(error.message), true); } }
         
         document.addEventListener('DOMContentLoaded', () => {
             const initialLang = getLocalStorage('chaterlabLang', 'ru');
