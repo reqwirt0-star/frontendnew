@@ -18,11 +18,7 @@
         #edit-mode-btn{}
         .editor-section,.editor-button-entry{border:1px solid var(--border-color);border-radius:16px;padding:20px;background-color:var(--background-card);margin-bottom:16px;box-shadow:var(--shadow-sm)}.editor-section-header,.editor-button-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}.editor-section-header input,.editor-button-header input{font-size:18px;font-weight:600;color:var(--primary-blue);border:none;background:transparent;width:100%;border-bottom:2px dashed var(--border-color);padding:8px;font-family:inherit}.editor-section-header input:focus,.editor-button-header input:focus{outline:none;border-bottom-style:solid;border-bottom-color:var(--primary-blue)}.editor-controls{margin-left:auto;display:flex}.editor-controls button{background-color:transparent;border:none;cursor:pointer;padding:8px;border-radius:8px;transition:all .2s ease}.editor-controls button:hover{background-color:rgba(239,68,68,.1)}.delete-btn{color:var(--error-color);font-size:18px}.template-variant{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}.template-variant textarea{width:100%;min-height:60px;resize:vertical;padding:12px;border-radius:12px;border:2px solid var(--border-color);background-color:var(--background-main);font-size:14px;color:var(--text-primary);font-family:inherit;line-height:1.6;transition:all .2s ease}.template-variant textarea:focus{outline:none;border-color:var(--primary-blue);box-shadow:0 0 0 3px rgba(59,130,246,.1)}.delete-variant-btn{padding:10px;background-color:rgba(239,68,68,.1);border:none;border-radius:10px;cursor:pointer;color:var(--error-color);line-height:0;transition:all .2s ease;font-size:18px}.delete-variant-btn:hover{background-color:rgba(239,68,68,.2)}.add-variant-btn,.add-btn{width:100%;padding:12px;background-color:rgba(16,185,129,.1);color:var(--success-color);border:2px dashed var(--success-color);border-radius:12px;font-weight:600;cursor:pointer;transition:all .2s ease;margin-top:12px;font-size:15px}.add-variant-btn:hover,.add-btn:hover{background-color:rgba(16,185,129,.2);border-style:solid}
         .manager-editor-entry{border:1px solid var(--border-color);border-radius:16px;padding:20px;background-color:var(--background-card);margin-bottom:16px;box-shadow:var(--shadow-sm)}.manager-editor-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}.manager-editor-header input{flex-grow:1;font-size:18px;font-weight:600;color:var(--primary-blue);border:none;background:transparent;border-bottom:2px dashed var(--border-color);padding:8px;font-family:inherit}.manager-editor-header input:focus{outline:none;border-bottom-style:solid;border-bottom-color:var(--primary-blue)}.manager-editor-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}.manager-editor-field{display:flex;flex-direction:column}.manager-editor-field label{font-size:12px;font-weight:500;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase}.manager-editor-field input{width:100%;padding:12px;border-radius:10px;border:2px solid var(--border-color);background-color:var(--background-main);font-size:14px;color:var(--text-primary);font-family:inherit}.manager-editor-field input:focus{outline:none;border-color:var(--primary-blue)}
-        
-        /* === MANAGER ASSIGNMENT STYLES START === */
         .manager-assignment-container{margin-top:20px;padding-top:20px;border-top:1px dashed var(--border-color)}.manager-assignment-container h4{margin-top:0;margin-bottom:12px;font-size:14px;font-weight:600;color:var(--text-secondary)}.manager-assignment-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));gap:12px}.checkbox-wrapper{display:flex;align-items:center;background-color:var(--background-main);padding:10px;border-radius:8px;border:1px solid var(--border-color)}.checkbox-wrapper input{width:18px;height:18px;margin-right:10px;accent-color:var(--primary-blue)}.checkbox-wrapper label{font-weight:500;font-size:14px;color:var(--text-primary);cursor:pointer}
-        /* === MANAGER ASSIGNMENT STYLES END === */
-
         .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:2500;opacity:0;pointer-events:none;transition:opacity .3s ease}.modal-overlay.show{opacity:1;pointer-events:auto}.modal-content{background-color:var(--background-card);padding:32px;border-radius:16px;width:500px;max-width:95%;box-shadow:var(--shadow-lg);transform:scale(.95);transition:transform .3s ease}.modal-overlay.show .modal-content{transform:scale(1)}.modal-content h3{margin-top:0;font-size:22px;color:var(--text-primary)}.modal-section{margin-bottom:24px}.modal-section h4{margin-bottom:12px;font-size:14px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px}.modal-radio-group{display:flex;gap:12px}.modal-radio-group label{flex:1;display:block;padding:12px 16px;border:2px solid var(--border-color);border-radius:12px;cursor:pointer;transition:all .2s ease;font-weight:500}.modal-radio-group input{display:none}.modal-radio-group input:checked+span{color:var(--primary-blue)}.modal-radio-group label:hover{border-color:var(--primary-blue);background-color:var(--light-blue-bg)}.modal-radio-group input:checked+label{border-color:var(--primary-blue);background-color:var(--light-blue-bg);box-shadow:0 0 0 3px rgba(59,130,246,.1)}.modal-select{width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background-color:var(--background-main);color:var(--text-primary);font-family:inherit}.modal-select:focus{outline:none;border-color:var(--primary-blue)}.modal-buttons{display:flex;gap:12px;justify-content:flex-end;margin-top:32px}.modal-buttons button{padding:12px 24px;font-size:15px;font-weight:600;border-radius:12px;cursor:pointer;border:none;transition:all .2s ease}#modal-confirm-btn{background-color:var(--primary-blue);color:#fff}#modal-confirm-btn:hover{background-color:var(--primary-blue-hover)}#modal-cancel-btn{background-color:transparent;color:var(--text-secondary)}#modal-cancel-btn:hover{background-color:var(--light-blue-bg)}
         
         @media (max-width:768px){main{flex-direction:column;height:auto}.sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border-color);overflow-y:visible;height:auto}.info{padding:24px;overflow-y:visible;height:auto}header{font-size:24px;padding:20px}}
@@ -565,6 +561,7 @@
         }
         
         function findButtonById(buttonId) {
+            if (!appContent.layout) return null;
             for (const section of appContent.layout) {
                 const button = section.buttons.find(b => b.id === buttonId);
                 if (button) return button;
@@ -590,15 +587,17 @@
 
         function openContactModal(buttonData) {
             managerSelect.innerHTML = '';
-            buttonData.manager_ids.forEach(managerId => {
-                const manager = appContent.managers[managerId];
-                if (manager) {
-                    const option = document.createElement('option');
-                    option.value = managerId;
-                    option.textContent = manager.name;
-                    managerSelect.appendChild(option);
-                }
-            });
+            if (buttonData.manager_ids && appContent.managers) {
+                buttonData.manager_ids.forEach(managerId => {
+                    const manager = appContent.managers[managerId];
+                    if (manager) {
+                        const option = document.createElement('option');
+                        option.value = managerId;
+                        option.textContent = manager.name;
+                        managerSelect.appendChild(option);
+                    }
+                });
+            }
             
             confirmBtn.onclick = () => generateAndCopyContact(buttonData);
             
@@ -1104,7 +1103,7 @@
                 assignmentContainer.className = 'manager-assignment-container';
                 let managerCheckboxesHTML = `<h4 data-key="managerAssignmentTitle">${getTranslatedText('managerAssignmentTitle')}</h4><div class="manager-assignment-grid">`;
                 
-                if (appContent.managers) {
+                if (appContent.managers && Object.keys(appContent.managers).length > 0) {
                     for (const [id, manager] of Object.entries(appContent.managers)) {
                         const isChecked = button.manager_ids && button.manager_ids.includes(id) ? 'checked' : '';
                         const checkboxId = `chk-${button.id}-${id}`;
@@ -1199,23 +1198,30 @@
                 const section = { id: sectionNode.dataset.id, title: sectionNode.querySelector('.section-title-input').value.trim(), buttons: [] };
                 if (!section.title) return;
                 sectionNode.querySelectorAll('.editor-button-entry').forEach(buttonNode => {
-                    const buttonData = findButtonById(buttonNode.dataset.id) || {};
-                    const button = { 
+                    const originalButtonData = findButtonById(buttonNode.dataset.id) || {};
+                    const newButtonObject = { 
                         id: buttonNode.dataset.id, 
                         label: buttonNode.querySelector('.button-label-input').value.trim(), 
-                        templates: Array.from(buttonNode.querySelectorAll('.variants-container .template-variant textarea')).map(t => t.value.trim()).filter(v => v),
-                        type: buttonData.type,
-                        manager_ids: buttonData.manager_ids
+                        templates: Array.from(buttonNode.querySelectorAll('.variants-container .template-variant textarea')).map(t => t.value.trim()).filter(v => v)
                     };
-                    
-                    const managerCheckboxes = buttonNode.querySelectorAll('.manager-checkbox:checked');
-                    if (managerCheckboxes.length > 0) {
-                        const selectedIds = [];
-                        managerCheckboxes.forEach(checkbox => selectedIds.push(checkbox.value));
-                        button.manager_ids = selectedIds;
+
+                    if (originalButtonData.type) {
+                        newButtonObject.type = originalButtonData.type;
                     }
 
-                    if (button.label) section.buttons.push(button);
+                    const managerAssignmentContainer = buttonNode.querySelector('.manager-assignment-container');
+                    if (managerAssignmentContainer) {
+                        const selectedIds = [];
+                        const managerCheckboxes = buttonNode.querySelectorAll('.manager-checkbox:checked');
+                        managerCheckboxes.forEach(checkbox => {
+                            selectedIds.push(checkbox.value);
+                        });
+                        newButtonObject.manager_ids = selectedIds;
+                    } else if (originalButtonData.manager_ids) {
+                        newButtonObject.manager_ids = originalButtonData.manager_ids;
+                    }
+
+                    if (newButtonObject.label) section.buttons.push(newButtonObject);
                 });
                 newLayout.push(section);
             });
