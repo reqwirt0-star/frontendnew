@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChaterLab Quick Replies (DEBUG MODE)</title>
+    <title>ChaterLab Quick Replies</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -22,7 +22,50 @@
         .button-options{margin-top:16px; padding-top: 16px; border-top: 1px dashed var(--border-color);}
         .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:2500;opacity:0;pointer-events:none;transition:opacity .3s ease}.modal-overlay.show{opacity:1;pointer-events:auto}.modal-content{background-color:var(--background-card);padding:32px;border-radius:16px;width:500px;max-width:95%;box-shadow:var(--shadow-lg);transform:scale(.95);transition:transform .3s ease}.modal-overlay.show .modal-content{transform:scale(1)}.modal-content h3{margin-top:0;font-size:22px;color:var(--text-primary)}.modal-section{margin-bottom:24px}.modal-section h4{margin-bottom:12px;font-size:14px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px}.modal-radio-group{display:flex;gap:12px}.modal-radio-group label{flex:1;display:block;padding:12px 16px;border:2px solid var(--border-color);border-radius:12px;cursor:pointer;transition:all .2s ease;font-weight:500}.modal-radio-group input{display:none}.modal-radio-group input:checked+span{color:var(--primary-blue)}.modal-radio-group label:hover{border-color:var(--primary-blue);background-color:var(--light-blue-bg)}.modal-radio-group input:checked+label{border-color:var(--primary-blue);background-color:var(--light-blue-bg);box-shadow:0 0 0 3px rgba(59,130,246,.1)}.modal-select{width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background-color:var(--background-main);color:var(--text-primary);font-family:inherit}.modal-select:focus{outline:none;border-color:var(--primary-blue)}.modal-buttons{display:flex;gap:12px;justify-content:flex-end;margin-top:32px}.modal-buttons button{padding:12px 24px;font-size:15px;font-weight:600;border-radius:12px;cursor:pointer;border:none;transition:all .2s ease}#modal-confirm-btn{background-color:var(--primary-blue);color:#fff}#modal-confirm-btn:hover{background-color:var(--primary-blue-hover)}#modal-cancel-btn{background-color:transparent;color:var(--text-secondary)}#modal-cancel-btn:hover{background-color:var(--light-blue-bg)}
         
-        @media (max-width:768px){main{flex-direction:column;height:auto}.sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border-color);overflow-y:visible;height:auto}.info{padding:24px;overflow-y:visible;height:auto}header{font-size:24px;padding:20px}}
+        /* === MOBILE STYLES START === */
+        #mobile-admin-panel-toggle { display: none; }
+        .mobile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; display: none; }
+        .mobile-panel { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--background-card); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 24px; transform: translateY(100%); transition: transform .3s ease-out; }
+        .mobile-overlay.show .mobile-panel { transform: translateY(0); }
+        .mobile-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .mobile-panel-header h3 { margin: 0; }
+        .mobile-panel-close { font-size: 24px; cursor: pointer; border: none; background: none; color: var(--text-secondary); }
+
+        @media (max-width: 768px) {
+            body { overflow: auto; }
+            main { flex-direction: column; height: auto; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); padding: 16px; overflow-y: visible; height: auto; }
+            .sidebar-scrollable-content { overflow-y: visible; margin-right: 0; padding-right: 0; }
+            .info { display: none !important; } /* Hide desktop content panel */
+            .manager-controls { display: none !important; } /* Hide desktop manager controls */
+            
+            #mobile-admin-panel-toggle {
+                display: none; /* Hidden by default, shown by JS for managers */
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: 60px;
+                height: 60px;
+                background-color: var(--primary-blue);
+                color: white;
+                border: none;
+                border-radius: 50%;
+                font-size: 28px;
+                cursor: pointer;
+                box-shadow: var(--shadow-lg);
+                z-index: 999;
+            }
+
+            .sidebar-section h2 { cursor: pointer; position: relative; padding-right: 30px; }
+            .sidebar-section h2::after { content: '▼'; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); transition: transform .2s ease; font-size: 12px; }
+            .sidebar-section.active h2::after { transform: translateY(-50%) rotate(180deg); }
+            .buttons-container { display: none; padding-top: 10px; }
+            .sidebar-section.active .buttons-container { display: block; }
+
+            header { font-size: 22px; padding: 16px; }
+            .login-form-container { width: 90%; padding: 32px 24px; }
+        }
+        /* === MOBILE STYLES END === */
     </style>
 </head>
 <body class="login-active">
@@ -121,6 +164,21 @@
             </div>
         </div>
     </div>
+
+    <button id="mobile-admin-panel-toggle">⚙️</button>
+    <div id="mobile-admin-overlay" class="mobile-overlay">
+        <div class="mobile-panel">
+            <div class="mobile-panel-header">
+                <h3 data-key="mobileAdminTitle">Админ-панель</h3>
+                <button id="mobile-panel-close" class="mobile-panel-close">&times;</button>
+            </div>
+            <div id="mobile-analytics-content"></div>
+            <div class="editor-unavailable-notice">
+                <h4 data-key="editorUnavailable">Редактор</h4>
+                <p data-key="editorUnavailableMsg">Полноценное редактирование доступно только в версии сайта для ПК.</p>
+            </div>
+        </div>
+    </div>
     <script>
         "use strict";
         const API_BASE_URL = 'https://backendchater.onrender.com';
@@ -128,6 +186,7 @@
         let appContent = {};
         let userName = null;
         let userFavorites = [];
+        const isMobile = () => window.matchMedia("(max-width: 768px)").matches;
         
         const uiTexts = {
             ru: {
@@ -144,6 +203,9 @@
                 navInstructions: '📖 Инструкция',
                 navAnalytics: '📊 Аналитика',
                 navEditor: '⚙️ Редактор',
+                mobileAdminTitle: 'Админ-панель',
+                editorUnavailable: 'Редактор',
+                editorUnavailableMsg: 'Полноценное редактирование доступно только в версии сайта для ПК.',
                 tabLayout: 'Конструктор кнопок',
                 tabInstructions: 'Инструкция',
                 tabManagers: 'Менеджеры',
@@ -237,6 +299,9 @@
                 navInstructions: '📖 Instructions',
                 navAnalytics: '📊 Analytics',
                 navEditor: '⚙️ Editor',
+                mobileAdminTitle: 'Admin Panel',
+                editorUnavailable: 'Editor',
+                editorUnavailableMsg: 'Full editing is only available on the desktop version of the site.',
                 tabLayout: 'Button Builder',
                 tabInstructions: 'Instructions',
                 tabManagers: 'Managers',
@@ -330,6 +395,9 @@
                 navInstructions: '📖 Інструкція',
                 navAnalytics: '📊 Аналітика',
                 navEditor: '⚙️ Редактор',
+                mobileAdminTitle: 'Адмін-панель',
+                editorUnavailable: 'Редактор',
+                editorUnavailableMsg: 'Повноцінне редагування доступне лише у версії сайту для ПК.',
                 tabLayout: 'Конструктор кнопок',
                 tabInstructions: 'Інструкція',
                 tabManagers: 'Менеджери',
@@ -403,7 +471,7 @@
                 analytics_db_error: 'Помилка при отриманні аналітики з БД.',
                 analytics_server_error: 'Помилка на сервері при отриманні аналітики.',
                 analytics_load_error: 'Помилка завантаження статистики',
-                no_templates_for_button: 'Нет шаблонов для этой кнопки',
+                no_templates_for_button: 'Немає шаблонів для цієї кнопки',
                 copy_success: 'Скопировано ({current}/{total})',
                 copy_success_generic: 'Текст успішно скопійовано!',
                 favorites_load_error: 'Не вдалося завантажити обране',
@@ -558,6 +626,7 @@
                 updateInstructions(currentLang);
                 checkUserRoleAndSetupManagerUI();
                 setupSearch();
+                setupAccordion(); // Setup accordion for mobile
                 applyTranslations();
             } catch (error) {
                 showToast(getTranslatedText(error.message), true);
@@ -665,6 +734,10 @@
                 const title = document.createElement('h2');
                 title.textContent = section.title;
                 sectionDiv.appendChild(title);
+
+                const buttonsContainer = document.createElement('div');
+                buttonsContainer.className = 'buttons-container';
+
                 section.buttons.forEach(buttonData => {
                     const button = document.createElement('button');
                     button.className = 'sidebar-button';
@@ -673,8 +746,9 @@
                         if (e.target.classList.contains('favorite-star')) return; 
                         handleSidebarButtonClick(buttonData.id);
                     };
-                    sectionDiv.appendChild(button);
+                    buttonsContainer.appendChild(button);
                 });
+                sectionDiv.appendChild(buttonsContainer);
                 container.appendChild(sectionDiv);
             });
             document.querySelector('.sidebar-scrollable-content').addEventListener('click', handleFavoriteClick);
@@ -868,56 +942,100 @@
         }
         
         function checkUserRoleAndSetupManagerUI() {
-            const managerControls = document.querySelector('.manager-controls');
             if (userRole === 'manager') {
-                managerControls.style.display = 'flex';
-                const triggerAnalyticsLoad = setupAnalytics();
-                
-                const instructionsBtn = document.getElementById('show-instructions-btn');
-                const analyticsBtn = document.getElementById('show-analytics-btn');
-                const editBtn = document.getElementById('edit-mode-btn');
+                if (isMobile()) {
+                    const toggleBtn = document.getElementById('mobile-admin-panel-toggle');
+                    const overlay = document.getElementById('mobile-admin-overlay');
+                    const closeBtn = document.getElementById('mobile-panel-close');
+                    toggleBtn.style.display = 'block';
 
-                const mainContentPanel = document.getElementById('main-content-wrapper');
-                const analyticsPanel = document.getElementById('analytics-panel');
-
-                function switchManagerView(view) {
-                    mainContentPanel.style.display = 'none';
-                    analyticsPanel.style.display = 'none';
+                    toggleBtn.onclick = () => {
+                        overlay.style.display = 'block';
+                        // Use a timeout to allow the display property to apply before starting the transition
+                        setTimeout(() => overlay.classList.add('show'), 10);
+                        fetchAndRenderMobileAnalytics();
+                    };
                     
-                    instructionsBtn.classList.remove('active');
-                    analyticsBtn.classList.remove('active');
-                    editBtn.classList.remove('active');
+                    const closePanel = () => {
+                        overlay.classList.remove('show');
+                        setTimeout(() => overlay.style.display = 'none', 300);
+                    };
 
-                    if (view === 'instructions' || view === 'editor') {
-                        mainContentPanel.style.display = 'block';
-                        if (view === 'instructions') {
-                            instructionsBtn.classList.add('active');
-                            hideContentEditor();
-                        } else {
-                            editBtn.classList.add('active');
-                            showContentEditor();
+                    closeBtn.onclick = closePanel;
+                    overlay.onclick = (e) => { if (e.target === overlay) closePanel(); };
+
+                } else {
+                    const managerControls = document.querySelector('.manager-controls');
+                    managerControls.style.display = 'flex';
+                    const triggerAnalyticsLoad = setupAnalytics();
+                    
+                    const instructionsBtn = document.getElementById('show-instructions-btn');
+                    const analyticsBtn = document.getElementById('show-analytics-btn');
+                    const editBtn = document.getElementById('edit-mode-btn');
+
+                    const mainContentPanel = document.getElementById('main-content-wrapper');
+                    const analyticsPanel = document.getElementById('analytics-panel');
+
+                    function switchManagerView(view) {
+                        mainContentPanel.style.display = 'none';
+                        analyticsPanel.style.display = 'none';
+                        
+                        instructionsBtn.classList.remove('active');
+                        analyticsBtn.classList.remove('active');
+                        editBtn.classList.remove('active');
+
+                        if (view === 'instructions' || view === 'editor') {
+                            mainContentPanel.style.display = 'block';
+                            if (view === 'instructions') {
+                                instructionsBtn.classList.add('active');
+                                hideContentEditor();
+                            } else {
+                                editBtn.classList.add('active');
+                                showContentEditor();
+                            }
+                        } else if (view === 'analytics') {
+                            analyticsPanel.style.display = 'block';
+                            analyticsBtn.classList.add('active');
+                            triggerAnalyticsLoad();
                         }
-                    } else if (view === 'analytics') {
-                        analyticsPanel.style.display = 'block';
-                        analyticsBtn.classList.add('active');
-                        triggerAnalyticsLoad();
                     }
+
+                    instructionsBtn.addEventListener('click', () => switchManagerView('instructions'));
+                    analyticsBtn.addEventListener('click', () => switchManagerView('analytics'));
+                    editBtn.addEventListener('click', () => switchManagerView('editor'));
+
+                    document.getElementById('cancel-edit-btn').addEventListener('click', () => switchManagerView('instructions'));
                 }
-
-                instructionsBtn.addEventListener('click', () => switchManagerView('instructions'));
-                analyticsBtn.addEventListener('click', () => switchManagerView('analytics'));
-                editBtn.addEventListener('click', () => switchManagerView('editor'));
-
-                document.getElementById('cancel-edit-btn').addEventListener('click', () => switchManagerView('instructions'));
-            } else { 
-                managerControls.style.display = 'none';
             }
+        }
 
-            document.getElementById('save-content-btn').addEventListener('click', saveContent);
-            document.getElementById('tab-btn-layout').addEventListener('click', () => switchEditorTab('layout'));
-            document.getElementById('tab-btn-instructions').addEventListener('click', () => switchEditorTab('instructions'));
-            document.getElementById('tab-btn-managers').addEventListener('click', () => switchEditorTab('managers'));
-            document.getElementById('add-section-btn').addEventListener('click', addSection);
+        async function fetchAndRenderMobileAnalytics() {
+            const contentDiv = document.getElementById('mobile-analytics-content');
+            contentDiv.innerHTML = `<p>${getTranslatedText('loading')}</p>`;
+            const token = getLocalStorage('chaterlabAuthToken', '');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/analytics?period=day`, { headers: { 'Authorization': token } });
+                if (!response.ok) throw new Error(getTranslatedText('analytics_load_error'));
+                const data = await response.json();
+                
+                const texts = uiTexts[getLocalStorage('chaterlabLang', 'ru')];
+                const totalClicks = data.detailed_log.length;
+                const topEmployee = data.employee_summary?.[0]?.username || '—';
+                const topTemplateId = data.template_summary?.[0]?.button_id;
+                const topTemplateLabel = topTemplateId ? (findButtonById(topTemplateId)?.label || '—') : '—';
+
+                contentDiv.innerHTML = `
+                    <div class="kpi-grid">
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${totalClicks}</h3></div>
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiMostActive}</p><h3 class="kpi-card-value">${topEmployee}</h3></div>
+                    </div>
+                     <div class="kpi-card" style="margin-top: 16px;"><p class="kpi-card-title">${texts.kpiTopTemplate}</p><h3 class="kpi-card-value">${topTemplateLabel}</h3></div>
+                `;
+
+            } catch (error) {
+                contentDiv.innerHTML = `<p style="color: var(--error-color);">${error.message}</p>`;
+            }
         }
 
         function setupAnalytics() {
@@ -1297,6 +1415,18 @@
             } catch (error) {
                 showToast(getTranslatedText(error.message), true);
             }
+        }
+        
+        function setupAccordion() {
+            if (!isMobile()) return;
+            const sidebar = document.getElementById('sidebar-content');
+            sidebar.addEventListener('click', (e) => {
+                const header = e.target.closest('h2');
+                if (header) {
+                    const section = header.parentElement;
+                    section.classList.toggle('active');
+                }
+            });
         }
         
         document.addEventListener('DOMContentLoaded', () => {
