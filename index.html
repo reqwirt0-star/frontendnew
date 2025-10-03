@@ -405,7 +405,7 @@
                 analytics_load_error: 'Помилка завантаження статистики',
                 no_templates_for_button: 'Немає шаблонів для цієї кнопки',
                 copy_success: 'Скопировано ({current}/{total})',
-                copy_success_generic: 'Текст успішно скопийовано!',
+                copy_success_generic: 'Текст успішно скопійовано!',
                 favorites_load_error: 'Не вдалося завантажити обране',
                 favorites_save_error: 'Помилка збереження обраного'
             }
@@ -629,12 +629,13 @@
 
             const channelName = selectedChannelEl.value;
             const manager = appContent.managers[selectedManagerId];
-            const managerContact = channelName === 'Telegram' ? manager.telegram : manager.whatsapp;
+            const managerContact = channelName.toLowerCase() === 'telegram' ? manager.telegram : manager.whatsapp;
             
-            let template = buttonData.templates[0];
-            template = template.replace('{contact_method}', channelName).replace('{manager_contact}', managerContact);
+            let finalText = buttonData.templates[0];
+            finalText = finalText.replace(/\{contact_method\}/g, channelName);
+            finalText = finalText.replace(/\{manager_contact\}/g, managerContact);
             
-            navigator.clipboard.writeText(template).then(() => {
+            navigator.clipboard.writeText(finalText).then(() => {
                 showToast(getTranslatedText('copy_success_generic'));
                 trackClick(buttonData.id);
             });
@@ -1116,7 +1117,9 @@
             
             const assignmentContainer = document.createElement('div');
             assignmentContainer.className = 'manager-assignment-container';
-            buttonDiv.appendChild(assignmentContainer);
+            // Insert after the options
+            buttonDiv.querySelector('.button-options').insertAdjacentElement('afterend', assignmentContainer);
+
 
             const addVariantBtn = document.createElement('button');
             addVariantBtn.className = 'add-variant-btn';
@@ -1128,13 +1131,14 @@
                 newVariant.querySelector('textarea').focus();
             };
 
-            buttonDiv.insertBefore(addVariantBtn, assignmentContainer);
+            // Insert before the options
+            buttonDiv.querySelector('.button-options').insertAdjacentElement('beforebegin', addVariantBtn);
             buttonDiv.querySelector('.delete-btn').onclick = () => buttonDiv.remove();
 
-            const renderManagerAssignment = () => {
+            const renderManagerAssignment = (currentButtonData) => {
                 if (buttonDiv.querySelector('.is-contact-btn-toggle').checked) {
                     let managerCheckboxesHTML = `<h4 data-key="managerAssignmentTitle">${getTranslatedText('managerAssignmentTitle')}</h4><div class="manager-assignment-grid">`;
-                    const currentButtonData = findButtonById(button.id) || button;
+                    
                     if (appContent.managers && Object.keys(appContent.managers).length > 0) {
                         for (const [id, manager] of Object.entries(appContent.managers)) {
                             const isChecked = currentButtonData.manager_ids && currentButtonData.manager_ids.includes(id) ? 'checked' : '';
@@ -1154,10 +1158,14 @@
                  applyTranslations();
             };
 
-            buttonDiv.querySelector('.is-contact-btn-toggle').addEventListener('change', renderManagerAssignment);
+            buttonDiv.querySelector('.is-contact-btn-toggle').addEventListener('change', () => {
+                // To show the manager list immediately after checking, we pass a temporary object
+                const tempData = { ...button, manager_ids: [] }; 
+                renderManagerAssignment(tempData);
+            });
             
             // Initial render
-            renderManagerAssignment();
+            renderManagerAssignment(button);
             
             return buttonDiv;
         }
