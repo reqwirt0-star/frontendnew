@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChaterLab Quick Replies</title>
+    <title>ChaterLab Quick Replies (DEBUG MODE)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -403,7 +403,7 @@
                 analytics_db_error: 'Помилка при отриманні аналітики з БД.',
                 analytics_server_error: 'Помилка на сервері при отриманні аналітики.',
                 analytics_load_error: 'Помилка завантаження статистики',
-                no_templates_for_button: 'Немає шаблонів для цієї кнопки',
+                no_templates_for_button: 'Нет шаблонов для этой кнопки',
                 copy_success: 'Скопировано ({current}/{total})',
                 copy_success_generic: 'Текст успішно скопійовано!',
                 favorites_load_error: 'Не вдалося завантажити обране',
@@ -637,21 +637,20 @@
             
             const managerContact = channelName.toLowerCase() === 'telegram' ? manager.telegram : manager.whatsapp;
 
-            // --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
             if (buttonData.currentIndex === undefined) buttonData.currentIndex = 0;
             const baseTemplate = buttonData.templates[buttonData.currentIndex];
-            buttonData.currentIndex = (buttonData.currentIndex + 1) % buttonData.templates.length;
-            // --- КОНЕЦ ИСПРАВЛЕНИЯ ---
             
-            let finalText = baseTemplate; // Используем выбранный по кругу шаблон
+            let finalText = baseTemplate; 
             finalText = finalText.replace(/\{contact_method\}/g, channelName);
             finalText = finalText.replace(/\{manager_contact\}/g, managerContact);
             
             navigator.clipboard.writeText(finalText).then(() => {
                 let message = getTranslatedText('copy_success');
-                message = message.replace('{current}', buttonData.currentIndex === 0 ? buttonData.templates.length : buttonData.currentIndex).replace('{total}', buttonData.templates.length);
+                const nextIndex = (buttonData.currentIndex + 1) % buttonData.templates.length;
+                message = message.replace('{current}', buttonData.currentIndex + 1).replace('{total}', buttonData.templates.length);
                 showToast(message);
                 trackClick(buttonData.id);
+                buttonData.currentIndex = nextIndex;
             });
 
             closeContactModal();
