@@ -21,8 +21,6 @@
         .manager-assignment-container{margin-top:20px;padding-top:20px;border-top:1px dashed var(--border-color)}.manager-assignment-container h4{margin-top:0;margin-bottom:12px;font-size:14px;font-weight:600;color:var(--text-secondary)}.manager-assignment-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));gap:12px}.checkbox-wrapper{display:flex;align-items:center;background-color:var(--background-main);padding:10px;border-radius:8px;border:1px solid var(--border-color)}.checkbox-wrapper input{width:18px;height:18px;margin-right:10px;accent-color:var(--primary-blue)}.checkbox-wrapper label{font-weight:500;font-size:14px;color:var(--text-primary);cursor:pointer}
         .button-options{margin-top:16px; padding-top: 16px; border-top: 1px dashed var(--border-color);}
         .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:2500;opacity:0;pointer-events:none;transition:opacity .3s ease}.modal-overlay.show{opacity:1;pointer-events:auto}.modal-content{background-color:var(--background-card);padding:32px;border-radius:16px;width:500px;max-width:95%;box-shadow:var(--shadow-lg);transform:scale(.95);transition:transform .3s ease}.modal-overlay.show .modal-content{transform:scale(1)}.modal-content h3{margin-top:0;font-size:22px;color:var(--text-primary)}.modal-section{margin-bottom:24px}.modal-section h4{margin-bottom:12px;font-size:14px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px}.modal-radio-group{display:flex;gap:12px}.modal-radio-group label{flex:1;display:block;padding:12px 16px;border:2px solid var(--border-color);border-radius:12px;cursor:pointer;transition:all .2s ease;font-weight:500}.modal-radio-group input{display:none}.modal-radio-group input:checked+span{color:var(--primary-blue)}.modal-radio-group label:hover{border-color:var(--primary-blue);background-color:var(--light-blue-bg)}.modal-radio-group input:checked+label{border-color:var(--primary-blue);background-color:var(--light-blue-bg);box-shadow:0 0 0 3px rgba(59,130,246,.1)}.modal-select{width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background-color:var(--background-main);color:var(--text-primary);font-family:inherit}.modal-select:focus{outline:none;border-color:var(--primary-blue)}.modal-buttons{display:flex;gap:12px;justify-content:flex-end;margin-top:32px}.modal-buttons button{padding:12px 24px;font-size:15px;font-weight:600;border-radius:12px;cursor:pointer;border:none;transition:all .2s ease}#modal-confirm-btn{background-color:var(--primary-blue);color:#fff}#modal-confirm-btn:hover{background-color:var(--primary-blue-hover)}#modal-cancel-btn{background-color:transparent;color:var(--text-secondary)}#modal-cancel-btn:hover{background-color:var(--light-blue-bg)}
-        
-        /* === USER MANAGEMENT STYLES START === */
         #panel-users .editor-section { margin-bottom: 24px; }
         .user-list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
         .user-list-item:last-child { border-bottom: none; }
@@ -34,8 +32,6 @@
         #add-user-form { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 16px; align-items: flex-end; }
         #add-user-form input, #add-user-form select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--border-color); background-color: var(--background-main); font-size: 14px; color: var(--text-primary); font-family: inherit; }
         #add-user-form button { padding: 12px 24px; }
-        /* === USER MANAGEMENT STYLES END === */
-
         #mobile-admin-panel-toggle { display: none; }
         .mobile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity .3s ease; }
         .mobile-overlay.show { opacity: 1; pointer-events: auto; }
@@ -78,6 +74,7 @@
 
             header { font-size: 22px; padding: 16px; }
             .login-form-container { width: 90%; padding: 32px 24px; }
+            #add-user-form { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -965,7 +962,7 @@
             const applyTheme = (theme) => {
                 document.body.classList.toggle('dark-mode', theme === 'dark');
                 if (toggle) toggle.checked = (theme === 'dark');
-                if (!isMobile() && document.getElementById('content-editor').style.display === 'block') {
+                if (!isMobile() && document.getElementById('content-editor') && document.getElementById('content-editor').style.display === 'block') {
                     tinymce.remove();
                     initInstructionsEditor();
                 }
@@ -1026,7 +1023,7 @@
                     const closePanel = () => {
                          if(overlay) {
                             overlay.classList.remove('show');
-                            setTimeout(() => overlay.style.display = 'none', 300);
+                            setTimeout(() => { if(overlay) overlay.style.display = 'none'; }, 300);
                         }
                     };
 
@@ -1035,7 +1032,7 @@
 
                 } else {
                     const managerControls = document.querySelector('.manager-controls');
-                    managerControls.style.display = 'flex';
+                    if(managerControls) managerControls.style.display = 'flex';
                     const triggerAnalyticsLoad = setupAnalytics();
                     
                     const instructionsBtn = document.getElementById('show-instructions-btn');
@@ -1072,7 +1069,6 @@
                     instructionsBtn.addEventListener('click', () => switchManagerView('instructions'));
                     analyticsBtn.addEventListener('click', () => switchManagerView('analytics'));
                     editBtn.addEventListener('click', () => switchManagerView('editor'));
-
                     document.getElementById('cancel-edit-btn').addEventListener('click', () => switchManagerView('instructions'));
                 }
             }
@@ -1366,7 +1362,6 @@
                 renderManagerAssignment(tempData);
             });
             
-            // Initial render
             renderManagerAssignment(button);
             
             return buttonDiv;
@@ -1606,6 +1601,20 @@
             
             const addUserForm = document.getElementById('add-user-form');
             if(addUserForm) addUserForm.addEventListener('submit', createUser);
+
+            // --- ИСПРАВЛЕНИЕ: ВОССТАНАВЛИВАЕМ ОБРАБОТЧИКИ КНОПОК РЕДАКТОРА ---
+            const tabLayout = document.getElementById('tab-btn-layout');
+            if(tabLayout) tabLayout.addEventListener('click', () => switchEditorTab('layout'));
+            
+            const tabInstructions = document.getElementById('tab-btn-instructions');
+            if(tabInstructions) tabInstructions.addEventListener('click', () => switchEditorTab('instructions'));
+
+            const tabManagers = document.getElementById('tab-btn-managers');
+            if(tabManagers) tabManagers.addEventListener('click', () => switchEditorTab('managers'));
+
+            const tabUsers = document.getElementById('tab-btn-users');
+            if(tabUsers) tabUsers.addEventListener('click', () => switchEditorTab('users'));
+            // --- КОНЕЦ ИСПРАВЛЕНИЯ ---
         });
     </script>
 </body>
