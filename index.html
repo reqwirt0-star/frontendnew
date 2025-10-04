@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChaterLab Quick Replies</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,163 +35,55 @@
         #add-user-form { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 16px; align-items: flex-end; }
         #add-user-form input, #add-user-form select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--border-color); background-color: var(--background-main); font-size: 14px; color: var(--text-primary); font-family: inherit; }
         #add-user-form button { padding: 12px 24px; }
-
-        /* --- START: MOBILE-SPECIFIC STYLES --- */
-        #mobile-ui-container, #mobile-editor-screen {
-            display: none;
-        }
+        #mobile-admin-panel-toggle { display: none; }
+        .mobile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity .3s ease; }
+        .mobile-overlay.show { opacity: 1; pointer-events: auto; }
+        .mobile-panel { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--background-card); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 24px; transform: translateY(100%); transition: transform .3s ease-out; }
+        .mobile-overlay.show .mobile-panel { transform: translateY(0); }
+        .mobile-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .mobile-panel-header h3 { margin: 0; }
+        .mobile-panel-close { font-size: 24px; cursor: pointer; border: none; background: none; color: var(--text-secondary); }
 
         @media (max-width: 768px) {
-            body { overflow: hidden; }
-            #app-container { display: none !important; } /* Hide the entire desktop container */
+            body { overflow: auto; }
+            main { flex-direction: column; height: auto; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); padding: 16px; overflow-y: visible; height: auto; }
+            .sidebar-scrollable-content { overflow-y: visible; margin-right: 0; padding-right: 0; }
+            .info { display: none !important; } 
+            .manager-controls-segmented { display: none !important; } 
             
-            #mobile-ui-container {
-                display: flex;
-                flex-direction: column;
-                height: 100vh;
-                width: 100%;
-                background-color: var(--background-main);
-            }
-
-            .mobile-screen {
-                display: none;
-                flex-direction: column;
-                flex-grow: 1;
-                overflow: hidden;
-            }
-            .mobile-screen.active {
-                display: flex;
-            }
-
-            .mobile-screen-header {
-                flex-shrink: 0;
-                padding: 16px;
-                font-size: 22px;
-                font-weight: 700;
-                border-bottom: 1px solid var(--border-color);
-                background-color: var(--background-card);
-                text-align: center;
-            }
-
-            .mobile-screen-content {
-                flex-grow: 1;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-                overscroll-behavior-y: contain;
-                padding: 16px;
-            }
-            #mobile-screen-templates .mobile-screen-content { padding: 0; }
-            #mobile-screen-templates .mobile-screen-content > div { padding: 16px; }
-
-            /* Styles for Templates screen specifically */
-            #mobile-templates-content .sidebar-section h2 { cursor: pointer; position: relative; padding: 8px; }
-            #mobile-templates-content .sidebar-section h2::after { content: '▼'; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); transition: transform .2s ease; font-size: 12px; }
-            #mobile-templates-content .sidebar-section.active h2::after { transform: translateY(-50%) rotate(180deg); }
-            #mobile-templates-content .sidebar-section .buttons-container { display: none; padding-top: 10px; }
-            #mobile-templates-content .sidebar-section.active .buttons-container { display: block; }
-            #mobile-templates-content .search-wrapper { border-bottom: none; padding-bottom: 0; margin-bottom: 16px;}
-            #mobile-templates-content .sidebar-section { margin-bottom: 8px;}
-
-            /* Styles for Menu screen */
-            #mobile-screen-menu .mobile-screen-content { padding: 16px 8px;}
-            .menu-card { background-color: var(--background-card); border-radius: 16px; padding: 16px; margin: 0 8px 16px 8px; box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 16px;}
-            .menu-card-icon { font-size: 24px; }
-            .menu-card-info .username { font-weight: 600; font-size: 18px; color: var(--text-primary); }
-            .menu-card-info .role { font-size: 14px; color: var(--text-secondary); }
-
-            .menu-list { list-style: none; padding: 0; margin: 0 8px; background-color: var(--background-card); border-radius: 16px; box-shadow: var(--shadow-sm); }
-            .menu-list-item { display: flex; align-items: center; padding: 16px; cursor: pointer; transition: background-color 0.2s; border-bottom: 1px solid var(--border-color); gap: 16px; }
-            .menu-list-item:last-child { border-bottom: none; }
-            .menu-list-item:active { background-color: rgba(0,0,0,0.05); }
-            body.dark-mode .menu-list-item:active { background-color: rgba(255,255,255,0.05); }
-            .menu-list-item-icon { color: var(--text-secondary); font-size: 22px; }
-            .menu-list-item-label { flex-grow: 1; font-weight: 500; }
-            .menu-list-item-value { color: var(--text-secondary); font-weight: 500; }
-            #mobile-logout-btn { color: var(--error-color); }
-            
-            #mobile-editor-btn { background-color: var(--primary-blue); color: #fff; border-radius: 12px; justify-content: center; margin-top: 16px;}
-            #mobile-editor-btn:active { background-color: var(--primary-blue-hover); }
-
-            /* Mobile Bottom Navigation */
-            #mobile-bottom-nav {
-                display: flex;
-                flex-shrink: 0;
-                height: 70px;
-                background-color: var(--background-card);
-                border-top: 1px solid var(--border-color);
-                box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-            }
-            .nav-btn {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                gap: 4px;
-                background: none;
-                border: none;
-                color: var(--text-secondary);
-                font-family: inherit;
-                font-size: 11px;
-                font-weight: 500;
-                cursor: pointer;
-                transition: color .2s ease;
-            }
-            .nav-btn svg {
-                width: 24px; height: 24px;
-                stroke-width: 2;
-            }
-            .nav-btn.active {
-                color: var(--primary-blue);
-            }
-
-            /* Mobile Fullscreen Editor */
-            #mobile-editor-screen {
+            #mobile-admin-panel-toggle {
+                display: none; 
                 position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: var(--background-main);
-                z-index: 1500;
-                transform: translateX(100%);
-                transition: transform 0.3s ease-in-out;
-                display: flex;
-                flex-direction: column;
+                bottom: 20px;
+                right: 20px;
+                width: 60px;
+                height: 60px;
+                background-color: var(--primary-blue);
+                color: white;
+                border: none;
+                border-radius: 50%;
+                font-size: 28px;
+                cursor: pointer;
+                box-shadow: var(--shadow-lg);
+                z-index: 999;
             }
-            #mobile-editor-screen.active {
-                transform: translateX(0);
-            }
-            .mobile-editor-header {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                padding: 12px;
-                background-color: var(--background-card);
-                border-bottom: 1px solid var(--border-color);
-                flex-shrink: 0;
-            }
-            .mobile-editor-back-btn { background: none; border: none; font-size: 28px; padding: 4px; cursor: pointer; color: var(--text-primary); line-height: 1;}
-            .mobile-editor-title { font-size: 20px; font-weight: 600; }
-            .mobile-editor-tabs { display: flex; overflow-x: auto; padding: 8px 12px; gap: 8px; background-color: var(--background-main); flex-shrink: 0; border-bottom: 1px solid var(--border-color);}
-            .mobile-editor-tabs::-webkit-scrollbar { display: none; }
-            .mobile-editor-tabs button { padding: 8px 16px; border: none; background-color: var(--background-card); color: var(--text-secondary); border-radius: 20px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: all 0.2s ease; }
-            .mobile-editor-tabs button.active { background-color: var(--primary-blue); color: #fff; }
-            .mobile-editor-content { flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-            .mobile-editor-panel { display: none; padding: 16px; }
-            .mobile-editor-panel.active { display: block; }
 
-            .mobile-editor-panel .editor-section { padding: 16px; }
-            .mobile-editor-panel #add-user-form { grid-template-columns: 1fr; }
-            .mobile-editor-panel #add-user-form button { width: 100%; }
+            .sidebar-section h2 { cursor: pointer; position: relative; padding-right: 30px; }
+            .sidebar-section h2::after { content: '▼'; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); transition: transform .2s ease; font-size: 12px; }
+            .sidebar-section.active h2::after { transform: translateY(-50%) rotate(180deg); }
+            .sidebar-section .buttons-container { display: none; padding-top: 10px; }
+            .sidebar-section.active .buttons-container { display: block; }
+
+            header { font-size: 22px; padding: 16px; }
+            .login-form-container { width: 90%; padding: 32px 24px; }
+            #add-user-form { grid-template-columns: 1fr; }
         }
-        /* --- END: MOBILE-SPECIFIC STYLES --- */
     </style>
 </head>
 <body class="login-active">
     <div id="animation-overlay"><div class="animation-content"><h1>ChaterLab</h1></div></div>
     <div id="login-screen"><div class="login-background"></div><div class="login-form-container"><h1 data-key="loginHeader">ChaterLab</h1><p data-key="loginSubheader">Панель быстрых ответов</p><div id="language-switcher-login"><button data-lang="ru" class="lang-btn">RU</button><button data-lang="en" class="lang-btn">EN</button><button data-lang="uk" class="lang-btn">UA</button></div><form id="login-form"><input type="text" id="login-username" required data-key="loginUsername" placeholder="Логин"><input type="password" id="login-password" required data-key="loginPassword" placeholder="Пароль"><button type="submit" data-key="loginBtn">Войти</button><div id="login-error"></div></form></div></div>
-    
     <div id="app-container" data-logged="false">
         <header>ChaterLab Quick Replies</header>
         <main>
@@ -222,8 +114,8 @@
                     <div id="content-editor" style="display: none;">
                         <div class="editor-main-controls">
                             <div class="editor-tabs">
-                                <button id="tab-btn-layout" class="active" data-key="tabLayout">Кнопки</button>
-                                <button id="tab-btn-instructions" data-key="tabInstructions">Инструкции</button>
+                                <button id="tab-btn-layout" class="active" data-key="tabLayout">Конструктор кнопок</button>
+                                <button id="tab-btn-instructions" data-key="tabInstructions">Инструкция</button>
                                 <button id="tab-btn-managers" data-key="tabManagers">Менеджеры</button>
                                 <button id="tab-btn-users" data-key="tabUsers">Пользователи</button>
                             </div>
@@ -241,9 +133,9 @@
                             <div class="editor-section"><h4 data-key="instructionTitleUk">Инструкция (UA)</h4><textarea id="instructions-editor-uk" style="width:100%;min-height:300px"></textarea></div>
                         </div>
                         <div id="panel-managers" class="editor-panel">
-                                <button class="add-btn" id="add-manager-btn" data-key="addManager">+ Добавить менеджера</button>
+                             <button class="add-btn" id="add-manager-btn" data-key="addManager">+ Добавить менеджера</button>
                         </div>
-                        <div id="panel-users" class="editor-panel">
+                         <div id="panel-users" class="editor-panel">
                             <div class="editor-section">
                                 <h4 data-key="addUserTitle">Добавить нового пользователя</h4>
                                 <form id="add-user-form">
@@ -277,97 +169,6 @@
             </div>
         </main>
     </div>
-
-    <div id="mobile-ui-container">
-        <div id="mobile-screen-templates" class="mobile-screen active">
-            <div class="mobile-screen-header" data-key="navTemplates">Шаблоны</div>
-            <div class="mobile-screen-content">
-                <div id="mobile-templates-content">
-                    </div>
-            </div>
-        </div>
-
-        <div id="mobile-screen-instructions" class="mobile-screen">
-            <div class="mobile-screen-header" data-key="navInstructions">Инструкция</div>
-            <div id="mobile-instructions-content" class="mobile-screen-content">
-                </div>
-        </div>
-
-        <div id="mobile-screen-analytics" class="mobile-screen">
-            <div class="mobile-screen-header" data-key="navAnalytics">Аналитика</div>
-            <div id="mobile-analytics-content" class="mobile-screen-content">
-                </div>
-        </div>
-
-        <div id="mobile-screen-menu" class="mobile-screen">
-            <div class="mobile-screen-header" data-key="navMenu">Меню</div>
-            <div class="mobile-screen-content">
-                <div id="mobile-user-card" class="menu-card">
-                    <div class="menu-card-icon">👤</div>
-                    <div class="menu-card-info">
-                        <div class="username">...</div>
-                        <div class="role">...</div>
-                    </div>
-                </div>
-
-                <ul class="menu-list">
-                    <li class="menu-list-item">
-                        <span class="menu-list-item-icon">🌗</span>
-                        <span class="menu-list-item-label" data-key="darkMode">Тёмная тема</span>
-                        <label class="theme-switch" for="mobile-theme-checkbox"><input type="checkbox" id="mobile-theme-checkbox" /><div class="slider round"></div></label>
-                    </li>
-                    <li id="mobile-lang-switcher" class="menu-list-item">
-                            <span class="menu-list-item-icon">🌐</span>
-                        <span class="menu-list-item-label" data-key="language">Язык</span>
-                        <span id="mobile-current-lang" class="menu-list-item-value">RU ></span>
-                    </li>
-                </ul>
-
-                <div id="mobile-manager-controls" style="display: none; padding: 0 8px;">
-                        <div id="mobile-editor-btn" class="menu-list-item">
-                        <span class="menu-list-item-icon">⚙️</span>
-                        <span class="menu-list-item-label" data-key="navEditor">Редактор контента</span>
-                    </div>
-                </div>
-                
-                <ul class="menu-list" style="margin-top: 16px;">
-                    <li id="mobile-logout-btn" class="menu-list-item">
-                        <span class="menu-list-item-icon">🚪</span>
-                        <span class="menu-list-item-label" data-key="logout">Выйти</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <nav id="mobile-bottom-nav">
-            <button class="nav-btn active" data-screen="templates">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                <span data-key="navTemplates">Шаблоны</span>
-            </button>
-            <button class="nav-btn" data-screen="instructions">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
-                <span data-key="navInstructions">Инструкция</span>
-            </button>
-            <button class="nav-btn" data-screen="analytics">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-                <span data-key="navAnalytics">Аналитика</span>
-            </button>
-            <button class="nav-btn" data-screen="menu">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                <span data-key="navMenu">Меню</span>
-            </button>
-        </nav>
-    </div>
-    <div id="mobile-editor-screen">
-        <div class="mobile-editor-header">
-            <button class="mobile-editor-back-btn">←</button>
-            <h2 class="mobile-editor-title" data-key="navEditor">Редактор</h2>
-        </div>
-        <div class="mobile-editor-tabs">
-            </div>
-        <div class="mobile-editor-content">
-            </div>
-    </div>
     <div id="toast" class="toast-notification"></div>
 
     <div id="contact-generator-modal" class="modal-overlay">
@@ -397,16 +198,30 @@
         </div>
     </div>
 
+    <button id="mobile-admin-panel-toggle">⚙️</button>
+    <div id="mobile-admin-overlay" class="mobile-overlay">
+        <div class="mobile-panel">
+            <div class="mobile-panel-header">
+                <h3 data-key="mobileAdminTitle">Админ-панель</h3>
+                <button id="mobile-panel-close" class="mobile-panel-close">&times;</button>
+            </div>
+            <div id="mobile-analytics-content"></div>
+            <div class="editor-unavailable-notice">
+                <h4 data-key="editorUnavailable">Редактор</h4>
+                <p data-key="editorUnavailableMsg">Полноценное редактирование доступно только в версии сайта для ПК.</p>
+            </div>
+        </div>
+    </div>
     <script>
-    "use strict";
-    const API_BASE_URL = 'https://backendchater.fly.dev';
-    let userRole = null;
-    let appContent = {};
-    let userName = null;
-    let userFavorites = [];
-    const isMobile = () => window.matchMedia("(max-width: 768px)").matches;
-    
-    const uiTexts = {
+        "use strict";
+        const API_BASE_URL = 'https://backendchater.fly.dev';
+        let userRole = null;
+        let appContent = {};
+        let userName = null;
+        let userFavorites = [];
+        const isMobile = () => window.matchMedia("(max-width: 768px)").matches;
+        
+        const uiTexts = {
             ru: {
                 lang_locale: 'ru',
                 loginHeader: 'ChaterLab', 
@@ -418,14 +233,14 @@
                 favoritesTitle: '⭐ Избранное',
                 darkMode: 'Тёмная тема',
                 logout: 'Выйти',
-                language: 'Язык',
-                navTemplates: 'Шаблоны',
                 navInstructions: 'Инструкция',
                 navAnalytics: 'Аналитика',
-                navMenu: 'Меню',
                 navEditor: 'Редактор',
-                tabLayout: 'Кнопки',
-                tabInstructions: 'Инструкции',
+                mobileAdminTitle: 'Админ-панель',
+                editorUnavailable: 'Редактор',
+                editorUnavailableMsg: 'Полноценное редактирование доступно только в версии сайта для ПК.',
+                tabLayout: 'Конструктор кнопок',
+                tabInstructions: 'Инструкция',
                 tabManagers: 'Менеджеры',
                 tabUsers: 'Пользователи',
                 addUserTitle: 'Добавить нового пользователя',
@@ -484,7 +299,6 @@
                 tableSection: 'Раздел',
                 noData: 'Нет данных за этот период.',
                 loading: 'Загрузка...',
-                analyticsForManagersOnly: 'Раздел аналитики доступен только для менеджеров.',
                 modalTitle: 'Создание контакта',
                 modalChannelTitle: '1. Выберите канал связи',
                 modalManagerTitle: '2. Выберите менеджера',
@@ -535,13 +349,13 @@
                 favoritesTitle: '⭐ Favorites',
                 darkMode: 'Dark Mode',
                 logout: 'Logout',
-                language: 'Language',
-                navTemplates: 'Templates',
                 navInstructions: 'Instructions',
                 navAnalytics: 'Analytics',
-                navMenu: 'Menu',
                 navEditor: 'Editor',
-                tabLayout: 'Buttons',
+                mobileAdminTitle: 'Admin Panel',
+                editorUnavailable: 'Editor',
+                editorUnavailableMsg: 'Full editing is only available on the desktop version of the site.',
+                tabLayout: 'Button Builder',
                 tabInstructions: 'Instructions',
                 tabManagers: 'Managers',
                 tabUsers: 'Users',
@@ -601,7 +415,6 @@
                 tableSection: 'Section',
                 noData: 'No data for this period.',
                 loading: 'Loading...',
-                analyticsForManagersOnly: 'Analytics section is available for managers only.',
                 modalTitle: 'Create Contact',
                 modalChannelTitle: '1. Select Channel',
                 modalManagerTitle: '2. Select Manager',
@@ -652,14 +465,14 @@
                 favoritesTitle: '⭐ Обране',
                 darkMode: 'Темна тема',
                 logout: 'Вийти',
-                language: 'Мова',
-                navTemplates: 'Шаблони',
                 navInstructions: 'Інструкція',
                 navAnalytics: 'Аналітика',
-                navMenu: 'Меню',
                 navEditor: 'Редактор',
-                tabLayout: 'Кнопки',
-                tabInstructions: 'Інструкції',
+                mobileAdminTitle: 'Адмін-панель',
+                editorUnavailable: 'Редактор',
+                editorUnavailableMsg: 'Повноцінне редагування доступне лише у версії сайту для ПК.',
+                tabLayout: 'Конструктор кнопок',
+                tabInstructions: 'Інструкція',
                 tabManagers: 'Менеджери',
                 tabUsers: 'Користувачі',
                 addUserTitle: 'Додати нового користувача',
@@ -718,7 +531,6 @@
                 tableSection: 'Розділ',
                 noData: 'Немає даних за цей період.',
                 loading: 'Завантаження...',
-                analyticsForManagersOnly: 'Розділ аналітики доступний лише для менеджерів.',
                 modalTitle: 'Створення контакту',
                 modalChannelTitle: '1. Оберіть канал зв\'язку',
                 modalManagerTitle: '2. Оберіть менеджера',
@@ -760,64 +572,57 @@
             }
         };
 
-    function getLocalStorage(key, defaultValue) { try { const val = localStorage.getItem(key); return val ? JSON.parse(val) : defaultValue; } catch (e) { return defaultValue; } }
-    function setLocalStorage(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.error(e); } }
-    
-    function getTranslatedText(key, replacements = {}) {
-        const lang = getLocalStorage('chaterlabLang', 'ru');
-        let text = (uiTexts[lang] && uiTexts[lang][key]) || uiTexts.ru[key] || key;
-        for (const placeholder in replacements) {
-            text = text.replace(`{${placeholder}}`, replacements[placeholder]);
-        }
-        return text;
-    }
-
-    function showToast(message, isError = false) { 
-        const t = document.getElementById('toast'); 
-        if(!t) return;
-        t.textContent = message; 
-        t.style.backgroundColor = isError ? 'var(--error-color)' : 'var(--success-color)'; 
-        t.style.bottom = isMobile() ? '80px' : '24px'; // Adjust for bottom nav
-        t.classList.add('show'); 
-        if (navigator.vibrate && !isError) navigator.vibrate(50); 
-        setTimeout(() => t.classList.remove('show'), 2000); 
-    }
-    
-    function generateId(prefix) { return prefix + Date.now() + Math.random().toString(16).slice(2); }
-    const userStatusTexts = { ru: { user: 'Пользователь', status: 'Статус', admin: 'Менеджер', worker: 'Сотрудник', access: 'Разрешено редактирование', noAccess: 'Редактирование не доступно' }, en: { user: 'User', status: 'Status', admin: 'Manager', worker: 'Employee', access: 'Editing is allowed', noAccess: 'Editing is not available' }, uk: { user: 'Користувач', status: 'Статус', admin: 'Менеджер', worker: 'Співробітник', access: 'Дозволено редагування', noAccess: 'Редагування не доступно' } };
-    
-    function applyTranslations() {
-        const lang = getLocalStorage('chaterlabLang', 'ru');
-        const texts = uiTexts[lang] || uiTexts.ru;
-        document.querySelectorAll('[data-key]').forEach(el => {
-            const key = el.dataset.key;
-            if (texts[key]) {
-                if (el.tagName === 'INPUT' && (el.placeholder !== undefined)) {
-                    el.placeholder = texts[key];
-                } else if (el.title !== undefined && el.title !== '') {
-                    el.title = texts[key]
-                }
-                else {
-                    el.textContent = texts[key];
-                }
-            }
-        });
-            if (isMobile()) {
-            const langValueEl = document.getElementById('mobile-current-lang');
-            if(langValueEl) langValueEl.textContent = `${lang.toUpperCase()} >`;
-        }
-    }
-
-    function switchLanguage(lang) {
-        setLocalStorage('chaterlabLang', lang);
-        applyTranslations(); 
-        document.querySelectorAll('#language-switcher-login button').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
+        function getLocalStorage(key, defaultValue) { try { const val = localStorage.getItem(key); return val ? JSON.parse(val) : defaultValue; } catch (e) { return defaultValue; } }
+        function setLocalStorage(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.error(e); } }
         
-        if (document.getElementById('app-container')?.getAttribute('data-logged') === 'true' || document.getElementById('mobile-ui-container')?.style.display === 'flex') {
-            document.querySelectorAll('#language-switcher-app button').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
-            updateInstructions(lang);
-            
-            if (!isMobile()) {
+        function getTranslatedText(key, replacements = {}) {
+            const lang = getLocalStorage('chaterlabLang', 'ru');
+            let text = (uiTexts[lang] && uiTexts[lang][key]) || uiTexts.ru[key] || key;
+            for (const placeholder in replacements) {
+                text = text.replace(`{${placeholder}}`, replacements[placeholder]);
+            }
+            return text;
+        }
+
+        function showToast(message, isError = false) { 
+            const t = document.getElementById('toast'); 
+            t.textContent = message; 
+            t.style.backgroundColor = isError ? 'var(--error-color)' : 'var(--success-color)'; 
+            t.classList.add('show'); 
+            if (navigator.vibrate && !isError) navigator.vibrate(50); 
+            setTimeout(() => t.classList.remove('show'), 2000); 
+        }
+        
+        function generateId(prefix) { return prefix + Date.now() + Math.random().toString(16).slice(2); }
+        const userStatusTexts = { ru: { user: 'Пользователь', status: 'Статус', admin: 'Менеджер', worker: 'Сотрудник', access: 'Разрешено редактирование', noAccess: 'Редактирование не доступно' }, en: { user: 'User', status: 'Status', admin: 'Manager', worker: 'Employee', access: 'Editing is allowed', noAccess: 'Editing is not available' }, uk: { user: 'Користувач', status: 'Статус', admin: 'Менеджер', worker: 'Співробітник', access: 'Дозволено редагування', noAccess: 'Редагування не доступно' } };
+        
+        function applyTranslations() {
+            const lang = getLocalStorage('chaterlabLang', 'ru');
+            const texts = uiTexts[lang] || uiTexts.ru;
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.dataset.key;
+                if (texts[key]) {
+                    if (el.tagName === 'INPUT' && (el.placeholder !== undefined)) {
+                        el.placeholder = texts[key];
+                    } else if (el.title !== undefined && el.title !== '') {
+                        el.title = texts[key]
+                    }
+                    else {
+                        el.textContent = texts[key];
+                    }
+                }
+            });
+        }
+
+        function switchLanguage(lang) {
+            setLocalStorage('chaterlabLang', lang);
+            applyTranslations(); 
+            const langButtonsLogin = document.querySelectorAll('#language-switcher-login button');
+            langButtonsLogin.forEach(btn => { btn.classList.toggle('active', btn.dataset.lang === lang); });
+            if (document.getElementById('app-container').getAttribute('data-logged') === 'true') {
+                const langButtonsApp = document.querySelectorAll('#language-switcher-app button');
+                langButtonsApp.forEach(btn => { btn.classList.toggle('active', btn.dataset.lang === lang); });
+                updateInstructions(lang);
                 renderUserStatusCard();
                 const analyticsPanel = document.getElementById('analytics-panel');
                 if (analyticsPanel && analyticsPanel.style.display === 'block') {
@@ -825,1155 +630,1083 @@
                 }
             }
         }
-    }
-    
-    async function initApp() {
-        const authToken = getLocalStorage('chaterlabAuthToken', null);
-        const savedRole = getLocalStorage('chaterlabUserRole', null);
-        const savedName = getLocalStorage('chaterlabUserName', null);
-
-        if (authToken && savedRole && savedName) {
-            userRole = savedRole;
-            userName = savedName;
-            document.getElementById('login-screen').style.display = 'none';
-            document.body.classList.remove('login-active');
-            
-            await fetchContent();
-            await fetchFavorites();
-            
-            if (isMobile()) {
-                document.getElementById('mobile-ui-container').style.display = 'flex';
-                setupMobileUI();
-            } else {
+        
+        async function checkLogin() {
+            const authToken = getLocalStorage('chaterlabAuthToken', null);
+            const savedRole = getLocalStorage('chaterlabUserRole', null);
+            const savedName = getLocalStorage('chaterlabUserName', null);
+            if (authToken && savedRole && savedName) {
+                userRole = savedRole;
+                userName = savedName;
+                document.getElementById('login-screen').style.display = 'none';
+                document.body.classList.remove('login-active');
                 const appContainer = document.getElementById('app-container');
                 appContainer.setAttribute('data-logged', 'true');
                 appContainer.style.opacity = '1';
-                renderSidebar();
+                appContainer.style.display = 'flex';
+                await fetchContent();
+                await fetchFavorites();
+                updateFavoritesUI();
+                setupDarkMode();
                 renderUserStatusCard();
-                setupSearch('#sidebar-content');
+                return true;
+            } else {
+                logout(false);
+                return false;
+            }
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const usernameInput = document.getElementById('login-username');
+            const passwordInput = document.getElementById('login-password');
+            const errorDiv = document.getElementById('login-error');
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            errorDiv.classList.remove('show');
+            try {
+                const response = await fetch(`${API_BASE_URL}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message);
+                setLocalStorage('chaterlabAuthToken', data.token);
+                setLocalStorage('chaterlabUserRole', data.role);
+                setLocalStorage('chaterlabUserName', username);
+                if (!getLocalStorage('chaterlabLang', null)) setLocalStorage('chaterlabLang', 'ru');
+                userRole = data.role;
+                userName = username;
+                document.body.classList.remove('login-active');
+                document.getElementById('login-screen').style.display = 'none';
+                const overlay = document.getElementById('animation-overlay');
+                overlay.style.display = 'flex';
+                void overlay.offsetHeight;
+                overlay.classList.add('animate');
+                setTimeout(async () => {
+                    overlay.style.display = 'none';
+                    overlay.classList.remove('animate');
+                    const appContainer = document.getElementById('app-container');
+                    appContainer.style.display = 'flex';
+                    appContainer.setAttribute('data-logged', 'true');
+                    appContainer.style.opacity = '1';
+                    await fetchContent();
+                    await fetchFavorites();
+                    updateFavoritesUI();
+                    setupDarkMode();
+                    renderUserStatusCard();
+                }, 2500);
+            } catch (error) {
+                errorDiv.textContent = getTranslatedText(error.message);
+                errorDiv.classList.add('show'); // <-- Показываем ошибку
+            }
+        }
+
+        function logout(doUIRefresh = true) {
+            localStorage.removeItem('chaterlabAuthToken');
+            localStorage.removeItem('chaterlabUserRole');
+            localStorage.removeItem('chaterlabUserName');
+            userRole = null;
+            userName = null;
+            if (doUIRefresh) {
+                location.reload();
+            }
+        }
+
+        async function fetchContent() {
+            try {
+                // Публичный контент не требует токена
+                const response = await fetch(`${API_BASE_URL}/content`);
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.message);
+                };
+                appContent = await response.json();
+                renderSidebar();
+                const currentLang = getLocalStorage('chaterlabLang', 'ru');
+                updateInstructions(currentLang);
+                checkUserRoleAndSetupManagerUI();
+                setupSearch();
+                setupAccordion();
+                applyTranslations();
+            } catch (error) {
+                showToast(getTranslatedText(error.message), true);
+            }
+        }
+        
+        function findButtonById(buttonId) {
+            if (!appContent.layout) return null;
+            for (const section of appContent.layout) {
+                const button = section.buttons.find(b => b.id === buttonId);
+                if (button) return button;
+            }
+            return null;
+        }
+
+        function handleSidebarButtonClick(buttonId) {
+            const buttonData = findButtonById(buttonId);
+            if (!buttonData) return;
+
+            if (buttonData.type === 'contact_generator') {
+                openContactModal(buttonData);
+            } else {
+                copyDynamicTemplate(buttonId);
+            }
+        }
+
+        const contactModal = document.getElementById('contact-generator-modal');
+        const managerSelect = document.getElementById('manager-select');
+        const confirmBtn = document.getElementById('modal-confirm-btn');
+        const cancelBtn = document.getElementById('modal-cancel-btn');
+
+        function openContactModal(buttonData) {
+            managerSelect.innerHTML = '';
+            if (buttonData.manager_ids && appContent.managers) {
+                buttonData.manager_ids.forEach(managerId => {
+                    const manager = appContent.managers[managerId];
+                    if (manager) {
+                        const option = document.createElement('option');
+                        option.value = managerId;
+                        option.textContent = manager.name;
+                        managerSelect.appendChild(option);
+                    }
+                });
             }
             
-            updateFavoritesUI();
-            setupDarkMode();
+            confirmBtn.onclick = () => generateAndCopyContact(buttonData);
             
-        } else {
-            logout(false);
+            contactModal.classList.add('show');
         }
-    }
+        
+        function closeContactModal() {
+            contactModal.classList.remove('show');
+            confirmBtn.onclick = null;
+        }
 
-    async function handleLogin(event) {
-        event.preventDefault();
-        const usernameInput = document.getElementById('login-username');
-        const passwordInput = document.getElementById('login-password');
-        const errorDiv = document.getElementById('login-error');
-        const username = usernameInput.value.trim();
-        const password = passwordInput.value.trim();
-        errorDiv.classList.remove('show');
-        try {
-            const response = await fetch(`${API_BASE_URL}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message);
-            setLocalStorage('chaterlabAuthToken', data.token);
-            setLocalStorage('chaterlabUserRole', data.role);
-            setLocalStorage('chaterlabUserName', username);
-            if (!getLocalStorage('chaterlabLang', null)) setLocalStorage('chaterlabLang', 'ru');
+        cancelBtn.addEventListener('click', closeContactModal);
+        contactModal.addEventListener('click', (e) => {
+             if(e.target === contactModal) closeContactModal();
+        });
+
+        function generateAndCopyContact(buttonData) {
+            const selectedChannelEl = document.querySelector('input[name="channel"]:checked');
+            const selectedManagerId = managerSelect.value;
+
+            if (!selectedChannelEl || !selectedManagerId) {
+                showToast(getTranslatedText('modalError'), true);
+                return;
+            }
+
+            const channelName = selectedChannelEl.value;
+            const manager = appContent.managers[selectedManagerId];
+
+            if (!manager) {
+                showToast('Ошибка: не удалось найти данные менеджера.', true);
+                return;
+            }
             
-            const overlay = document.getElementById('animation-overlay');
-            overlay.style.display = 'flex';
-            void overlay.offsetHeight;
-            overlay.classList.add('animate');
+            const managerContact = channelName.toLowerCase() === 'telegram' ? manager.telegram : manager.whatsapp;
+
+            if (buttonData.currentIndex === undefined) buttonData.currentIndex = 0;
+            const baseTemplate = buttonData.templates[buttonData.currentIndex];
             
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                overlay.classList.remove('animate');
-                initApp();
-            }, 2500);
+            let finalText = baseTemplate; 
+            finalText = finalText.replace(/\{contact_method\}/g, channelName);
+            finalText = finalText.replace(/\{manager_contact\}/g, managerContact);
+            
+            navigator.clipboard.writeText(finalText).then(() => {
+                let message = getTranslatedText('copy_success');
+                const nextIndex = (buttonData.currentIndex + 1) % buttonData.templates.length;
+                message = message.replace('{current}', buttonData.currentIndex + 1).replace('{total}', buttonData.templates.length);
+                showToast(message);
+                trackClick(buttonData.id);
+                buttonData.currentIndex = nextIndex;
+            });
 
-        } catch (error) {
-            errorDiv.textContent = getTranslatedText(error.message);
-            errorDiv.classList.add('show');
+            closeContactModal();
         }
-    }
 
-    function logout(doUIRefresh = true) {
-        localStorage.removeItem('chaterlabAuthToken');
-        localStorage.removeItem('chaterlabUserRole');
-        localStorage.removeItem('chaterlabUserName');
-        userRole = null;
-        userName = null;
-        if (doUIRefresh) {
-            location.reload();
+        function renderSidebar() {
+            const container = document.getElementById('sidebar-content');
+            container.innerHTML = '';
+            appContent.layout?.forEach(section => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'sidebar-section';
+                const title = document.createElement('h2');
+                title.textContent = section.title;
+                sectionDiv.appendChild(title);
+
+                const buttonsContainer = document.createElement('div');
+                buttonsContainer.className = 'buttons-container';
+
+                section.buttons.forEach(buttonData => {
+                    const button = document.createElement('button');
+                    button.className = 'sidebar-button';
+                    button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span><div class="favorite-star" data-button-id="${buttonData.id}">☆</div>`;
+                    button.onclick = (e) => { 
+                        if (e.target.classList.contains('favorite-star')) return; 
+                        handleSidebarButtonClick(buttonData.id);
+                    };
+                    buttonsContainer.appendChild(button);
+                });
+                sectionDiv.appendChild(buttonsContainer);
+                container.appendChild(sectionDiv);
+            });
+            document.querySelector('.sidebar-scrollable-content').addEventListener('click', handleFavoriteClick);
         }
-    }
-
-    async function fetchContent() {
-        try {
-            const response = await fetch(`${API_BASE_URL}/content`);
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message);
-            };
-            appContent = await response.json();
+        
+        function renderUserStatusCard() {
+            const card = document.getElementById('user-status-card');
+            if (!card || !userName || !userRole) return;
             const currentLang = getLocalStorage('chaterlabLang', 'ru');
-            updateInstructions(currentLang);
-            checkUserRoleAndSetupManagerUI();
-            applyTranslations();
-        } catch (error) {
-            showToast(getTranslatedText(error.message), true);
+            const texts = userStatusTexts[currentLang] || userStatusTexts.ru;
+            let statusText, accessText, statusColor;
+            if (userRole === 'manager') {
+                statusText = texts.admin;
+                accessText = texts.access;
+                statusColor = 'var(--accent-purple)';
+            } else {
+                statusText = texts.worker;
+                accessText = texts.noAccess;
+                statusColor = 'var(--text-secondary)';
+            }
+            card.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;"><span style="font-weight: 600; color: var(--text-primary);">${texts.user}:</span><span style="font-weight: 700; color: var(--primary-blue);">${userName}</span></div><div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-weight: 600; color: var(--text-primary);">${texts.status}:</span><span style="font-weight: 700; color: ${statusColor};">${statusText}</span></div><div style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; text-align: center;"><span style="color: ${userRole === 'manager' ? 'var(--success-color)' : 'var(--text-secondary)'}; font-weight: 500;">${accessText}</span></div>`;
         }
-    }
-    
-    function findButtonById(buttonId) {
-        if (!appContent.layout) return null;
-        for (const section of appContent.layout) {
-            const button = section.buttons.find(b => b.id === buttonId);
-            if (button) return button;
+
+        function updateInstructions(lang) {
+            const instructionsDiv = document.getElementById('instructions');
+            if (appContent.instructionsContent && appContent.instructionsContent[lang]) {
+                instructionsDiv.innerHTML = appContent.instructionsContent[lang];
+            } else {
+                const fallbackMessage = { 'ru': '<h3>Инструкция не найдена</h3><p>Для выбранного языка нет инструкции в базе данных.</p>', 'en': '<h3>Instructions Not Found</h3><p>No instructions are available for the selected language in the database.</p>', 'uk': '<h3>Інструкція не знайдена</h3><p>Для вибраної мови немає інструкції в базі даних.</p>' };
+                instructionsDiv.innerHTML = fallbackMessage[lang] || fallbackMessage['ru'];
+            }
         }
-        return null;
-    }
-
-    function handleSidebarButtonClick(buttonId) {
-        const buttonData = findButtonById(buttonId);
-        if (!buttonData) return;
-
-        if (buttonData.type === 'contact_generator') {
-            openContactModal(buttonData);
-        } else {
-            copyDynamicTemplate(buttonId);
+        
+        async function trackClick(buttonId) {
+            const token = getLocalStorage('chaterlabAuthToken', '');
+            if (!token) return;
+            try {
+                // ИЗМЕНЕНО: Добавлен заголовок Authorization
+                await fetch(`${API_BASE_URL}/api/track-click`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ buttonId: buttonId })
+                });
+            } catch (error) {
+                console.error('Failed to track click:', error);
+            }
         }
-    }
 
-    const contactModal = document.getElementById('contact-generator-modal');
-    const managerSelect = document.getElementById('manager-select');
-    const confirmBtn = document.getElementById('modal-confirm-btn');
-    const cancelBtn = document.getElementById('modal-cancel-btn');
-
-    function openContactModal(buttonData) {
-        managerSelect.innerHTML = '';
-        if (buttonData.manager_ids && appContent.managers) {
-            buttonData.manager_ids.forEach(managerId => {
-                const manager = appContent.managers[managerId];
-                if (manager) {
-                    const option = document.createElement('option');
-                    option.value = managerId;
-                    option.textContent = manager.name;
-                    managerSelect.appendChild(option);
-                }
+        function copyDynamicTemplate(buttonId) {
+            let targetButton = findButtonById(buttonId);
+            if (!targetButton || !targetButton.templates || targetButton.templates.length === 0) {
+                showToast(getTranslatedText('no_templates_for_button'), true);
+                return;
+            }
+            if (targetButton.currentIndex === undefined) targetButton.currentIndex = 0;
+            const textToCopy = targetButton.templates[targetButton.currentIndex];
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                let message = getTranslatedText('copy_success');
+                message = message.replace('{current}', targetButton.currentIndex + 1).replace('{total}', targetButton.templates.length);
+                showToast(message);
+                trackClick(buttonId);
             });
-        }
-        
-        confirmBtn.onclick = () => generateAndCopyContact(buttonData);
-        
-        contactModal.classList.add('show');
-    }
-    
-    function closeContactModal() {
-        contactModal.classList.remove('show');
-        confirmBtn.onclick = null;
-    }
 
-    cancelBtn.addEventListener('click', closeContactModal);
-    contactModal.addEventListener('click', (e) => {
-            if(e.target === contactModal) closeContactModal();
-    });
-
-    function generateAndCopyContact(buttonData) {
-        const selectedChannelEl = document.querySelector('input[name="channel"]:checked');
-        const selectedManagerId = managerSelect.value;
-
-        if (!selectedChannelEl || !selectedManagerId) {
-            showToast(getTranslatedText('modalError'), true);
-            return;
+            targetButton.currentIndex = (targetButton.currentIndex + 1) % targetButton.templates.length;
         }
 
-        const channelName = selectedChannelEl.value;
-        const manager = appContent.managers[selectedManagerId];
-
-        if (!manager) {
-            showToast('Ошибка: не удалось найти данные менеджера.', true);
-            return;
+        async function fetchFavorites() {
+            const token = getLocalStorage('chaterlabAuthToken', '');
+            if (!token) return;
+            try {
+                 // ИЗМЕНЕНО: Добавлен заголовок Authorization
+                const response = await fetch(`${API_BASE_URL}/api/favorites`, { 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
+                if (!response.ok) throw new Error(getTranslatedText('favorites_load_error'));
+                const data = await response.json();
+                userFavorites = data.favorites || [];
+            } catch (error) {
+                showToast(error.message, true);
+                userFavorites = [];
+            }
         }
-        
-        const managerContact = channelName.toLowerCase() === 'telegram' ? manager.telegram : manager.whatsapp;
 
-        if (buttonData.currentIndex === undefined) buttonData.currentIndex = 0;
-        const baseTemplate = buttonData.templates[buttonData.currentIndex];
-        
-        let finalText = baseTemplate; 
-        finalText = finalText.replace(/\{contact_method\}/g, channelName);
-        finalText = finalText.replace(/\{manager_contact\}/g, managerContact);
-        
-        navigator.clipboard.writeText(finalText).then(() => {
-            let message = getTranslatedText('copy_success');
-            const nextIndex = (buttonData.currentIndex + 1) % buttonData.templates.length;
-            message = message.replace('{current}', buttonData.currentIndex + 1).replace('{total}', buttonData.templates.length);
-            showToast(message);
-            trackClick(buttonData.id);
-            buttonData.currentIndex = nextIndex;
-        });
-
-        closeContactModal();
-    }
-
-    function renderSidebar() {
-        const container = document.getElementById('sidebar-content');
-        if (!container) return;
-        container.innerHTML = '';
-        appContent.layout?.forEach(section => {
-            const sectionDiv = document.createElement('div');
-            sectionDiv.className = 'sidebar-section';
-            const title = document.createElement('h2');
-            title.textContent = section.title;
-            sectionDiv.appendChild(title);
-
-            const buttonsContainer = document.createElement('div');
-            buttonsContainer.className = 'buttons-container';
-
-            section.buttons.forEach(buttonData => {
-                const button = document.createElement('button');
-                button.className = 'sidebar-button';
-                button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span><div class="favorite-star" data-button-id="${buttonData.id}">☆</div>`;
-                button.onclick = (e) => { 
-                    if (e.target.classList.contains('favorite-star')) return; 
-                    handleSidebarButtonClick(buttonData.id);
-                };
-                buttonsContainer.appendChild(button);
-            });
-            sectionDiv.appendChild(buttonsContainer);
-            container.appendChild(sectionDiv);
-        });
-    }
-    
-    function renderUserStatusCard() {
-        const card = document.getElementById('user-status-card');
-        if (!card || !userName || !userRole) return;
-        const currentLang = getLocalStorage('chaterlabLang', 'ru');
-        const texts = userStatusTexts[currentLang] || userStatusTexts.ru;
-        let statusText = userRole === 'manager' ? texts.admin : texts.worker;
-        card.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;"><span style="font-weight: 600;">${texts.user}:</span><span style="font-weight: 700; color: var(--primary-blue);">${userName}</span></div><div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-weight: 600;">${texts.status}:</span><span style="font-weight: 700; color: ${userRole === 'manager' ? 'var(--accent-purple)' : 'var(--text-secondary)'};">${statusText}</span></div>`;
-    }
-
-    function updateInstructions(lang) {
-        const instructionsDiv = document.getElementById('instructions');
-        const mobileInstructionsDiv = document.getElementById('mobile-instructions-content');
-        
-        let content = '';
-        if (appContent.instructionsContent && appContent.instructionsContent[lang]) {
-            content = appContent.instructionsContent[lang];
-        } else {
-            const fallbackMessage = { 'ru': '<h3>Инструкция не найдена</h3>', 'en': '<h3>Instructions Not Found</h3>', 'uk': '<h3>Інструкція не знайдена</h3>' };
-            content = fallbackMessage[lang] || fallbackMessage['ru'];
+        async function saveFavorites() {
+            const token = getLocalStorage('chaterlabAuthToken', '');
+            if (!token) return;
+            try {
+                // ИЗМЕНЕНО: Добавлен заголовок Authorization
+                await fetch(`${API_BASE_URL}/api/favorites`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ favorites: userFavorites })
+                });
+            } catch (error) {
+                showToast(getTranslatedText('favorites_save_error'), true);
+            }
         }
-        if (instructionsDiv) instructionsDiv.innerHTML = content;
-        if (mobileInstructionsDiv) mobileInstructionsDiv.innerHTML = content;
-    }
-    
-    async function trackClick(buttonId) {
-        const token = getLocalStorage('chaterlabAuthToken', '');
-        if (!token) return;
-        try {
-            await fetch(`${API_BASE_URL}/api/track-click`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'Authorization': `Bearer ${token}` 
-                },
-                body: JSON.stringify({ buttonId: buttonId })
-            });
-        } catch (error) {
-            console.error('Failed to track click:', error);
+
+        function handleFavoriteClick(event) {
+            const star = event.target;
+            if (!star.classList.contains('favorite-star')) return;
+            const buttonId = star.dataset.buttonId;
+            if (!buttonId) return;
+            const index = userFavorites.indexOf(buttonId);
+            if (index > -1) {
+                userFavorites.splice(index, 1);
+            } else {
+                userFavorites.push(buttonId);
+            }
+            updateFavoritesUI();
+            saveFavorites();
         }
-    }
 
-    function copyDynamicTemplate(buttonId) {
-        let targetButton = findButtonById(buttonId);
-        if (!targetButton || !targetButton.templates || targetButton.templates.length === 0) {
-            showToast(getTranslatedText('no_templates_for_button'), true);
-            return;
-        }
-        if (targetButton.currentIndex === undefined) targetButton.currentIndex = 0;
-        const textToCopy = targetButton.templates[targetButton.currentIndex];
-        
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            let message = getTranslatedText('copy_success');
-            message = message.replace('{current}', targetButton.currentIndex + 1).replace('{total}', targetButton.templates.length);
-            showToast(message);
-            trackClick(buttonId);
-        });
-
-        targetButton.currentIndex = (targetButton.currentIndex + 1) % targetButton.templates.length;
-    }
-
-    async function fetchFavorites() {
-        const token = getLocalStorage('chaterlabAuthToken', '');
-        if (!token) return;
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/favorites`, { 
-                headers: { 'Authorization': `Bearer ${token}` } 
-            });
-            if (!response.ok) throw new Error(getTranslatedText('favorites_load_error'));
-            const data = await response.json();
-            userFavorites = data.favorites || [];
-        } catch (error) {
-            showToast(error.message, true);
-            userFavorites = [];
-        }
-    }
-
-    async function saveFavorites() {
-        const token = getLocalStorage('chaterlabAuthToken', '');
-        if (!token) return;
-        try {
-            await fetch(`${API_BASE_URL}/api/favorites`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'Authorization': `Bearer ${token}` 
-                },
-                body: JSON.stringify({ favorites: userFavorites })
-            });
-        } catch (error) {
-            showToast(getTranslatedText('favorites_save_error'), true);
-        }
-    }
-
-    function handleFavoriteClick(event) {
-        const star = event.target;
-        if (!star.classList.contains('favorite-star')) return;
-        const buttonId = star.dataset.buttonId;
-        if (!buttonId) return;
-        const index = userFavorites.indexOf(buttonId);
-        if (index > -1) {
-            userFavorites.splice(index, 1);
-        } else {
-            userFavorites.push(buttonId);
-        }
-        updateFavoritesUI();
-        saveFavorites();
-    }
-
-    function updateFavoritesUI() {
-        const allButtons = new Map();
-        appContent.layout?.forEach(section => { section.buttons.forEach(btn => allButtons.set(btn.id, btn)); });
-
-        const renderFavs = (favContainer, favSection) => {
-            if (!favContainer || !favSection) return;
-            favContainer.innerHTML = '';
+        function updateFavoritesUI() {
+            const favoritesContainer = document.getElementById('favorites-content');
+            const favoritesSection = document.getElementById('favorites-section');
+            if (!favoritesContainer || !favoritesSection) return;
+            favoritesContainer.innerHTML = '';
+            const allButtons = new Map();
+            appContent.layout?.forEach(section => { section.buttons.forEach(btn => allButtons.set(btn.id, btn)); });
             userFavorites.forEach(favId => {
                 const buttonData = allButtons.get(favId);
                 if (buttonData) {
                     const button = document.createElement('button');
                     button.className = 'sidebar-button';
-                    button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span><div class="favorite-star favorited" data-button-id="${buttonData.id}">★</div>`;
+                    button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span><div class="favorite-star favorited" data-button-id="${buttonData.id}">★</div>`;
                     button.onclick = (e) => { 
                         if (e.target.classList.contains('favorite-star')) return; 
                         handleSidebarButtonClick(buttonData.id);
                     };
-                    favContainer.appendChild(button);
+                    favoritesContainer.appendChild(button);
                 }
             });
-            favSection.style.display = userFavorites.length > 0 ? 'block' : 'none';
-        };
-
-        if (isMobile()) {
-            renderFavs(document.querySelector('#mobile-templates-content #favorites-content'), document.querySelector('#mobile-templates-content #favorites-section'));
-        } else {
-            renderFavs(document.querySelector('#favorites-content'), document.querySelector('#favorites-section'));
+            if (userFavorites.length > 0) {
+                favoritesSection.style.display = 'block';
+            } else {
+                favoritesSection.style.display = 'none';
+            }
+            document.querySelectorAll('.sidebar-button .favorite-star').forEach(star => {
+                const buttonId = star.dataset.buttonId;
+                if (userFavorites.includes(buttonId)) {
+                    star.classList.add('favorited');
+                    star.innerHTML = '★';
+                } else {
+                    star.classList.remove('favorited');
+                    star.innerHTML = '☆';
+                }
+            });
         }
-
-        document.querySelectorAll('.sidebar-button .favorite-star').forEach(star => {
-            const buttonId = star.dataset.buttonId;
-            if (userFavorites.includes(buttonId)) {
-                star.classList.add('favorited');
-                star.textContent = '★';
-            } else {
-                star.classList.remove('favorited');
-                star.textContent = '☆';
-            }
-        });
-    }
-    
-    function setupDarkMode() {
-        const toggle = document.getElementById('theme-checkbox');
-        const mobileToggle = document.getElementById('mobile-theme-checkbox');
         
-        const applyTheme = (theme, from) => {
-            document.body.classList.toggle('dark-mode', theme === 'dark');
-            if (toggle && from !== 'mobile') toggle.checked = (theme === 'dark');
-            if (mobileToggle && from !== 'desktop') mobileToggle.checked = (theme === 'dark');
-            if (!isMobile() && document.getElementById('content-editor')?.style.display === 'block') {
-                tinymce.remove();
-                initInstructionsEditor();
-            }
-        };
-
-        const savedTheme = getLocalStorage('chaterlabTheme', 'light');
-        applyTheme(savedTheme, 'init');
-
-        if (toggle) toggle.addEventListener('change', () => {
-            const theme = toggle.checked ? 'dark' : 'light';
-            setLocalStorage('chaterlabTheme', theme);
-            applyTheme(theme, 'desktop');
-        });
-        if (mobileToggle) mobileToggle.addEventListener('change', () => {
-            const theme = mobileToggle.checked ? 'dark' : 'light';
-            setLocalStorage('chaterlabTheme', theme);
-            applyTheme(theme, 'mobile');
-        });
-    }
-    
-    function setupSearch(containerSelector = '#sidebar-content', inputSelector = '#searchInput') {
-        const searchInput = document.querySelector(inputSelector);
-        const searchContainer = document.querySelector(containerSelector);
-
-        if (!searchInput || !searchContainer) return;
-        
-        searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase().trim();
-            searchContainer.querySelectorAll('.sidebar-section').forEach(section => {
-                let sectionHasVisibleButton = false;
-                section.querySelectorAll('.sidebar-button').forEach(button => {
-                    const buttonLabel = button.querySelector('span').textContent.toLowerCase();
-                    const isVisible = buttonLabel.includes(searchTerm);
-                    button.style.display = isVisible ? 'flex' : 'none';
-                    if (isVisible) sectionHasVisibleButton = true;
-                });
-                section.style.display = sectionHasVisibleButton ? 'block' : 'none';
-            });
-        });
-    }
-    
-    function checkUserRoleAndSetupManagerUI() {
-        if (userRole === 'manager') {
-            if (isMobile()) {
-                document.getElementById('mobile-manager-controls').style.display = 'block';
-            } else {
-                const managerControls = document.querySelector('.manager-controls-segmented');
-                if(managerControls) managerControls.style.display = 'flex';
-                const triggerAnalyticsLoad = setupAnalytics('#analytics-panel', '#analytics-main', '#employee-list', '.analytics-period-selector');
-                
-                const buttons = document.querySelectorAll('.manager-controls-segmented button');
-                const glider = document.querySelector('.manager-controls-segmented .glider');
-                const mainContentPanel = document.getElementById('main-content-wrapper');
-                const analyticsPanel = document.getElementById('analytics-panel');
-
-                function moveGlider(target) {
-                    buttons.forEach(btn => btn.classList.remove('active'));
-                    target.classList.add('active');
-                    glider.style.width = `${target.offsetWidth}px`;
-                    glider.style.left = `${target.offsetLeft}px`;
+        function setupDarkMode() {
+            const toggle = document.getElementById('theme-checkbox');
+            const applyTheme = (theme) => {
+                document.body.classList.toggle('dark-mode', theme === 'dark');
+                if (toggle) toggle.checked = (theme === 'dark');
+                if (!isMobile() && document.getElementById('content-editor') && document.getElementById('content-editor').style.display === 'block') {
+                    tinymce.remove();
+                    initInstructionsEditor();
                 }
-                
-                buttons.forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        moveGlider(e.currentTarget);
-                        if(button.id === 'show-instructions-btn') switchManagerView('instructions');
-                        else if(button.id === 'show-analytics-btn') switchManagerView('analytics');
-                        else if(button.id === 'edit-mode-btn') switchManagerView('editor');
+            };
+            const savedTheme = getLocalStorage('chaterlabTheme', 'light');
+            applyTheme(savedTheme);
+            if (toggle) toggle.addEventListener('change', () => {
+                const theme = toggle.checked ? 'dark' : 'light';
+                setLocalStorage('chaterlabTheme', theme);
+                applyTheme(theme);
+            });
+        }
+        
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            if (!searchInput) return;
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                document.querySelectorAll('#sidebar-content .sidebar-section').forEach(section => {
+                    let sectionHasVisibleButton = false;
+                    const buttons = section.querySelectorAll('.sidebar-button');
+                    buttons.forEach(button => {
+                        const buttonLabel = button.querySelector('span').textContent.toLowerCase();
+                        if (buttonLabel.includes(searchTerm)) {
+                            button.style.display = 'flex';
+                            sectionHasVisibleButton = true;
+                        } else {
+                            button.style.display = 'none';
+                        }
                     });
-                });
-                
-                const activeButton = document.querySelector('.manager-controls-segmented button.active');
-                if(activeButton) setTimeout(() => moveGlider(activeButton), 50);
 
-                function switchManagerView(view) {
-                    mainContentPanel.style.display = 'none';
-                    if (analyticsPanel) analyticsPanel.style.display = 'none';
-                    
-                    if (view === 'instructions' || view === 'editor') {
-                        mainContentPanel.style.display = 'block';
-                        view === 'instructions' ? hideContentEditor() : showContentEditor();
-                    } else if (view === 'analytics') {
-                        if (analyticsPanel) analyticsPanel.style.display = 'block';
-                        if(triggerAnalyticsLoad) triggerAnalyticsLoad();
+                    const sectionTitle = section.querySelector('h2');
+                    if (isMobile()) {
+                         section.style.display = sectionHasVisibleButton ? 'block' : 'none';
+                    } else {
+                         if(sectionTitle) sectionTitle.style.display = sectionHasVisibleButton ? 'block' : 'none';
                     }
-                }
-                
-                document.getElementById('cancel-edit-btn').addEventListener('click', () => {
-                    document.getElementById('show-instructions-btn')?.click();
                 });
+            });
+        }
+        
+        function checkUserRoleAndSetupManagerUI() {
+            if (userRole === 'manager') {
+                if (isMobile()) {
+                    const toggleBtn = document.getElementById('mobile-admin-panel-toggle');
+                    const overlay = document.getElementById('mobile-admin-overlay');
+                    const closeBtn = document.getElementById('mobile-panel-close');
+                    if(toggleBtn) toggleBtn.style.display = 'block';
+
+                    if(toggleBtn) toggleBtn.onclick = () => {
+                        if(overlay) {
+                            overlay.style.display = 'block';
+                            setTimeout(() => overlay.classList.add('show'), 10);
+                        }
+                        fetchAndRenderMobileAnalytics();
+                    };
+                    
+                    const closePanel = () => {
+                         if(overlay) {
+                            overlay.classList.remove('show');
+                            setTimeout(() => { if(overlay) overlay.style.display = 'none'; }, 300);
+                        }
+                    };
+
+                    if(closeBtn) closeBtn.onclick = closePanel;
+                    if(overlay) overlay.onclick = (e) => { if (e.target === overlay) closePanel(); };
+
+                } else {
+                    const managerControls = document.querySelector('.manager-controls-segmented');
+                    if(managerControls) managerControls.style.display = 'flex';
+                    const triggerAnalyticsLoad = setupAnalytics();
+                    
+                    const buttons = document.querySelectorAll('.manager-controls-segmented button');
+                    const glider = document.querySelector('.manager-controls-segmented .glider');
+                    const mainContentPanel = document.getElementById('main-content-wrapper');
+                    const analyticsPanel = document.getElementById('analytics-panel');
+
+                    function moveGlider(target) {
+                        buttons.forEach(btn => btn.classList.remove('active'));
+                        target.classList.add('active');
+                        glider.style.width = `${target.offsetWidth}px`;
+                        glider.style.left = `${target.offsetLeft}px`;
+                    }
+                    
+                    buttons.forEach(button => {
+                        button.addEventListener('click', (e) => {
+                            moveGlider(e.currentTarget);
+                            if(button.id === 'show-instructions-btn') switchManagerView('instructions');
+                            if(button.id === 'show-analytics-btn') switchManagerView('analytics');
+                            if(button.id === 'edit-mode-btn') switchManagerView('editor');
+                        });
+                    });
+                    
+                    // Initial position
+                    const activeButton = document.querySelector('.manager-controls-segmented button.active');
+                    if(activeButton) {
+                         setTimeout(() => moveGlider(activeButton), 50);
+                    }
+
+                    function switchManagerView(view) {
+                        mainContentPanel.style.display = 'none';
+                        if (analyticsPanel) analyticsPanel.style.display = 'none';
+                        
+                        if (view === 'instructions' || view === 'editor') {
+                            mainContentPanel.style.display = 'block';
+                            if (view === 'instructions') {
+                                hideContentEditor();
+                            } else {
+                                showContentEditor();
+                            }
+                        } else if (view === 'analytics') {
+                           if (analyticsPanel) analyticsPanel.style.display = 'block';
+                            if(triggerAnalyticsLoad) triggerAnalyticsLoad();
+                        }
+                    }
+                    
+                    document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+                        const instructionButton = document.getElementById('show-instructions-btn');
+                        if (instructionButton) instructionButton.click();
+                    });
+                }
             }
         }
-    }
 
-    function setupAnalytics(panelSelector, mainSelector, employeeListSelector, periodSelectorContainer) {
-        const analyticsPanel = document.querySelector(panelSelector);
-        const mainPanel = document.querySelector(mainSelector);
-        const employeeList = document.querySelector(employeeListSelector);
-        const periodSelector = document.querySelector(periodSelectorContainer);
-        
-        if(!mainPanel || !employeeList || !periodSelector || !analyticsPanel) return null;
-
-        let currentPeriod = 'day';
-        let selectedUser = null;
-        let fullData = null;
-        const DateTime = luxon.DateTime;
-
-        analyticsPanel.addEventListener('languageChange', renderAnalytics);
-        
-        periodSelector.addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON' && !e.target.classList.contains('active')) {
-                const currentActive = periodSelector.querySelector('.active');
-                if (currentActive) currentActive.classList.remove('active');
-                e.target.classList.add('active');
-                currentPeriod = e.target.dataset.period;
-                fetchAndRenderAnalytics();
-            }
-        });
-        
-        employeeList.addEventListener('click', (e) => {
-            const li = e.target.closest('li');
-            if (li) {
-                const username = li.dataset.username;
-                selectedUser = (username === 'all') ? null : username;
-                renderAnalytics();
-            }
-        });
-
-        async function fetchAndRenderAnalytics() {
-            mainPanel.innerHTML = `<div id="analytics-loader">${getTranslatedText('loading')}</div>`;
-            employeeList.innerHTML = '';
+        async function fetchAndRenderMobileAnalytics() {
+            const contentDiv = document.getElementById('mobile-analytics-content');
+            if(!contentDiv) return;
+            contentDiv.innerHTML = `<p>${getTranslatedText('loading')}</p>`;
             const token = getLocalStorage('chaterlabAuthToken', '');
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api/analytics?period=${currentPeriod}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                // ИЗМЕНЕНО: Добавлен заголовок Authorization
+                const response = await fetch(`${API_BASE_URL}/api/analytics?period=day`, { 
+                    headers: { 'Authorization': `Bearer ${token}` } 
                 });
                 if (!response.ok) throw new Error(getTranslatedText('analytics_load_error'));
+                const data = await response.json();
                 
-                fullData = await response.json();
-                renderAnalytics();
+                const texts = uiTexts[getLocalStorage('chaterlabLang', 'ru')];
+                const totalClicks = data.detailed_log.length;
+                const topEmployee = data.employee_summary?.[0]?.username || '—';
+                const topTemplateId = data.template_summary?.[0]?.button_id;
+                const topTemplateLabel = topTemplateId ? (findButtonById(topTemplateId)?.label || '—') : '—';
+
+                contentDiv.innerHTML = `
+                    <div class="kpi-grid">
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${totalClicks}</h3></div>
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiMostActive}</p><h3 class="kpi-card-value">${topEmployee}</h3></div>
+                    </div>
+                     <div class="kpi-card" style="margin-top: 16px;"><p class="kpi-card-title">${texts.kpiTopTemplate}</p><h3 class="kpi-card-value">${topTemplateLabel}</h3></div>
+                `;
 
             } catch (error) {
-                showToast(error.message, true);
-                mainPanel.innerHTML = `<div class="no-data-message">${error.message}</div>`;
+                contentDiv.innerHTML = `<p style="color: var(--error-color);">${error.message}</p>`;
             }
         }
 
-        function renderAnalytics() {
-            if (!fullData) return;
-            const lang = getLocalStorage('chaterlabLang', 'ru');
-            const texts = uiTexts[lang] || uiTexts.ru;
-            renderEmployeeList(fullData.employee_summary, texts);
-            if (selectedUser) {
-                renderUserDetailView(selectedUser, fullData, texts);
-            } else {
-                renderOverallSummaryView(fullData, texts);
-            }
-        }
-        
-        function renderEmployeeList(summary, texts) {
-            employeeList.innerHTML = `<li data-username="all" class="${!selectedUser ? 'active' : ''}"><span class="employee-name">${texts.employeeListTitle}</span></li>`;
-            if(summary && summary.length > 0) {
-                summary.forEach(emp => {
-                    const li = document.createElement('li');
-                    li.dataset.username = emp.username;
-                    li.className = (selectedUser === emp.username) ? 'active' : '';
-                    li.innerHTML = `<span class="employee-name">${emp.username}</span><span class="employee-clicks">${emp.count}</span>`;
-                    employeeList.appendChild(li);
-                });
-            }
-        }
+        function setupAnalytics() {
+            const mainPanel = document.getElementById('analytics-main');
+            const employeeList = document.getElementById('employee-list');
+            const periodSelector = document.querySelector('.analytics-period-selector');
+            const analyticsPanel = document.getElementById('analytics-panel');
+            
+            if(!mainPanel || !employeeList || !periodSelector || !analyticsPanel) return;
 
-        function getButtonData(buttonId) {
-                if (!appContent.layout) return { label: `(ID: ${buttonId})`, section: 'N/A' };
-                for (const section of appContent.layout) {
-                const button = section.buttons.find(b => b.id === buttonId);
-                if (button) return { label: button.label, section: section.title };
+            let currentPeriod = 'day';
+            let selectedUser = null;
+            let fullData = null;
+            const DateTime = luxon.DateTime;
+
+            analyticsPanel.addEventListener('languageChange', renderAnalytics);
+            
+            periodSelector.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON' && !e.target.classList.contains('active')) {
+                    periodSelector.querySelector('.active').classList.remove('active');
+                    e.target.classList.add('active');
+                    currentPeriod = e.target.dataset.period;
+                    fetchAndRenderAnalytics();
                 }
-                return { label: `(удален: ${buttonId})`, section: 'N/A' };
-        }
-
-        function formatRelativeTime(isoString, lang) {
-            if (!isoString) return 'никогда';
-            return DateTime.fromISO(isoString).setLocale(lang).toRelative();
-        }
-
-        function renderOverallSummaryView(data, texts) {
-            const topEmployee = data.employee_summary?.[0]?.username || '—';
-            const topTemplateId = data.template_summary?.[0]?.button_id;
-            const topTemplateLabel = topTemplateId ? getButtonData(topTemplateId).label : '—';
-            const peakHour = data.peak_hour;
-            const peakTimeText = (peakHour !== null && peakHour !== undefined) ? `${String(peakHour).padStart(2, '0')}:00 - ${String(peakHour + 1).padStart(2, '0')}:00` : '—';
-
-            let topTemplatesHtml = data.template_summary?.slice(0, 5).map(t => `<tr><td>${getButtonData(t.button_id).label}</td><td class="count-cell">${t.count}</td></tr>`).join('') || `<tr><td colspan="2">${texts.noData}</td></tr>`;
-            let topEmployeesHtml = data.employee_summary?.slice(0, 5).map(e => `<tr><td>${e.username}</td><td class="count-cell">${e.count}</td></tr>`).join('') || `<tr><td colspan="2">${texts.noData}</td></tr>`;
+            });
             
-            if (!data.detailed_log || data.detailed_log.length === 0) {
-                mainPanel.innerHTML = `<div class="no-data-message">${texts.noData}</div>`;
-                return;
-            }
-            
-            mainPanel.innerHTML = `
-                <div class="analytics-main-header">
-                    <h2>${texts.overallSummaryHeader}</h2>
-                    <p>${texts.overallSummarySubheader}</p>
-                </div>
-                <div class="kpi-grid">
-                    <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${data.detailed_log.length}</h3></div>
-                    <div class="kpi-card"><p class="kpi-card-title">${texts.kpiMostActive}</p><h3 class="kpi-card-value">${topEmployee}</h3></div>
-                    <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTopTemplate}</p><h3 class="kpi-card-value">${topTemplateLabel}</h3></div>
-                    <div class="kpi-card"><p class="kpi-card-title">${texts.kpiPeakTime}</p><h3 class="kpi-card-value">${peakTimeText}</h3></div>
-                </div>
-                <div class="analytics-section">
-                    <h4>${texts.top5Employees}</h4>
-                    <table class="analytics-table"><thead><tr><th>${texts.tableEmployee}</th><th style="text-align:right;">${texts.tableActions}</th></tr></thead><tbody>${topEmployeesHtml}</tbody></table>
-                </div>
-                <div class="analytics-section">
-                    <h4>${texts.top5Templates}</h4>
-                    <table class="analytics-table"><thead><tr><th>${texts.tableTemplate}</th><th style="text-align:right;">${texts.tableUses}</th></tr></thead><tbody>${topTemplatesHtml}</tbody></table>
-                </div>
-            `;
-        }
-
-        function renderUserDetailView(username, data, texts) {
-            const userData = data.employee_summary.find(e => e.username === username);
-            const userLog = data.detailed_log.filter(log => log.username === username);
-            
-            const userTemplateCounts = userLog.reduce((acc, log) => {
-                acc[log.button_id] = (acc[log.button_id] || 0) + 1;
-                return acc;
-            }, {});
-
-            const topTemplateId = Object.keys(userTemplateCounts).sort((a, b) => userTemplateCounts[b] - userTemplateCounts[a])[0];
-            const topTemplateLabel = topTemplateId ? getButtonData(topTemplateId).label : '—';
-            
-            let logHtml = userLog.slice(0, 100).map(log => {
-                const btnData = getButtonData(log.button_id);
-                return `<tr>
-                    <td class="time-cell">${DateTime.fromISO(log.created_at).toFormat('HH:mm:ss')}</td>
-                    <td>${btnData.label}</td>
-                    <td class="time-cell">${btnData.section}</td>
-                </tr>`
-            }).join('');
-
-            mainPanel.innerHTML = `
-                <div class="analytics-main-header">
-                    <h2>${texts.userDetailHeader} ${username}</h2>
-                    <p>${texts.userDetailSubheader}</p>
-                </div>
-                <div class="kpi-grid">
-                    <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${userData?.count || 0}</h3></div>
-                    <div class="kpi-card"><p class="kpi-card-title">${texts.kpiLastActivity}</p><h3 class="kpi-card-value">${formatRelativeTime(userData?.last_activity, texts.lang_locale || 'ru')}</h3></div>
-                    <div class="kpi-card"><p class="kpi-card-title">${texts.kpiFavTemplate}</p><h3 class="kpi-card-value">${topTemplateLabel}</h3></div>
-                </div>
-                <div class="analytics-section">
-                    <h4>${texts.activityFeedTitle}</h4>
-                    <div style="max-height: 400px; overflow-y: auto;">
-                        <table class="analytics-table">
-                            <thead><tr><th>${texts.tableTime}</th><th>${texts.tableTemplate}</th><th>${texts.tableSection}</th></tr></thead>
-                            <tbody>${logHtml || `<tr><td colspan="3" style="text-align:center;">${texts.noData}</td></tr>`}</tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-        }
-        return fetchAndRenderAnalytics;
-    }
-    
-    function switchEditorTab(tabName) { document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active')); document.querySelectorAll('.editor-tabs button').forEach(b => b.classList.remove('active')); document.getElementById(`panel-${tabName}`).classList.add('active'); document.getElementById(`tab-btn-${tabName}`).classList.add('active'); if(tabName === 'users') { fetchAndRenderUsers(); } applyTranslations(); }
-    function showContentEditor() { document.getElementById('main-content-wrapper').style.display = 'block'; document.getElementById('content-editor').style.display = 'block'; document.getElementById('instructions').style.display = 'none'; buildLayoutEditor(); initInstructionsEditor(); buildManagerEditor(); switchEditorTab('layout'); }
-    function hideContentEditor() { document.getElementById('main-content-wrapper').style.display = 'block'; document.getElementById('content-editor').style.display = 'none'; document.getElementById('instructions').style.display = 'block'; tinymce.remove(); }
-    function buildLayoutEditor() { const container = document.getElementById('panel-layout'); if(!container) return; while (container.firstChild && container.firstChild.id !== 'add-section-btn') { container.removeChild(container.firstChild); } appContent.layout?.forEach(section => { const sectionNode = createSectionEditor(section); container.insertBefore(sectionNode, document.getElementById('add-section-btn')); }); applyTranslations();}
-    
-    function createSectionEditor(section) { 
-        const sectionDiv = document.createElement('div'); 
-        sectionDiv.className = 'editor-section'; 
-        sectionDiv.dataset.id = section.id; 
-        sectionDiv.innerHTML = `<div class="editor-section-header"><input type="text" class="section-title-input" value="${section.title}" data-key="sectionTitle" placeholder="Название раздела"><div class="editor-controls"><button class="delete-btn" data-key="deleteButtonTitle" title="Удалить раздел">🗑</button></div></div><div class="buttons-container"></div><button class="add-btn add-button-btn" data-key="addButton">+ Добавить кнопку в раздел</button>`; 
-        const buttonsContainer = sectionDiv.querySelector('.buttons-container'); 
-        section.buttons.forEach(button => { buttonsContainer.appendChild(createButtonEditor(button)); }); 
-        sectionDiv.querySelector('.delete-btn').onclick = () => { if (confirm(getTranslatedText('deleteSectionConfirm'))) sectionDiv.remove(); }; 
-        sectionDiv.querySelector('.add-button-btn').onclick = () => { const newButton = { id: generateId('btn_'), label: getTranslatedText('buttonLabel'), templates: ['Новый шаблон'] }; buttonsContainer.appendChild(createButtonEditor(newButton)); }; 
-        return sectionDiv; 
-    }
-
-    function createButtonEditor(button) {
-        const buttonDiv = document.createElement('div');
-        buttonDiv.className = 'editor-button-entry';
-        buttonDiv.dataset.id = button.id;
-        buttonDiv.innerHTML = `
-            <div class="editor-button-header">
-                <input type="text" class="button-label-input" value="${button.label}" data-key="buttonLabel" placeholder="Название кнопки">
-                <div class="editor-controls"><button class="delete-btn" data-key="deleteButtonEntryTitle" title="Удалить кнопку">🗑</button></div>
-            </div>
-            <div class="variants-container"></div>
-            <div class="button-options">
-                <div class="checkbox-wrapper">
-                        <input type="checkbox" id="is-contact-btn-${button.id}" class="is-contact-btn-toggle" ${button.type === 'contact_generator' ? 'checked' : ''}>
-                        <label for="is-contact-btn-${button.id}" data-key="isContactButtonLabel">Сделать кнопкой "Контакт"</label>
-                </div>
-            </div>
-        `;
-        
-        const variantsContainer = buttonDiv.querySelector('.variants-container');
-        if (button.templates) {
-            button.templates.forEach(template => { variantsContainer.appendChild(createVariantInput(template)); });
-        }
-        
-        const assignmentContainer = document.createElement('div');
-        assignmentContainer.className = 'manager-assignment-container';
-        buttonDiv.querySelector('.button-options').insertAdjacentElement('afterend', assignmentContainer);
-
-
-        const addVariantBtn = document.createElement('button');
-        addVariantBtn.className = 'add-variant-btn';
-        addVariantBtn.dataset.key = 'addVariant';
-        addVariantBtn.textContent = getTranslatedText('addVariant');
-        addVariantBtn.onclick = () => {
-            const newVariant = createVariantInput('');
-            variantsContainer.appendChild(newVariant);
-            newVariant.querySelector('textarea').focus();
-        };
-
-        buttonDiv.querySelector('.button-options').insertAdjacentElement('beforebegin', addVariantBtn);
-        buttonDiv.querySelector('.delete-btn').onclick = () => buttonDiv.remove();
-
-        const renderManagerAssignment = (currentButtonData) => {
-            if (buttonDiv.querySelector('.is-contact-btn-toggle').checked) {
-                let managerCheckboxesHTML = `<h4 data-key="managerAssignmentTitle">${getTranslatedText('managerAssignmentTitle')}</h4><div class="manager-assignment-grid">`;
-                
-                if (appContent.managers && Object.keys(appContent.managers).length > 0) {
-                    for (const [id, manager] of Object.entries(appContent.managers)) {
-                        const isChecked = currentButtonData.manager_ids && currentButtonData.manager_ids.includes(id) ? 'checked' : '';
-                        const checkboxId = `chk-${button.id}-${id}`;
-                        managerCheckboxesHTML += `
-                            <div class="checkbox-wrapper">
-                                <input type="checkbox" id="${checkboxId}" value="${id}" class="manager-checkbox" ${isChecked}>
-                                <label for="${checkboxId}">${manager.name}</label>
-                            </div>`;
-                    }
+            employeeList.addEventListener('click', (e) => {
+                const li = e.target.closest('li');
+                if (li) {
+                    const username = li.dataset.username;
+                    selectedUser = (username === 'all') ? null : username;
+                    renderAnalytics();
                 }
-                managerCheckboxesHTML += `</div>`;
-                assignmentContainer.innerHTML = managerCheckboxesHTML;
-            } else {
-                assignmentContainer.innerHTML = '';
-            }
-                applyTranslations();
-        };
+            });
 
-        buttonDiv.querySelector('.is-contact-btn-toggle').addEventListener('change', () => {
-            const tempData = { ...button, manager_ids: [] }; 
-            renderManagerAssignment(tempData);
-        });
-        
-        renderManagerAssignment(button);
-        
-        return buttonDiv;
-    }
-
-    function createVariantInput(text) { const variantDiv = document.createElement('div'); variantDiv.className = 'template-variant'; variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" data-key="deleteVariantTitle" title="Удалить вариант">🗑</button>`; variantDiv.querySelector('.delete-variant-btn').onclick = () => variantDiv.remove(); return variantDiv; }
-    function addSection() { const newSection = { id: generateId('sec_'), title: 'Новый раздел', buttons: [] }; const sectionNode = createSectionEditor(newSection); const container = document.getElementById('panel-layout'); container.insertBefore(sectionNode, document.getElementById('add-section-btn')); applyTranslations();}
-    function initInstructionsEditor() { const skin = document.body.classList.contains('dark-mode') ? 'oxide-dark' : 'oxide'; const content_css = document.body.classList.contains('dark-mode') ? 'dark' : 'default'; tinymce.init({ selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk', height: 500, menubar: false, plugins: 'lists link image code help wordcount autoresize table', toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | table | help', skin: skin, content_css: content_css, setup: editor => { editor.on('init', () => { const langKey = editor.id.split('-')[2]; editor.setContent(appContent.instructionsContent?.[langKey] || ''); }); } }); }
-    
-    function buildManagerEditor() {
-        const container = document.getElementById('panel-managers');
-        const addButton = document.getElementById('add-manager-btn');
-        if(!container || !addButton) return;
-        container.innerHTML = ''; 
-        if (appContent.managers) {
-            for (const [id, manager] of Object.entries(appContent.managers)) {
-                container.appendChild(createManagerEditorEntry(id, manager));
-            }
-        }
-        container.appendChild(addButton);
-        addButton.onclick = addManagerEntry;
-        applyTranslations();
-    }
-
-    function createManagerEditorEntry(id, manager) {
-        const entryDiv = document.createElement('div');
-        entryDiv.className = 'manager-editor-entry';
-        entryDiv.dataset.id = id;
-        entryDiv.innerHTML = `
-            <div class="manager-editor-header">
-                <input type="text" class="manager-name-input" value="${manager.name}" data-key="managerNamePlaceholder" placeholder="Имя менеджера">
-                <div class="editor-controls">
-                    <button class="delete-btn" data-key="deleteManagerTitle" title="Удалить менеджера">🗑</button>
-                </div>
-            </div>
-            <div class="manager-editor-fields">
-                <div class="manager-editor-field">
-                    <label>Telegram</label>
-                    <input type="text" class="manager-telegram-input" value="${manager.telegram}" data-key="managerTelegramPlaceholder" placeholder="@username">
-                </div>
-                <div class="manager-editor-field">
-                    <label>WhatsApp</label>
-                    <input type="text" class="manager-whatsapp-input" value="${manager.whatsapp}" data-key="managerWhatsappPlaceholder" placeholder="+123...">
-                </div>
-            </div>
-        `;
-        entryDiv.querySelector('.delete-btn').onclick = () => entryDiv.remove();
-        return entryDiv;
-    }
-    
-    function addManagerEntry() {
-        const newId = generateId('mgr_');
-        const newManager = { name: 'Новый менеджер', telegram: '@username', whatsapp: '+123456789' };
-        const entryNode = createManagerEditorEntry(newId, newManager);
-        const container = document.getElementById('panel-managers');
-        const addButton = document.getElementById('add-manager-btn');
-        container.insertBefore(entryNode, addButton);
-        applyTranslations();
-        entryNode.querySelector('.manager-name-input').focus();
-    }
-
-    async function saveContent() {
-        const editorRoot = isMobile() ? document.getElementById('mobile-editor-content') : document.getElementById('content-editor');
-        const newLayout = [];
-        editorRoot.querySelectorAll('#panel-layout .editor-section, #mobile-editor-panel-layout .editor-section').forEach(sectionNode => {
-            const section = { id: sectionNode.dataset.id, title: sectionNode.querySelector('.section-title-input').value.trim(), buttons: [] };
-            if (!section.title) return;
-            sectionNode.querySelectorAll('.editor-button-entry').forEach(buttonNode => {
+            async function fetchAndRenderAnalytics() {
+                mainPanel.innerHTML = `<div id="analytics-loader">${getTranslatedText('loading')}</div>`;
+                employeeList.innerHTML = '';
+                const token = getLocalStorage('chaterlabAuthToken', '');
                 
-                const newButtonObject = { 
-                    id: buttonNode.dataset.id, 
-                    label: buttonNode.querySelector('.button-label-input').value.trim(), 
-                    templates: Array.from(buttonNode.querySelectorAll('.variants-container .template-variant textarea')).map(t => t.value.trim()).filter(v => v)
-                };
-
-                const isContactToggle = buttonNode.querySelector('.is-contact-btn-toggle');
-                if (isContactToggle && isContactToggle.checked) {
-                    newButtonObject.type = 'contact_generator';
-                    const selectedIds = [];
-                    const managerCheckboxes = buttonNode.querySelectorAll('.manager-checkbox:checked');
-                    managerCheckboxes.forEach(checkbox => {
-                        selectedIds.push(checkbox.value);
+                try {
+                    // ИЗМЕНЕНО: Добавлен заголовок Authorization
+                    const response = await fetch(`${API_BASE_URL}/api/analytics?period=${currentPeriod}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    newButtonObject.manager_ids = selectedIds;
+                    if (!response.ok) throw new Error(getTranslatedText('analytics_load_error'));
+                    
+                    fullData = await response.json();
+                    renderAnalytics();
+
+                } catch (error) {
+                    showToast(error.message, true);
+                    mainPanel.innerHTML = `<div class="no-data-message">${error.message}</div>`;
                 }
-
-                if (newButtonObject.label) section.buttons.push(newButtonObject);
-            });
-            newLayout.push(section);
-        });
-
-        const newInstructions = {};
-        for (const lang of ['ru', 'en', 'uk']) {
-            const editor = tinymce.get(`instructions-editor-${lang}`);
-            if (editor) newInstructions[lang] = editor.getContent();
-        }
-
-        const newManagers = {};
-        editorRoot.querySelectorAll('#panel-managers .manager-editor-entry, #mobile-editor-panel-managers .manager-editor-entry').forEach(entryNode => {
-            const id = entryNode.dataset.id;
-            const name = entryNode.querySelector('.manager-name-input').value.trim();
-            const telegram = entryNode.querySelector('.manager-telegram-input').value.trim();
-            const whatsapp = entryNode.querySelector('.manager-whatsapp-input').value.trim();
-            if (name) {
-                newManagers[id] = { name, telegram, whatsapp };
             }
-        });
 
-        const newContent = { layout: newLayout, instructionsContent: newInstructions, managers: newManagers };
-        const token = getLocalStorage('chaterlabAuthToken', '');
-        try {
-            const response = await fetch(`${API_BASE_URL}/update-content`, { 
-                method: 'POST', 
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'Authorization': `Bearer ${token}` 
-                }, 
-                body: JSON.stringify(newContent) 
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message);
-            showToast(getTranslatedText(data.message));
-            appContent = newContent;
-            
-            updateInstructions(getLocalStorage('chaterlabLang', 'ru'));
-
-            if(isMobile()) {
-                renderMobileTemplates();
-                document.querySelector('.mobile-editor-back-btn').click();
-            } else {
-                renderSidebar();
-                hideContentEditor();
+            function renderAnalytics() {
+                if (!fullData) return;
+                const lang = getLocalStorage('chaterlabLang', 'ru');
+                const texts = uiTexts[lang] || uiTexts.ru;
+                renderEmployeeList(fullData.employee_summary, texts);
+                if (selectedUser) {
+                    renderUserDetailView(selectedUser, fullData, texts);
+                } else {
+                    renderOverallSummaryView(fullData, texts);
+                }
             }
-        } catch (error) {
-            showToast(getTranslatedText(error.message), true);
-        }
-    }
-    
-    async function fetchAndRenderUsers(containerSelector = '#panel-users') {
-        const parentContainer = document.querySelector(containerSelector);
-        if (!parentContainer) return;
-        const listContainer = parentContainer.querySelector('#user-list');
-        if (!listContainer) return;
-
-        listContainer.innerHTML = `<p>${getTranslatedText('loading')}</p>`;
-        const token = getLocalStorage('chaterlabAuthToken', '');
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/users`, { 
-                headers: { 'Authorization': `Bearer ${token}` } 
-            });
-            const users = await response.json();
-            if (!response.ok) throw new Error(users.message);
             
-            listContainer.innerHTML = '';
-            users.forEach(user => {
-                const userDiv = document.createElement('div');
-                userDiv.className = 'user-list-item';
-                const roleText = getTranslatedText(user.role === 'manager' ? 'roleManager' : 'roleEmployee');
-                userDiv.innerHTML = `
-                    <div class="user-info">
-                        <span class="username">${user.username}</span>
-                        <span class="role">${roleText}</span>
+            function renderEmployeeList(summary, texts) {
+                employeeList.innerHTML = `<li data-username="all" class="${!selectedUser ? 'active' : ''}"><span class="employee-name">${texts.employeeListTitle}</span></li>`;
+                if(summary && summary.length > 0) {
+                    summary.forEach(emp => {
+                        const li = document.createElement('li');
+                        li.dataset.username = emp.username;
+                        li.className = (selectedUser === emp.username) ? 'active' : '';
+                        li.innerHTML = `<span class="employee-name">${emp.username}</span><span class="employee-clicks">${emp.count}</span>`;
+                        employeeList.appendChild(li);
+                    });
+                }
+            }
+
+            function getButtonData(buttonId) {
+                 if (!appContent.layout) return { label: `(ID: ${buttonId})`, section: 'N/A' };
+                 for (const section of appContent.layout) {
+                    const button = section.buttons.find(b => b.id === buttonId);
+                    if (button) return { label: button.label, section: section.title };
+                 }
+                 return { label: `(удален: ${buttonId})`, section: 'N/A' };
+            }
+
+            function formatRelativeTime(isoString, lang) {
+                if (!isoString) return 'никогда';
+                return DateTime.fromISO(isoString).setLocale(lang).toRelative();
+            }
+
+            function renderOverallSummaryView(data, texts) {
+                const topEmployee = data.employee_summary?.[0]?.username || '—';
+                const topTemplateId = data.template_summary?.[0]?.button_id;
+                const topTemplateLabel = topTemplateId ? getButtonData(topTemplateId).label : '—';
+                const peakHour = data.peak_hour;
+                const peakTimeText = (peakHour !== null && peakHour !== undefined) ? `${String(peakHour).padStart(2, '0')}:00 - ${String(peakHour + 1).padStart(2, '0')}:00` : '—';
+
+                let topTemplatesHtml = data.template_summary?.slice(0, 5).map(t => `<tr><td>${getButtonData(t.button_id).label}</td><td class="count-cell">${t.count}</td></tr>`).join('') || `<tr><td colspan="2">${texts.noData}</td></tr>`;
+                let topEmployeesHtml = data.employee_summary?.slice(0, 5).map(e => `<tr><td>${e.username}</td><td class="count-cell">${e.count}</td></tr>`).join('') || `<tr><td colspan="2">${texts.noData}</td></tr>`;
+                
+                if (!data.detailed_log || data.detailed_log.length === 0) {
+                    mainPanel.innerHTML = `<div class="no-data-message">${texts.noData}</div>`;
+                    return;
+                }
+                
+                mainPanel.innerHTML = `
+                    <div class="analytics-main-header">
+                        <h2>${texts.overallSummaryHeader}</h2>
+                        <p>${texts.overallSummarySubheader}</p>
                     </div>
-                    <div class="user-actions">
-                        <button class="delete-user-btn" data-username="${user.username}" ${userName === user.username ? 'disabled' : ''}>${getTranslatedText('deleteUserBtn')}</button>
+                    <div class="kpi-grid">
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${data.detailed_log.length}</h3></div>
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiMostActive}</p><h3 class="kpi-card-value">${topEmployee}</h3></div>
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTopTemplate}</p><h3 class="kpi-card-value">${topTemplateLabel}</h3></div>
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiPeakTime}</p><h3 class="kpi-card-value">${peakTimeText}</h3></div>
+                    </div>
+                    <div class="analytics-section">
+                        <h4>${texts.top5Employees}</h4>
+                        <table class="analytics-table"><thead><tr><th>${texts.tableEmployee}</th><th style="text-align:right;">${texts.tableActions}</th></tr></thead><tbody>${topEmployeesHtml}</tbody></table>
+                    </div>
+                    <div class="analytics-section">
+                        <h4>${texts.top5Templates}</h4>
+                        <table class="analytics-table"><thead><tr><th>${texts.tableTemplate}</th><th style="text-align:right;">${texts.tableUses}</th></tr></thead><tbody>${topTemplatesHtml}</tbody></table>
                     </div>
                 `;
-                listContainer.appendChild(userDiv);
-            });
-
-            parentContainer.querySelectorAll('.delete-user-btn').forEach(btn => {
-                btn.onclick = async (e) => {
-                    const userToDelete = e.target.dataset.username;
-                    const confirmMsg = getTranslatedText('deleteUserConfirm', { username: userToDelete });
-                    if(confirm(confirmMsg)){
-                            await deleteUser(userToDelete, containerSelector);
-                    }
-                };
-            });
-        } catch (error) {
-            listContainer.innerHTML = `<p style="color: var(--error-color);">${getTranslatedText(error.message)}</p>`;
-        }
-    }
-    
-    async function createUser(event) {
-        event.preventDefault();
-        const form = event.target;
-        const usernameInput = form.querySelector('[id^="new-username"]');
-        const passwordInput = form.querySelector('[id^="new-password"]');
-        const roleSelect = form.querySelector('[id^="new-user-role"]');
-        const containerSelector = form.closest('.mobile-editor-panel') ? `#mobile-editor-panel-users` : '#panel-users';
-
-        const userData = {
-            username: usernameInput.value.trim(),
-            password: passwordInput.value.trim(),
-            role: roleSelect.value
-        };
-
-        if(!userData.username || !userData.password) {
-            showToast(getTranslatedText('missing_user_data'), true);
-            return;
-        }
-
-        const token = getLocalStorage('chaterlabAuthToken', '');
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/users/create`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'Authorization': `Bearer ${token}` 
-                },
-                body: JSON.stringify(userData)
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.message);
-            showToast(getTranslatedText(result.message));
-            usernameInput.value = '';
-            passwordInput.value = '';
-            fetchAndRenderUsers(containerSelector);
-        } catch (error) {
-                showToast(getTranslatedText(error.message), true);
-        }
-    }
-    
-    async function deleteUser(username, containerSelector) {
-            const token = getLocalStorage('chaterlabAuthToken', '');
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/users/delete`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'Authorization': `Bearer ${token}` 
-                },
-                body: JSON.stringify({ username: username })
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.message);
-            showToast(getTranslatedText(result.message));
-            fetchAndRenderUsers(containerSelector);
-        } catch (error) {
-                showToast(getTranslatedText(error.message), true);
-        }
-    }
-
-    // --- NEW MOBILE UI FUNCTIONS ---
-    function setupMobileUI() {
-        renderMobileTemplates();
-        
-        const navButtons = document.querySelectorAll('#mobile-bottom-nav .nav-btn');
-        const screens = document.querySelectorAll('.mobile-screen');
-
-        navButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const screenName = btn.dataset.screen;
-                
-                if(screenName === 'analytics' && userRole !== 'manager') {
-                    const analyticsContent = document.getElementById('mobile-analytics-content');
-                    analyticsContent.innerHTML = `<p style="text-align: center; padding: 40px 16px;">${getTranslatedText('analyticsForManagersOnly')}</p>`;
-                } else if (screenName === 'analytics' && userRole === 'manager') {
-                    const analyticsContainer = document.getElementById('mobile-analytics-content');
-                    if (!analyticsContainer.dataset.initialized) {
-                         // Clone analytics panel only once
-                        const desktopAnalytics = document.getElementById('analytics-panel');
-                        analyticsContainer.innerHTML = desktopAnalytics.innerHTML;
-                        setupAnalytics('#mobile-analytics-content', '#mobile-analytics-content .analytics-main', '#mobile-analytics-content .employee-list', '#mobile-analytics-content .analytics-period-selector')();
-                        analyticsContainer.dataset.initialized = "true";
-                    }
-                }
-
-                screens.forEach(s => s.classList.remove('active'));
-                document.getElementById(`mobile-screen-${screenName}`).classList.add('active');
-
-                navButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
-        });
-
-        renderMobileMenu();
-        document.getElementById('mobile-logout-btn').addEventListener('click', () => logout());
-        document.getElementById('mobile-lang-switcher').addEventListener('click', () => {
-            const langs = ['ru', 'en', 'uk'];
-            const currentLang = getLocalStorage('chaterlabLang', 'ru');
-            const nextIndex = (langs.indexOf(currentLang) + 1) % langs.length;
-            switchLanguage(langs[nextIndex]);
-        });
-
-        if (userRole === 'manager') {
-            setupMobileEditor();
-        }
-    }
-
-    function renderMobileTemplates() {
-        const container = document.getElementById('mobile-templates-content');
-        if(!container) return;
-        
-        // Clone the search input
-        const desktopSearch = document.querySelector('.sidebar .search-wrapper');
-        const mobileSearch = desktopSearch.cloneNode(true);
-
-        container.innerHTML = ''; // Clear previous content
-        container.appendChild(mobileSearch);
-
-        // Render sections and buttons
-        appContent.layout?.forEach(section => {
-            const sectionDiv = document.createElement('div');
-            sectionDiv.className = 'sidebar-section';
-            const title = document.createElement('h2');
-            title.textContent = section.title;
-            sectionDiv.appendChild(title);
-
-            const buttonsContainer = document.createElement('div');
-            buttonsContainer.className = 'buttons-container';
-
-            section.buttons.forEach(buttonData => {
-                const button = document.createElement('button');
-                button.className = 'sidebar-button';
-                button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span><div class="favorite-star" data-button-id="${buttonData.id}">☆</div>`;
-                button.onclick = (e) => { 
-                    if (e.target.classList.contains('favorite-star')) return; 
-                    handleSidebarButtonClick(buttonData.id);
-                };
-                buttonsContainer.appendChild(button);
-            });
-            sectionDiv.appendChild(buttonsContainer);
-            container.appendChild(sectionDiv);
-        });
-        
-        // Setup accordion and search again for the new content
-        container.addEventListener('click', (e) => {
-            const header = e.target.closest('h2');
-            if (header) {
-                header.parentElement.classList.toggle('active');
             }
-        });
-        setupSearch('#mobile-templates-content', '#mobile-templates-content #searchInput');
-        container.addEventListener('click', handleFavoriteClick);
-    }
 
-    function renderMobileMenu() {
-        const card = document.getElementById('mobile-user-card');
-        const roleText = getTranslatedText(userRole === 'manager' ? 'roleManager' : 'roleEmployee');
-        card.querySelector('.username').textContent = userName;
-        card.querySelector('.role').textContent = roleText;
-    }
+            function renderUserDetailView(username, data, texts) {
+                const userData = data.employee_summary.find(e => e.username === username);
+                const userLog = data.detailed_log.filter(log => log.username === username);
+                
+                const userTemplateCounts = userLog.reduce((acc, log) => {
+                    acc[log.button_id] = (acc[log.button_id] || 0) + 1;
+                    return acc;
+                }, {});
 
-    function setupMobileEditor() {
-        const editorScreen = document.getElementById('mobile-editor-screen');
-        const openBtn = document.getElementById('mobile-editor-btn');
-        const backBtn = document.querySelector('.mobile-editor-back-btn');
-        const tabsContainer = document.querySelector('.mobile-editor-tabs');
-        const contentContainer = document.querySelector('.mobile-editor-content');
+                const topTemplateId = Object.keys(userTemplateCounts).sort((a, b) => userTemplateCounts[b] - userTemplateCounts[a])[0];
+                const topTemplateLabel = topTemplateId ? getButtonData(topTemplateId).label : '—';
+                
+                let logHtml = userLog.slice(0, 100).map(log => {
+                    const btnData = getButtonData(log.button_id);
+                    return `<tr>
+                        <td class="time-cell">${DateTime.fromISO(log.created_at).toFormat('HH:mm:ss')}</td>
+                        <td>${btnData.label}</td>
+                        <td class="time-cell">${btnData.section}</td>
+                    </tr>`
+                }).join('');
+
+                mainPanel.innerHTML = `
+                    <div class="analytics-main-header">
+                        <h2>${texts.userDetailHeader} ${username}</h2>
+                        <p>${texts.userDetailSubheader}</p>
+                    </div>
+                    <div class="kpi-grid">
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${userData?.count || 0}</h3></div>
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiLastActivity}</p><h3 class="kpi-card-value">${formatRelativeTime(userData?.last_activity, texts.lang_locale || 'ru')}</h3></div>
+                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiFavTemplate}</p><h3 class="kpi-card-value">${topTemplateLabel}</h3></div>
+                    </div>
+                    <div class="analytics-section">
+                        <h4>${texts.activityFeedTitle}</h4>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table class="analytics-table">
+                                <thead><tr><th>${texts.tableTime}</th><th>${texts.tableTemplate}</th><th>${texts.tableSection}</th></tr></thead>
+                                <tbody>${logHtml || `<tr><td colspan="3" style="text-align:center;">${texts.noData}</td></tr>`}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+            return fetchAndRenderAnalytics;
+        }
         
-        openBtn.addEventListener('click', () => {
-            if (!editorScreen.dataset.initialized) {
-                 // Clone editor content only on first open
-                const desktopEditor = document.getElementById('content-editor');
-                tabsContainer.innerHTML = desktopEditor.querySelector('.editor-tabs').innerHTML;
-                
-                desktopEditor.querySelectorAll('.editor-panel').forEach(panel => {
-                    const newPanel = document.createElement('div');
-                    newPanel.className = 'mobile-editor-panel';
-                    newPanel.id = `mobile-editor-${panel.id}`;
-                    const clonedPanel = panel.cloneNode(true);
-                    newPanel.appendChild(clonedPanel);
-                    contentContainer.appendChild(newPanel);
-                });
+        function switchEditorTab(tabName) { document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active')); document.querySelectorAll('.editor-tabs button').forEach(b => b.classList.remove('active')); document.getElementById(`panel-${tabName}`).classList.add('active'); document.getElementById(`tab-btn-${tabName}`).classList.add('active'); if(tabName === 'users') { fetchAndRenderUsers(); } applyTranslations(); }
+        function showContentEditor() { document.getElementById('main-content-wrapper').style.display = 'block'; document.getElementById('content-editor').style.display = 'block'; document.getElementById('instructions').style.display = 'none'; buildLayoutEditor(); initInstructionsEditor(); buildManagerEditor(); switchEditorTab('layout'); }
+        function hideContentEditor() { document.getElementById('main-content-wrapper').style.display = 'block'; document.getElementById('content-editor').style.display = 'none'; document.getElementById('instructions').style.display = 'block'; tinymce.remove(); }
+        function buildLayoutEditor() { const container = document.getElementById('panel-layout'); if(!container) return; while (container.firstChild && container.firstChild.id !== 'add-section-btn') { container.removeChild(container.firstChild); } appContent.layout?.forEach(section => { const sectionNode = createSectionEditor(section); container.insertBefore(sectionNode, document.getElementById('add-section-btn')); }); applyTranslations(); }
+        
+        function createSectionEditor(section) { 
+            const sectionDiv = document.createElement('div'); 
+            sectionDiv.className = 'editor-section'; 
+            sectionDiv.dataset.id = section.id; 
+            sectionDiv.innerHTML = `<div class="editor-section-header"><input type="text" class="section-title-input" value="${section.title}" data-key="sectionTitle" placeholder="Название раздела"><div class="editor-controls"><button class="delete-btn" data-key="deleteButtonTitle" title="Удалить раздел">🗑</button></div></div><div class="buttons-container"></div><button class="add-btn add-button-btn" data-key="addButton">+ Добавить кнопку в раздел</button>`; 
+            const buttonsContainer = sectionDiv.querySelector('.buttons-container'); 
+            section.buttons.forEach(button => { buttonsContainer.appendChild(createButtonEditor(button)); }); 
+            sectionDiv.querySelector('.delete-btn').onclick = () => { if (confirm(getTranslatedText('deleteSectionConfirm'))) sectionDiv.remove(); }; 
+            sectionDiv.querySelector('.add-button-btn').onclick = () => { const newButton = { id: generateId('btn_'), label: getTranslatedText('buttonLabel'), templates: ['Новый шаблон'] }; buttonsContainer.appendChild(createButtonEditor(newButton)); }; 
+            return sectionDiv; 
+        }
 
-                // Re-initialize complex editors
-                buildLayoutEditor();
-                buildManagerEditor();
-                
-                // Activate first tab
-                tabsContainer.querySelector('button').classList.add('active');
-                contentContainer.querySelector('.mobile-editor-panel').classList.add('active');
-                
-                // Add listeners to tabs
-                tabsContainer.querySelectorAll('button').forEach(tab => {
-                    tab.addEventListener('click', () => {
-                        tabsContainer.querySelector('.active')?.classList.remove('active');
-                        tab.classList.add('active');
+        function createButtonEditor(button) {
+            const buttonDiv = document.createElement('div');
+            buttonDiv.className = 'editor-button-entry';
+            buttonDiv.dataset.id = button.id;
+            buttonDiv.innerHTML = `
+                <div class="editor-button-header">
+                    <input type="text" class="button-label-input" value="${button.label}" data-key="buttonLabel" placeholder="Название кнопки">
+                    <div class="editor-controls"><button class="delete-btn" data-key="deleteButtonEntryTitle" title="Удалить кнопку">🗑</button></div>
+                </div>
+                <div class="variants-container"></div>
+                <div class="button-options">
+                    <div class="checkbox-wrapper">
+                         <input type="checkbox" id="is-contact-btn-${button.id}" class="is-contact-btn-toggle" ${button.type === 'contact_generator' ? 'checked' : ''}>
+                         <label for="is-contact-btn-${button.id}" data-key="isContactButtonLabel">Сделать кнопкой "Контакт"</label>
+                    </div>
+                </div>
+            `;
+            
+            const variantsContainer = buttonDiv.querySelector('.variants-container');
+            if (button.templates) {
+                button.templates.forEach(template => { variantsContainer.appendChild(createVariantInput(template)); });
+            }
+            
+            const assignmentContainer = document.createElement('div');
+            assignmentContainer.className = 'manager-assignment-container';
+            buttonDiv.querySelector('.button-options').insertAdjacentElement('afterend', assignmentContainer);
 
-                        const panelId = tab.id.replace('tab-btn-', 'panel-');
-                        contentContainer.querySelectorAll('.mobile-editor-panel').forEach(p => p.classList.remove('active'));
-                        const targetPanel = document.getElementById(`mobile-editor-${panelId}`);
-                        targetPanel.classList.add('active');
 
-                        if (panelId === 'panel-users') {
-                            fetchAndRenderUsers(`#mobile-editor-panel-users`);
-                        } else if (panelId === 'panel-instructions') {
-                             // Initialize TinyMCE for mobile if not already done
-                            if (!tinymce.get('instructions-editor-ru')) initInstructionsEditor();
+            const addVariantBtn = document.createElement('button');
+            addVariantBtn.className = 'add-variant-btn';
+            addVariantBtn.dataset.key = 'addVariant';
+            addVariantBtn.textContent = getTranslatedText('addVariant');
+            addVariantBtn.onclick = () => {
+                const newVariant = createVariantInput('');
+                variantsContainer.appendChild(newVariant);
+                newVariant.querySelector('textarea').focus();
+            };
+
+            buttonDiv.querySelector('.button-options').insertAdjacentElement('beforebegin', addVariantBtn);
+            buttonDiv.querySelector('.delete-btn').onclick = () => buttonDiv.remove();
+
+            const renderManagerAssignment = (currentButtonData) => {
+                if (buttonDiv.querySelector('.is-contact-btn-toggle').checked) {
+                    let managerCheckboxesHTML = `<h4 data-key="managerAssignmentTitle">${getTranslatedText('managerAssignmentTitle')}</h4><div class="manager-assignment-grid">`;
+                    
+                    if (appContent.managers && Object.keys(appContent.managers).length > 0) {
+                        for (const [id, manager] of Object.entries(appContent.managers)) {
+                            const isChecked = currentButtonData.manager_ids && currentButtonData.manager_ids.includes(id) ? 'checked' : '';
+                            const checkboxId = `chk-${button.id}-${id}`;
+                            managerCheckboxesHTML += `
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" id="${checkboxId}" value="${id}" class="manager-checkbox" ${isChecked}>
+                                    <label for="${checkboxId}">${manager.name}</label>
+                                </div>`;
                         }
-                    });
+                    }
+                    managerCheckboxesHTML += `</div>`;
+                    assignmentContainer.innerHTML = managerCheckboxesHTML;
+                } else {
+                    assignmentContainer.innerHTML = '';
+                }
+                 applyTranslations();
+            };
+
+            buttonDiv.querySelector('.is-contact-btn-toggle').addEventListener('change', () => {
+                const tempData = { ...button, manager_ids: [] }; 
+                renderManagerAssignment(tempData);
+            });
+            
+            renderManagerAssignment(button);
+            
+            return buttonDiv;
+        }
+
+        function createVariantInput(text) { const variantDiv = document.createElement('div'); variantDiv.className = 'template-variant'; variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" data-key="deleteVariantTitle" title="Удалить вариант">🗑</button>`; variantDiv.querySelector('.delete-variant-btn').onclick = () => variantDiv.remove(); return variantDiv; }
+        function addSection() { const newSection = { id: generateId('sec_'), title: 'Новый раздел', buttons: [] }; const sectionNode = createSectionEditor(newSection); const container = document.getElementById('panel-layout'); container.insertBefore(sectionNode, document.getElementById('add-section-btn')); applyTranslations();}
+        function initInstructionsEditor() { const skin = document.body.classList.contains('dark-mode') ? 'oxide-dark' : 'oxide'; const content_css = document.body.classList.contains('dark-mode') ? 'dark' : 'default'; tinymce.init({ selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk', height: 500, menubar: false, plugins: 'lists link image code help wordcount autoresize table', toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | table | help', skin: skin, content_css: content_css, setup: editor => { editor.on('init', () => { const langKey = editor.id.split('-')[2]; editor.setContent(appContent.instructionsContent?.[langKey] || ''); }); } }); }
+        
+        function buildManagerEditor() {
+            const container = document.getElementById('panel-managers');
+            const addButton = document.getElementById('add-manager-btn');
+            if(!container || !addButton) return;
+            container.innerHTML = ''; 
+            if (appContent.managers) {
+                for (const [id, manager] of Object.entries(appContent.managers)) {
+                    container.appendChild(createManagerEditorEntry(id, manager));
+                }
+            }
+            container.appendChild(addButton);
+            addButton.onclick = addManagerEntry;
+            applyTranslations();
+        }
+
+        function createManagerEditorEntry(id, manager) {
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'manager-editor-entry';
+            entryDiv.dataset.id = id;
+            entryDiv.innerHTML = `
+                <div class="manager-editor-header">
+                    <input type="text" class="manager-name-input" value="${manager.name}" data-key="managerNamePlaceholder" placeholder="Имя менеджера">
+                    <div class="editor-controls">
+                        <button class="delete-btn" data-key="deleteManagerTitle" title="Удалить менеджера">🗑</button>
+                    </div>
+                </div>
+                <div class="manager-editor-fields">
+                    <div class="manager-editor-field">
+                        <label>Telegram</label>
+                        <input type="text" class="manager-telegram-input" value="${manager.telegram}" data-key="managerTelegramPlaceholder" placeholder="@username">
+                    </div>
+                    <div class="manager-editor-field">
+                        <label>WhatsApp</label>
+                        <input type="text" class="manager-whatsapp-input" value="${manager.whatsapp}" data-key="managerWhatsappPlaceholder" placeholder="+123...">
+                    </div>
+                </div>
+            `;
+            entryDiv.querySelector('.delete-btn').onclick = () => entryDiv.remove();
+            return entryDiv;
+        }
+        
+        function addManagerEntry() {
+            const newId = generateId('mgr_');
+            const newManager = { name: 'Новый менеджер', telegram: '@username', whatsapp: '+123456789' };
+            const entryNode = createManagerEditorEntry(newId, newManager);
+            const container = document.getElementById('panel-managers');
+            const addButton = document.getElementById('add-manager-btn');
+            container.insertBefore(entryNode, addButton);
+            applyTranslations();
+            entryNode.querySelector('.manager-name-input').focus();
+        }
+
+        async function saveContent() {
+            const newLayout = [];
+            document.querySelectorAll('#panel-layout .editor-section').forEach(sectionNode => {
+                const section = { id: sectionNode.dataset.id, title: sectionNode.querySelector('.section-title-input').value.trim(), buttons: [] };
+                if (!section.title) return;
+                sectionNode.querySelectorAll('.editor-button-entry').forEach(buttonNode => {
+                    
+                    const newButtonObject = { 
+                        id: buttonNode.dataset.id, 
+                        label: buttonNode.querySelector('.button-label-input').value.trim(), 
+                        templates: Array.from(buttonNode.querySelectorAll('.variants-container .template-variant textarea')).map(t => t.value.trim()).filter(v => v)
+                    };
+
+                    const isContactToggle = buttonNode.querySelector('.is-contact-btn-toggle');
+                    if (isContactToggle && isContactToggle.checked) {
+                        newButtonObject.type = 'contact_generator';
+                        const selectedIds = [];
+                        const managerCheckboxes = buttonNode.querySelectorAll('.manager-checkbox:checked');
+                        managerCheckboxes.forEach(checkbox => {
+                            selectedIds.push(checkbox.value);
+                        });
+                        newButtonObject.manager_ids = selectedIds;
+                    }
+
+                    if (newButtonObject.label) section.buttons.push(newButtonObject);
+                });
+                newLayout.push(section);
+            });
+
+            const newInstructions = {};
+            for (const lang of ['ru', 'en', 'uk']) {
+                const editor = tinymce.get(`instructions-editor-${lang}`);
+                if (editor) newInstructions[lang] = editor.getContent();
+            }
+
+            const newManagers = {};
+            document.querySelectorAll('#panel-managers .manager-editor-entry').forEach(entryNode => {
+                const id = entryNode.dataset.id;
+                const name = entryNode.querySelector('.manager-name-input').value.trim();
+                const telegram = entryNode.querySelector('.manager-telegram-input').value.trim();
+                const whatsapp = entryNode.querySelector('.manager-whatsapp-input').value.trim();
+                if (name) {
+                    newManagers[id] = { name, telegram, whatsapp };
+                }
+            });
+
+            const newContent = { layout: newLayout, instructionsContent: newInstructions, managers: newManagers };
+            const token = getLocalStorage('chaterlabAuthToken', '');
+            try {
+                // ИЗМЕНЕНО: Добавлен заголовок Authorization
+                const response = await fetch(`${API_BASE_URL}/update-content`, { 
+                    method: 'POST', 
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    }, 
+                    body: JSON.stringify(newContent) 
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message);
+                showToast(getTranslatedText(data.message));
+                appContent = newContent;
+                renderSidebar();
+                updateInstructions(getLocalStorage('chaterlabLang', 'ru'));
+                hideContentEditor();
+            } catch (error) {
+                showToast(getTranslatedText(error.message), true);
+            }
+        }
+        
+        async function fetchAndRenderUsers() {
+            const listContainer = document.getElementById('user-list');
+            if (!listContainer) return;
+            listContainer.innerHTML = `<p>${getTranslatedText('loading')}</p>`;
+            const token = getLocalStorage('chaterlabAuthToken', '');
+            try {
+                // ИЗМЕНЕНО: Добавлен заголовок Authorization
+                const response = await fetch(`${API_BASE_URL}/api/users`, { 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
+                const users = await response.json();
+                if (!response.ok) throw new Error(users.message);
+                
+                listContainer.innerHTML = '';
+                users.forEach(user => {
+                    const userDiv = document.createElement('div');
+                    userDiv.className = 'user-list-item';
+                    const roleText = getTranslatedText(user.role === 'manager' ? 'roleManager' : 'roleEmployee');
+                    userDiv.innerHTML = `
+                        <div class="user-info">
+                            <span class="username">${user.username}</span>
+                            <span class="role">${roleText}</span>
+                        </div>
+                        <div class="user-actions">
+                            <button class="delete-user-btn" data-username="${user.username}" ${userName === user.username ? 'disabled' : ''}>${getTranslatedText('deleteUserBtn')}</button>
+                        </div>
+                    `;
+                    listContainer.appendChild(userDiv);
                 });
 
-                // Add form submit listener for user creation in mobile editor
-                const mobileUserForm = document.querySelector('#mobile-editor-panel-users #add-user-form');
-                if (mobileUserForm) mobileUserForm.addEventListener('submit', createUser);
-
-                // Add save listener for mobile
-                const mobileSaveBtn = document.querySelector('#mobile-editor-panel-layout #save-content-btn');
-                if(mobileSaveBtn) mobileSaveBtn.addEventListener('click', saveContent);
-
-                editorScreen.dataset.initialized = "true";
+                document.querySelectorAll('.delete-user-btn').forEach(btn => {
+                    btn.onclick = async (e) => {
+                        const userToDelete = e.target.dataset.username;
+                        const confirmMsg = getTranslatedText('deleteUserConfirm', { username: userToDelete });
+                        if(confirm(confirmMsg)){
+                            await deleteUser(userToDelete);
+                        }
+                    };
+                });
+            } catch (error) {
+                listContainer.innerHTML = `<p style="color: var(--error-color);">${getTranslatedText(error.message)}</p>`;
             }
-            editorScreen.classList.add('active');
+        }
+        
+        async function createUser(event) {
+            event.preventDefault();
+            const usernameInput = document.getElementById('new-username');
+            const passwordInput = document.getElementById('new-password');
+            const roleSelect = document.getElementById('new-user-role');
+
+            const userData = {
+                username: usernameInput.value.trim(),
+                password: passwordInput.value.trim(),
+                role: roleSelect.value
+            };
+
+            if(!userData.username || !userData.password) {
+                showToast(getTranslatedText('missing_user_data'), true);
+                return;
+            }
+
+            const token = getLocalStorage('chaterlabAuthToken', '');
+            try {
+                // ИЗМЕНЕНО: Добавлен заголовок Authorization
+                const response = await fetch(`${API_BASE_URL}/api/users/create`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify(userData)
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+                showToast(getTranslatedText(result.message));
+                usernameInput.value = '';
+                passwordInput.value = '';
+                fetchAndRenderUsers();
+            } catch (error) {
+                 showToast(getTranslatedText(error.message), true);
+            }
+        }
+        
+        async function deleteUser(username) {
+             const token = getLocalStorage('chaterlabAuthToken', '');
+            try {
+                // ИЗМЕНЕНО: Добавлен заголовок Authorization
+                const response = await fetch(`${API_BASE_URL}/api/users/delete`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ username: username })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+                showToast(getTranslatedText(result.message));
+                fetchAndRenderUsers();
+            } catch (error) {
+                 showToast(getTranslatedText(error.message), true);
+            }
+        }
+
+        function setupAccordion() {
+            if (!isMobile()) return;
+            const sidebar = document.getElementById('sidebar-content');
+            if (!sidebar) return;
+            sidebar.addEventListener('click', (e) => {
+                const header = e.target.closest('h2');
+                if (header) {
+                    const section = header.parentElement;
+                    if(section) section.classList.toggle('active');
+                }
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialLang = getLocalStorage('chaterlabLang', 'ru');
+            switchLanguage(initialLang);
+            document.querySelectorAll('#language-switcher-login button').forEach(button => { button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang)); });
+            document.querySelectorAll('#language-switcher-app button').forEach(button => { button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang)); });
+            checkLogin();
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            
+            const addUserForm = document.getElementById('add-user-form');
+            if(addUserForm) addUserForm.addEventListener('submit', createUser);
+
+            const tabLayout = document.getElementById('tab-btn-layout');
+            if(tabLayout) tabLayout.addEventListener('click', () => switchEditorTab('layout'));
+            
+            const tabInstructions = document.getElementById('tab-btn-instructions');
+            if(tabInstructions) tabInstructions.addEventListener('click', () => switchEditorTab('instructions'));
+
+            const tabManagers = document.getElementById('tab-btn-managers');
+            if(tabManagers) tabManagers.addEventListener('click', () => switchEditorTab('managers'));
+
+            const tabUsers = document.getElementById('tab-btn-users');
+            if(tabUsers) tabUsers.addEventListener('click', () => switchEditorTab('users'));
+
+            const saveBtn = document.getElementById('save-content-btn');
+            if(saveBtn) saveBtn.addEventListener('click', saveContent);
+
+            const addSectionBtn = document.getElementById('add-section-btn');
+            if(addSectionBtn) addSectionBtn.addEventListener('click', addSection);
         });
-
-        backBtn.addEventListener('click', () => editorScreen.classList.remove('active'));
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const initialLang = getLocalStorage('chaterlabLang', 'ru');
-        switchLanguage(initialLang);
-        document.getElementById('login-form').addEventListener('submit', handleLogin);
-        initApp();
-    });
     </script>
 </body>
 </html>
+}
+Сам внеси эти изменения в мой присланный файл, и отправь итоговый результат
