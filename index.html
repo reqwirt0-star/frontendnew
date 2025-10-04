@@ -35,14 +35,22 @@
         #add-user-form { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 16px; align-items: flex-end; }
         #add-user-form input, #add-user-form select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--border-color); background-color: var(--background-main); font-size: 14px; color: var(--text-primary); font-family: inherit; }
         #add-user-form button { padding: 12px 24px; }
+        /* Mobile-specific UI elements */
+        #mobile-view-switcher { display: none; }
+        #mobile-instructions-view { display: none; padding: 0 16px 16px 16px; }
         #mobile-admin-panel-toggle { display: none; }
         .mobile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity .3s ease; }
         .mobile-overlay.show { opacity: 1; pointer-events: auto; }
-        .mobile-panel { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--background-card); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 24px; transform: translateY(100%); transition: transform .3s ease-out; }
+        .mobile-panel { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--background-card); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 24px; transform: translateY(100%); transition: transform .3s ease-out; z-index: 1001; max-height: 85vh; overflow-y: auto;}
         .mobile-overlay.show .mobile-panel { transform: translateY(0); }
         .mobile-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
         .mobile-panel-header h3 { margin: 0; }
         .mobile-panel-close { font-size: 24px; cursor: pointer; border: none; background: none; color: var(--text-secondary); }
+        .mobile-panel .kpi-card { padding: 16px; }
+        .mobile-panel .kpi-card-value { font-size: 24px;}
+        .mobile-panel .kpi-grid { gap: 12px; }
+        .mobile-panel-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color); }
+        .mobile-panel-section h4 { margin-top: 0; margin-bottom: 16px; }
 
         @media (max-width: 768px) {
             body { overflow: auto; }
@@ -50,10 +58,34 @@
             .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); padding: 16px; overflow-y: visible; height: auto; }
             .sidebar-scrollable-content { overflow-y: visible; margin-right: 0; padding-right: 0; }
             .info { display: none !important; } 
-            .manager-controls-segmented { display: none !important; } 
+            .manager-controls-segmented, #user-status-card { display: none !important; } 
             
+            #mobile-view-switcher {
+                display: flex;
+                border-bottom: 1px solid var(--border-color);
+                margin: -16px -16px 16px -16px;
+                padding: 0 16px;
+            }
+            #mobile-view-switcher button {
+                flex: 1;
+                padding: 14px 0;
+                background: none;
+                border: none;
+                font-size: 15px;
+                font-weight: 600;
+                color: var(--text-secondary);
+                cursor: pointer;
+                border-bottom: 2px solid transparent;
+                margin-bottom: -1px;
+                transition: all 0.2s ease;
+            }
+            #mobile-view-switcher button.active {
+                color: var(--primary-blue);
+                border-bottom-color: var(--primary-blue);
+            }
+
             #mobile-admin-panel-toggle {
-                display: none; 
+                display: none; /* Controlled by JS */
                 position: fixed;
                 bottom: 20px;
                 right: 20px;
@@ -67,6 +99,9 @@
                 cursor: pointer;
                 box-shadow: var(--shadow-lg);
                 z-index: 999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .sidebar-section h2 { cursor: pointer; position: relative; padding-right: 30px; }
@@ -78,6 +113,8 @@
             header { font-size: 22px; padding: 16px; }
             .login-form-container { width: 90%; padding: 32px 24px; }
             #add-user-form { grid-template-columns: 1fr; }
+            .mobile-panel #add-user-form { grid-template-columns: 1fr; }
+            .mobile-panel #add-user-form button { width: 100%; }
         }
     </style>
 </head>
@@ -88,11 +125,18 @@
         <header>ChaterLab Quick Replies</header>
         <main>
             <div class="sidebar">
-                <div class="sidebar-scrollable-content">
-                    <div class="search-wrapper"><input type="search" id="searchInput" data-key="searchPlaceholder"></div>
-                    <div id="favorites-section" class="sidebar-section" style="display: none;"><h2 data-key="favoritesTitle">⭐ Избранное</h2><div id="favorites-content"></div></div>
-                    <div id="sidebar-content"></div>
+                <div id="mobile-view-switcher">
+                    <button id="mobile-templates-btn" class="active" data-key="navTemplates">Шаблоны</button>
+                    <button id="mobile-instructions-btn" data-key="navInstructions">Инструкция</button>
                 </div>
+                <div id="mobile-templates-view">
+                    <div class="search-wrapper"><input type="search" id="searchInput" data-key="searchPlaceholder"></div>
+                    <div class="sidebar-scrollable-content">
+                        <div id="favorites-section" class="sidebar-section" style="display: none;"><h2 data-key="favoritesTitle">⭐ Избранное</h2><div id="favorites-content"></div></div>
+                        <div id="sidebar-content"></div>
+                    </div>
+                </div>
+                <div id="mobile-instructions-view"></div>
                 <div class="sidebar-footer">
                     <div id="language-switcher-app"><button data-lang="ru" class="lang-btn-app">RU</button><button data-lang="en" class="lang-btn-app">EN</button><button data-lang="uk" class="lang-btn-app">UA</button></div>
                     <div class="theme-switch-wrapper"><div class="theme-switch-label" data-key="darkMode">Тёмная тема</div><label class="theme-switch" for="theme-checkbox"><input type="checkbox" id="theme-checkbox" /><div class="slider round"></div></label></div>
@@ -206,10 +250,11 @@
                 <button id="mobile-panel-close" class="mobile-panel-close">&times;</button>
             </div>
             <div id="mobile-analytics-content"></div>
-            <div class="editor-unavailable-notice">
+            <div class="mobile-panel-section editor-unavailable-notice">
                 <h4 data-key="editorUnavailable">Редактор</h4>
-                <p data-key="editorUnavailableMsg">Полноценное редактирование доступно только в версии сайта для ПК.</p>
+                <p data-key="editorUnavailableMsg">Полноценное редактирование кнопок и инструкций доступно только в версии сайта для ПК.</p>
             </div>
+            <div id="mobile-users-manager" class="mobile-panel-section"></div>
         </div>
     </div>
     <script>
@@ -233,12 +278,13 @@
                 favoritesTitle: '⭐ Избранное',
                 darkMode: 'Тёмная тема',
                 logout: 'Выйти',
+                navTemplates: 'Шаблоны',
                 navInstructions: 'Инструкция',
                 navAnalytics: 'Аналитика',
                 navEditor: 'Редактор',
                 mobileAdminTitle: 'Админ-панель',
                 editorUnavailable: 'Редактор',
-                editorUnavailableMsg: 'Полноценное редактирование доступно только в версии сайта для ПК.',
+                editorUnavailableMsg: 'Полноценное редактирование кнопок и инструкций доступно только в версии сайта для ПК.',
                 tabLayout: 'Конструктор кнопок',
                 tabInstructions: 'Инструкция',
                 tabManagers: 'Менеджеры',
@@ -273,7 +319,7 @@
                 instructionTitleRu: 'Инструкция (RU)',
                 instructionTitleEn: 'Инструкция (EN)',
                 instructionTitleUk: 'Инструкция (UA)',
-                analyticsTitle: 'Аналитика',
+                analyticsTitle: 'Аналитика (за день)',
                 periodDay: 'День',
                 periodWeek: 'Неделя',
                 periodMonth: 'Месяц',
@@ -349,12 +395,13 @@
                 favoritesTitle: '⭐ Favorites',
                 darkMode: 'Dark Mode',
                 logout: 'Logout',
+                navTemplates: 'Templates',
                 navInstructions: 'Instructions',
                 navAnalytics: 'Analytics',
                 navEditor: 'Editor',
                 mobileAdminTitle: 'Admin Panel',
                 editorUnavailable: 'Editor',
-                editorUnavailableMsg: 'Full editing is only available on the desktop version of the site.',
+                editorUnavailableMsg: 'Full editing of buttons and instructions is only available on the desktop version of the site.',
                 tabLayout: 'Button Builder',
                 tabInstructions: 'Instructions',
                 tabManagers: 'Managers',
@@ -389,7 +436,7 @@
                 instructionTitleRu: 'Instructions (RU)',
                 instructionTitleEn: 'Instructions (EN)',
                 instructionTitleUk: 'Instructions (UA)',
-                analyticsTitle: 'Analytics',
+                analyticsTitle: 'Analytics (Daily)',
                 periodDay: 'Day',
                 periodWeek: 'Week',
                 periodMonth: 'Month',
@@ -465,12 +512,13 @@
                 favoritesTitle: '⭐ Обране',
                 darkMode: 'Темна тема',
                 logout: 'Вийти',
+                navTemplates: 'Шаблони',
                 navInstructions: 'Інструкція',
                 navAnalytics: 'Аналітика',
                 navEditor: 'Редактор',
                 mobileAdminTitle: 'Адмін-панель',
                 editorUnavailable: 'Редактор',
-                editorUnavailableMsg: 'Повноцінне редагування доступне лише у версії сайту для ПК.',
+                editorUnavailableMsg: 'Повноцінне редагування кнопок та інструкцій доступне лише у версії сайту для ПК.',
                 tabLayout: 'Конструктор кнопок',
                 tabInstructions: 'Інструкція',
                 tabManagers: 'Менеджери',
@@ -505,7 +553,7 @@
                 instructionTitleRu: 'Інструкція (RU)',
                 instructionTitleEn: 'Інструкція (EN)',
                 instructionTitleUk: 'Інструкція (UA)',
-                analyticsTitle: 'Аналітика',
+                analyticsTitle: 'Аналітика (за день)',
                 periodDay: 'День',
                 periodWeek: 'Тиждень',
                 periodMonth: 'Місяць',
@@ -872,12 +920,17 @@
 
         function updateInstructions(lang) {
             const instructionsDiv = document.getElementById('instructions');
+            const mobileInstructionsDiv = document.getElementById('mobile-instructions-view');
+            
+            let content = '';
             if (appContent.instructionsContent && appContent.instructionsContent[lang]) {
-                instructionsDiv.innerHTML = appContent.instructionsContent[lang];
+                content = appContent.instructionsContent[lang];
             } else {
                 const fallbackMessage = { 'ru': '<h3>Инструкция не найдена</h3><p>Для выбранного языка нет инструкции в базе данных.</p>', 'en': '<h3>Instructions Not Found</h3><p>No instructions are available for the selected language in the database.</p>', 'uk': '<h3>Інструкція не знайдена</h3><p>Для вибраної мови немає інструкції в базі даних.</p>' };
-                instructionsDiv.innerHTML = fallbackMessage[lang] || fallbackMessage['ru'];
+                content = fallbackMessage[lang] || fallbackMessage['ru'];
             }
+            if (instructionsDiv) instructionsDiv.innerHTML = content;
+            if (mobileInstructionsDiv) mobileInstructionsDiv.innerHTML = content;
         }
         
         async function trackClick(buttonId) {
@@ -1057,20 +1110,24 @@
                     const toggleBtn = document.getElementById('mobile-admin-panel-toggle');
                     const overlay = document.getElementById('mobile-admin-overlay');
                     const closeBtn = document.getElementById('mobile-panel-close');
-                    if(toggleBtn) toggleBtn.style.display = 'block';
+                    const mobileUsersContainer = document.getElementById('mobile-users-manager');
+
+                    if(toggleBtn) toggleBtn.style.display = 'flex';
 
                     if(toggleBtn) toggleBtn.onclick = () => {
                         if(overlay) {
-                            overlay.style.display = 'block';
-                            setTimeout(() => overlay.classList.add('show'), 10);
+                            overlay.classList.add('show');
                         }
                         fetchAndRenderMobileAnalytics();
+                        // Render user management in the panel
+                        mobileUsersContainer.innerHTML = document.getElementById('panel-users').innerHTML;
+                        mobileUsersContainer.querySelector('form').addEventListener('submit', createUser);
+                        fetchAndRenderUsers('#mobile-users-manager');
                     };
                     
                     const closePanel = () => {
                          if(overlay) {
                             overlay.classList.remove('show');
-                            setTimeout(() => { if(overlay) overlay.style.display = 'none'; }, 300);
                         }
                     };
 
@@ -1137,7 +1194,7 @@
         async function fetchAndRenderMobileAnalytics() {
             const contentDiv = document.getElementById('mobile-analytics-content');
             if(!contentDiv) return;
-            contentDiv.innerHTML = `<p>${getTranslatedText('loading')}</p>`;
+            contentDiv.innerHTML = `<div class="mobile-panel-section"><h4>${getTranslatedText('analyticsTitle')}</h4><p>${getTranslatedText('loading')}</p></div>`;
             const token = getLocalStorage('chaterlabAuthToken', '');
             
             try {
@@ -1155,15 +1212,18 @@
                 const topTemplateLabel = topTemplateId ? (findButtonById(topTemplateId)?.label || '—') : '—';
 
                 contentDiv.innerHTML = `
-                    <div class="kpi-grid">
-                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${totalClicks}</h3></div>
-                        <div class="kpi-card"><p class="kpi-card-title">${texts.kpiMostActive}</p><h3 class="kpi-card-value">${topEmployee}</h3></div>
+                    <div class="mobile-panel-section">
+                        <h4 data-key="analyticsTitle">${getTranslatedText('analyticsTitle')}</h4>
+                        <div class="kpi-grid">
+                            <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${totalClicks}</h3></div>
+                            <div class="kpi-card"><p class="kpi-card-title">${texts.kpiMostActive}</p><h3 class="kpi-card-value">${topEmployee}</h3></div>
+                        </div>
+                        <div class="kpi-card" style="margin-top: 12px;"><p class="kpi-card-title">${texts.kpiTopTemplate}</p><h3 class="kpi-card-value">${topTemplateLabel}</h3></div>
                     </div>
-                     <div class="kpi-card" style="margin-top: 16px;"><p class="kpi-card-title">${texts.kpiTopTemplate}</p><h3 class="kpi-card-value">${topTemplateLabel}</h3></div>
                 `;
 
             } catch (error) {
-                contentDiv.innerHTML = `<p style="color: var(--error-color);">${error.message}</p>`;
+                contentDiv.innerHTML = `<div class="mobile-panel-section"><h4>${getTranslatedText('analyticsTitle')}</h4><p style="color: var(--error-color);">${error.message}</p></div>`;
             }
         }
 
@@ -1559,13 +1619,15 @@
             }
         }
         
-        async function fetchAndRenderUsers() {
-            const listContainer = document.getElementById('user-list');
+        async function fetchAndRenderUsers(containerSelector = '#panel-users') {
+            const parentContainer = document.querySelector(containerSelector);
+            if (!parentContainer) return;
+            const listContainer = parentContainer.querySelector('#user-list, .user-list'); // Adapt for mobile/desktop
             if (!listContainer) return;
+
             listContainer.innerHTML = `<p>${getTranslatedText('loading')}</p>`;
             const token = getLocalStorage('chaterlabAuthToken', '');
             try {
-                // ИЗМЕНЕНО: Добавлен заголовок Authorization
                 const response = await fetch(`${API_BASE_URL}/api/users`, { 
                     headers: { 'Authorization': `Bearer ${token}` } 
                 });
@@ -1589,12 +1651,12 @@
                     listContainer.appendChild(userDiv);
                 });
 
-                document.querySelectorAll('.delete-user-btn').forEach(btn => {
+                document.querySelectorAll(`${containerSelector} .delete-user-btn`).forEach(btn => {
                     btn.onclick = async (e) => {
                         const userToDelete = e.target.dataset.username;
                         const confirmMsg = getTranslatedText('deleteUserConfirm', { username: userToDelete });
                         if(confirm(confirmMsg)){
-                            await deleteUser(userToDelete);
+                             await deleteUser(userToDelete, containerSelector);
                         }
                     };
                 });
@@ -1605,9 +1667,11 @@
         
         async function createUser(event) {
             event.preventDefault();
-            const usernameInput = document.getElementById('new-username');
-            const passwordInput = document.getElementById('new-password');
-            const roleSelect = document.getElementById('new-user-role');
+            const form = event.target;
+            const usernameInput = form.querySelector('[id^="new-username"]');
+            const passwordInput = form.querySelector('[id^="new-password"]');
+            const roleSelect = form.querySelector('[id^="new-user-role"]');
+            const containerSelector = form.closest('#mobile-users-manager') ? '#mobile-users-manager' : '#panel-users';
 
             const userData = {
                 username: usernameInput.value.trim(),
@@ -1636,13 +1700,13 @@
                 showToast(getTranslatedText(result.message));
                 usernameInput.value = '';
                 passwordInput.value = '';
-                fetchAndRenderUsers();
+                fetchAndRenderUsers(containerSelector);
             } catch (error) {
                  showToast(getTranslatedText(error.message), true);
             }
         }
         
-        async function deleteUser(username) {
+        async function deleteUser(username, containerSelector) {
              const token = getLocalStorage('chaterlabAuthToken', '');
             try {
                 // ИЗМЕНЕНО: Добавлен заголовок Authorization
@@ -1657,7 +1721,7 @@
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.message);
                 showToast(getTranslatedText(result.message));
-                fetchAndRenderUsers();
+                fetchAndRenderUsers(containerSelector);
             } catch (error) {
                  showToast(getTranslatedText(error.message), true);
             }
@@ -1675,6 +1739,28 @@
                 }
             });
         }
+
+        function setupMobileViewSwitcher() {
+            if (!isMobile()) return;
+            const templatesBtn = document.getElementById('mobile-templates-btn');
+            const instructionsBtn = document.getElementById('mobile-instructions-btn');
+            const templatesView = document.getElementById('mobile-templates-view');
+            const instructionsView = document.getElementById('mobile-instructions-view');
+
+            templatesBtn.addEventListener('click', () => {
+                templatesBtn.classList.add('active');
+                instructionsBtn.classList.remove('active');
+                templatesView.style.display = 'block';
+                instructionsView.style.display = 'none';
+            });
+
+            instructionsBtn.addEventListener('click', () => {
+                instructionsBtn.classList.add('active');
+                templatesBtn.classList.remove('active');
+                instructionsView.style.display = 'block';
+                templatesView.style.display = 'none';
+            });
+        }
         
         document.addEventListener('DOMContentLoaded', () => {
             const initialLang = getLocalStorage('chaterlabLang', 'ru');
@@ -1684,8 +1770,10 @@
             checkLogin();
             document.getElementById('login-form').addEventListener('submit', handleLogin);
             
-            const addUserForm = document.getElementById('add-user-form');
-            if(addUserForm) addUserForm.addEventListener('submit', createUser);
+            // Setup for both desktop and mobile user forms
+            document.querySelectorAll('#add-user-form').forEach(form => {
+                form.addEventListener('submit', createUser);
+            });
 
             const tabLayout = document.getElementById('tab-btn-layout');
             if(tabLayout) tabLayout.addEventListener('click', () => switchEditorTab('layout'));
@@ -1704,9 +1792,9 @@
 
             const addSectionBtn = document.getElementById('add-section-btn');
             if(addSectionBtn) addSectionBtn.addEventListener('click', addSection);
+
+            setupMobileViewSwitcher();
         });
     </script>
 </body>
 </html>
-}
-Сам внеси эти изменения в мой присланный файл, и отправь итоговый результат
