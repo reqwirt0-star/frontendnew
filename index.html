@@ -326,7 +326,17 @@
                 copy_success: 'Скопировано ({current}/{total})',
                 copy_success_generic: 'Текст успешно скопирован!',
                 favorites_load_error: 'Не удалось загрузить избранное',
-                favorites_save_error: 'Ошибка сохранения избранного'
+                favorites_save_error: 'Ошибка сохранения избранного',
+                missing_user_data: 'Необходимо указать имя пользователя и пароль.',
+                invalid_role: 'Неверная роль пользователя.',
+                user_created_successfully: 'Пользователь успешно создан!',
+                user_already_exists: 'Пользователь с таким именем уже существует.',
+                server_error_creating_user: 'Ошибка на сервере при создании пользователя.',
+                username_not_provided: 'Не указано имя пользователя для удаления.',
+                cannot_delete_self: 'Нельзя удалить самого себя.',
+                user_deleted_successfully: 'Пользователь успешно удален!',
+                server_error_deleting_user: 'Ошибка на сервере при удалении пользователя.',
+                server_error_fetching_users: 'Ошибка на сервере при получении списка пользователей.'
             },
             en: {
                 lang_locale: 'en',
@@ -432,7 +442,17 @@
                 copy_success: 'Copied ({current}/{total})',
                 copy_success_generic: 'Text copied successfully!',
                 favorites_load_error: 'Failed to load favorites',
-                favorites_save_error: 'Error saving favorites'
+                favorites_save_error: 'Error saving favorites',
+                missing_user_data: 'Username and password are required.',
+                invalid_role: 'Invalid user role.',
+                user_created_successfully: 'User created successfully!',
+                user_already_exists: 'A user with this name already exists.',
+                server_error_creating_user: 'Server error while creating user.',
+                username_not_provided: 'Username for deletion not provided.',
+                cannot_delete_self: 'You cannot delete yourself.',
+                user_deleted_successfully: 'User deleted successfully!',
+                server_error_deleting_user: 'Server error while deleting user.',
+                server_error_fetching_users: 'Server error while fetching user list.'
             },
             uk: {
                 lang_locale: 'uk',
@@ -538,7 +558,17 @@
                 copy_success: 'Скопировано ({current}/{total})',
                 copy_success_generic: 'Текст успішно скопійовано!',
                 favorites_load_error: 'Не вдалося завантажити обране',
-                favorites_save_error: 'Помилка збереження обраного'
+                favorites_save_error: 'Помилка збереження обраного',
+                missing_user_data: 'Необхідно вказати ім\'я користувача та пароль.',
+                invalid_role: 'Невірна роль користувача.',
+                user_created_successfully: 'Користувача успішно створено!',
+                user_already_exists: 'Користувач з таким іменем вже існує.',
+                server_error_creating_user: 'Помилка на сервері при створенні користувача.',
+                username_not_provided: 'Не вказано ім\'я користувача для видалення.',
+                cannot_delete_self: 'Неможливо видалити самого себе.',
+                user_deleted_successfully: 'Користувача успішно видалено!',
+                server_error_deleting_user: 'Помилка на сервері при видаленні користувача.',
+                server_error_fetching_users: 'Помилка на сервері при отриманні списку користувачів.'
             }
         };
 
@@ -665,6 +695,7 @@
                 }, 2500);
             } catch (error) {
                 errorDiv.textContent = getTranslatedText(error.message);
+                errorDiv.classList.add('show'); // <-- Показываем ошибку
             }
         }
 
@@ -681,6 +712,7 @@
 
         async function fetchContent() {
             try {
+                // Публичный контент не требует токена
                 const response = await fetch(`${API_BASE_URL}/content`);
                 if (!response.ok) {
                     const data = await response.json();
@@ -852,9 +884,13 @@
             const token = getLocalStorage('chaterlabAuthToken', '');
             if (!token) return;
             try {
+                // ИЗМЕНЕНО: Добавлен заголовок Authorization
                 await fetch(`${API_BASE_URL}/api/track-click`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
                     body: JSON.stringify({ buttonId: buttonId })
                 });
             } catch (error) {
@@ -885,7 +921,10 @@
             const token = getLocalStorage('chaterlabAuthToken', '');
             if (!token) return;
             try {
-                const response = await fetch(`${API_BASE_URL}/api/favorites`, { headers: { 'Authorization': token } });
+                 // ИЗМЕНЕНО: Добавлен заголовок Authorization
+                const response = await fetch(`${API_BASE_URL}/api/favorites`, { 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
                 if (!response.ok) throw new Error(getTranslatedText('favorites_load_error'));
                 const data = await response.json();
                 userFavorites = data.favorites || [];
@@ -899,9 +938,13 @@
             const token = getLocalStorage('chaterlabAuthToken', '');
             if (!token) return;
             try {
+                // ИЗМЕНЕНО: Добавлен заголовок Authorization
                 await fetch(`${API_BASE_URL}/api/favorites`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
                     body: JSON.stringify({ favorites: userFavorites })
                 });
             } catch (error) {
@@ -1098,7 +1141,10 @@
             const token = getLocalStorage('chaterlabAuthToken', '');
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api/analytics?period=day`, { headers: { 'Authorization': token } });
+                // ИЗМЕНЕНО: Добавлен заголовок Authorization
+                const response = await fetch(`${API_BASE_URL}/api/analytics?period=day`, { 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
                 if (!response.ok) throw new Error(getTranslatedText('analytics_load_error'));
                 const data = await response.json();
                 
@@ -1160,8 +1206,9 @@
                 const token = getLocalStorage('chaterlabAuthToken', '');
                 
                 try {
+                    // ИЗМЕНЕНО: Добавлен заголовок Authorization
                     const response = await fetch(`${API_BASE_URL}/api/analytics?period=${currentPeriod}`, {
-                        headers: { 'Authorization': token }
+                        headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (!response.ok) throw new Error(getTranslatedText('analytics_load_error'));
                     
@@ -1491,7 +1538,15 @@
             const newContent = { layout: newLayout, instructionsContent: newInstructions, managers: newManagers };
             const token = getLocalStorage('chaterlabAuthToken', '');
             try {
-                const response = await fetch(`${API_BASE_URL}/update-content`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(newContent) });
+                // ИЗМЕНЕНО: Добавлен заголовок Authorization
+                const response = await fetch(`${API_BASE_URL}/update-content`, { 
+                    method: 'POST', 
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    }, 
+                    body: JSON.stringify(newContent) 
+                });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message);
                 showToast(getTranslatedText(data.message));
@@ -1510,7 +1565,10 @@
             listContainer.innerHTML = `<p>${getTranslatedText('loading')}</p>`;
             const token = getLocalStorage('chaterlabAuthToken', '');
             try {
-                const response = await fetch(`${API_BASE_URL}/api/users`, { headers: { 'Authorization': token } });
+                // ИЗМЕНЕНО: Добавлен заголовок Authorization
+                const response = await fetch(`${API_BASE_URL}/api/users`, { 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
                 const users = await response.json();
                 if (!response.ok) throw new Error(users.message);
                 
@@ -1564,9 +1622,13 @@
 
             const token = getLocalStorage('chaterlabAuthToken', '');
             try {
+                // ИЗМЕНЕНО: Добавлен заголовок Authorization
                 const response = await fetch(`${API_BASE_URL}/api/users/create`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
                     body: JSON.stringify(userData)
                 });
                 const result = await response.json();
@@ -1583,9 +1645,13 @@
         async function deleteUser(username) {
              const token = getLocalStorage('chaterlabAuthToken', '');
             try {
+                // ИЗМЕНЕНО: Добавлен заголовок Authorization
                 const response = await fetch(`${API_BASE_URL}/api/users/delete`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
                     body: JSON.stringify({ username: username })
                 });
                 const result = await response.json();
@@ -1632,6 +1698,12 @@
 
             const tabUsers = document.getElementById('tab-btn-users');
             if(tabUsers) tabUsers.addEventListener('click', () => switchEditorTab('users'));
+
+            const saveBtn = document.getElementById('save-content-btn');
+            if(saveBtn) saveBtn.addEventListener('click', saveContent);
+
+            const addSectionBtn = document.getElementById('add-section-btn');
+            if(addSectionBtn) addSectionBtn.addEventListener('click', addSection);
         });
     </script>
 </body>
