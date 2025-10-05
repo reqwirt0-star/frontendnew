@@ -463,6 +463,16 @@ function switchLanguage(lang) {
         if (analyticsPanel && analyticsPanel.style.display === 'block') {
             analyticsPanel.dispatchEvent(new Event('languageChange'));
         }
+        // Recalculate segmented control glider after translated labels change width
+        const managerControls = document.querySelector('.manager-controls-segmented');
+        if (managerControls) {
+            const glider = managerControls.querySelector('.glider');
+            const activeBtn = managerControls.querySelector('button.active');
+            if (glider && activeBtn) {
+                glider.style.width = `${activeBtn.offsetWidth}px`;
+                glider.style.left = `${activeBtn.offsetLeft}px`;
+            }
+        }
     }
 }
 
