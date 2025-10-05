@@ -25,11 +25,13 @@ function setupMobileNavigation() {
             instructions: getTranslatedText('navInstructions'),
             menu: 'Меню',
             analytics: getTranslatedText('navAnalytics'),
-            editor: getTranslatedText('navEditor')
+            editor: getTranslatedText('navEditor'),
+            'editor-info': getTranslatedText('navEditor'),
+            'users-management': getTranslatedText('tabUsers')
         };
         headerTitle.textContent = titles[screenName] || 'ChaterLab';
         
-        backBtn.style.display = (screenName === 'analytics' || screenName === 'editor') ? 'flex' : 'none';
+        backBtn.style.display = (screenName === 'analytics' || screenName === 'editor' || screenName === 'editor-info' || screenName === 'users-management') ? 'flex' : 'none';
     };
     
     navItems.forEach(item => {
@@ -43,26 +45,24 @@ function setupMobileNavigation() {
         switchScreen('menu');
     });
     
-    const openEditorBtn = document.getElementById('mobile-open-editor-btn');
-    const analyticsBtn = document.getElementById('mobile-analytics-btn');
+    const editorInfoBtn = document.getElementById('mobile-editor-info-btn');
+    const usersBtn = document.getElementById('mobile-users-btn');
     
-    if (userRole === 'manager' && openEditorBtn) {
-        openEditorBtn.style.display = 'flex';
-        openEditorBtn.addEventListener('click', () => {
-            switchScreen('editor');
-            setupMobileEditorTabs();
-        });
-    }
-    
-    if (analyticsBtn) {
-        analyticsBtn.addEventListener('click', () => {
-            switchScreen('analytics');
-            if (userRole === 'manager') {
-                loadMobileAnalytics();
-            } else {
-                showAnalyticsStub();
-            }
-        });
+    if (userRole === 'manager') {
+        if (editorInfoBtn) {
+            editorInfoBtn.style.display = 'flex';
+            editorInfoBtn.addEventListener('click', () => {
+                switchScreen('editor-info');
+            });
+        }
+        
+        if (usersBtn) {
+            usersBtn.style.display = 'flex';
+            usersBtn.addEventListener('click', () => {
+                switchScreen('users-management');
+                fetchAndRenderMobileUsers();
+            });
+        }
     }
     
     const mobileLangButtons = document.querySelectorAll('.mobile-lang-btn');
@@ -71,6 +71,12 @@ function setupMobileNavigation() {
             switchLanguage(btn.dataset.lang);
         });
     });
+    
+    // Setup mobile user form
+    const mobileUserForm = document.getElementById('mobile-add-user-form');
+    if (mobileUserForm) {
+        mobileUserForm.addEventListener('submit', createMobileUser);
+    }
 }
 
 function setupMobileEditorTabs() {
@@ -926,11 +932,20 @@ function updateFavoritesUI() {
 function setupDarkMode() {
     const toggle = document.getElementById('theme-checkbox');
     const mobileToggle = document.getElementById('mobile-theme-checkbox');
+    const mobileToggleSwitch = document.querySelector('.mobile-toggle-switch');
     
     const applyTheme = (theme) => {
         document.body.classList.toggle('dark-mode', theme === 'dark');
-        if (toggle) toggle.checked = (theme === 'dark');
-        if (mobileToggle) mobileToggle.checked = (theme === 'dark');
+        const isDark = theme === 'dark';
+        if (toggle) toggle.checked = isDark;
+        if (mobileToggle) mobileToggle.checked = isDark;
+        if (mobileToggleSwitch) {
+            if (isDark) {
+                mobileToggleSwitch.classList.add('checked');
+            } else {
+                mobileToggleSwitch.classList.remove('checked');
+            }
+        }
         if (!isMobile() && document.getElementById('content-editor') && document.getElementById('content-editor').style.display === 'block') {
             tinymce.remove();
             initInstructionsEditor();
@@ -947,23 +962,14 @@ function setupDarkMode() {
     };
     
     if (toggle) toggle.addEventListener('change', () => handleThemeChange(toggle.checked));
-    if (mobileToggle) {
-        mobileToggle.addEventListener('change', () => handleThemeChange(mobileToggle.checked));
-    }
     
-    // Mobile theme toggle fix
     const mobileThemeToggleBtn = document.getElementById('mobile-theme-toggle');
-    if (mobileThemeToggleBtn) {
+    if (mobileThemeToggleBtn && mobileToggle) {
         mobileThemeToggleBtn.addEventListener('click', (e) => {
-            if (e.target.classList.contains('mobile-toggle-switch') || 
-                e.target.classList.contains('mobile-slider') ||
-                e.target.tagName === 'INPUT') {
-                return;
-            }
-            if (mobileToggle) {
-                mobileToggle.checked = !mobileToggle.checked;
-                handleThemeChange(mobileToggle.checked);
-            }
+            e.preventDefault();
+            const newState = !mobileToggle.checked;
+            mobileToggle.checked = newState;
+            handleThemeChange(newState);
         });
     }
 }
