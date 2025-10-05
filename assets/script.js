@@ -932,18 +932,18 @@ function updateFavoritesUI() {
 function setupDarkMode() {
     const toggle = document.getElementById('theme-checkbox');
     const mobileToggle = document.getElementById('mobile-theme-checkbox');
-    const mobileToggleSwitch = document.querySelector('.mobile-toggle-switch');
+    const mobileToggleSwitchVisual = document.getElementById('mobile-theme-switch-visual');
     
     const applyTheme = (theme) => {
         document.body.classList.toggle('dark-mode', theme === 'dark');
         const isDark = theme === 'dark';
         if (toggle) toggle.checked = isDark;
         if (mobileToggle) mobileToggle.checked = isDark;
-        if (mobileToggleSwitch) {
+        if (mobileToggleSwitchVisual) {
             if (isDark) {
-                mobileToggleSwitch.classList.add('checked');
+                mobileToggleSwitchVisual.classList.add('checked');
             } else {
-                mobileToggleSwitch.classList.remove('checked');
+                mobileToggleSwitchVisual.classList.remove('checked');
             }
         }
         if (!isMobile() && document.getElementById('content-editor') && document.getElementById('content-editor').style.display === 'block') {
