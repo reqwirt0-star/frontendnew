@@ -1,4 +1,188 @@
-"use strict";
+function setupMobileNavigation() {
+    if (!isMobile()) return;
+    
+    const navItems = document.querySelectorAll('.mobile-bottom-nav .nav-item');
+    const screens = document.querySelectorAll('.mobile-screen');
+    const headerTitle = document.getElementById('mobile-header-title');
+    const backBtn = document.getElementById('mobile-back-btn');
+    
+    let currentScreen = 'templates';
+    
+    const switchScreen = (screenName) => {
+        screens.forEach(screen => screen.classList.remove('active'));
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const targetScreen = document.getElementById(`mobile-${screenName}-screen`);
+        const targetNavItem = document.querySelector(`.nav-item[data-screen="${screenName}"]`);
+        
+        if (targetScreen) targetScreen.classList.add('active');
+        if (targetNavItem) targetNavItem.classList.add('active');
+        
+        currentScreen = screenName;
+        
+        const titles = {
+            templates: 'ChaterLab',
+            instructions: getTranslatedText('navInstructions'),
+            menu: 'Меню',
+            analytics: getTranslatedText('navAnalytics'),
+            editor: getTranslatedText('navEditor')
+        };
+        headerTitle.textContent = titles[screenName] || 'ChaterLab';
+        
+        backBtn.style.display = (screenName === 'analytics' || screenName === 'editor') ? 'flex' : 'none';
+    };
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const screenName = item.dataset.screen;
+            switchScreen(screenName);
+        });
+    });
+    
+    backBtn.addEventListener('click', () => {
+        switchScreen('menu');
+    });
+    
+    const openEditorBtn = document.getElementById('mobile-open-editor-btn');
+    const analyticsBtn = document.getElementById('mobile-analytics-btn');
+    
+    if (userRole === 'manager' && openEditorBtn) {
+        openEditorBtn.style.display = 'flex';
+        openEditorBtn.addEventListener('click', () => {
+            switchScreen('editor');
+            setupMobileEditorTabs();
+        });
+    }
+    
+    if (analyticsBtn) {
+        analyticsBtn.addEventListener('click', () => {
+            switchScreen('analytics');
+            if (userRole === 'manager') {
+                loadMobileAnalytics();
+            } else {
+                showAnalyticsStub();
+            }
+        });
+    }
+    
+    const mobileLangButtons = document.querySelectorAll('.mobile-lang-btn');
+    mobileLangButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchLanguage(btn.dataset.lang);
+        });
+    });
+}
+
+function setupMobileEditorTabs() {
+    const tabs = document.querySelectorAll('.mobile-editor-tabs button');
+    const panels = document.querySelectorAll('.mobile-editor-panel');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetTab = tab.dataset.tab;
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            panels.forEach(p => p.classList.remove('active'));
+            
+            tab.classList.add('active');
+            const targetPanel = document.getElementById(`mobile-editor-panel-${targetTab}`);
+            if (targetPanel) targetPanel.classList.add('active');
+            
+            if (targetTab === 'users') {
+                fetchAndRenderMobileUsers();
+            }
+        });
+    });
+    
+    const mobileUserForm = document.getElementById('mobile-add-user-form');
+    if (mobileUserForm) {
+        mobileUserForm.addEventListener('submit', createMobileUser);
+    }
+}
+
+async function fetchAndRenderMobileUsers() {
+    const listContainer = document.getElementById('mobile-user-list');
+    if (!listContainer) return;
+    
+    listContainer.innerHTML = `<p style="text-align:center;padding:20px;color:var(--text-secondary);">${getTranslatedText('loading')}</p>`;
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/users`, { 
+            headers: { 'Authorization': `Bearer ${token}` } 
+        });
+        const users = await response.json();
+        if (!response.ok) throw new Error(users.message);
+        
+        listContainer.innerHTML = '';
+        users.forEach(user => {
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user-list-item';
+            const roleText = getTranslatedText(user.role === 'manager' ? 'roleManager' : 'roleEmployee');
+            userDiv.innerHTML = `
+                <div class="user-info">
+                    <span class="username">${user.username}</span>
+                    <span class="role">${roleText}</span>
+                </div>
+                <div class="user-actions">
+                    <button class="delete-user-btn" data-username="${user.username}" ${userName === user.username ? 'disabled' : ''}>${getTranslatedText('deleteUserBtn')}</button>
+                </div>
+            `;
+            listContainer.appendChild(userDiv);
+        });
+
+        document.querySelectorAll('.delete-user-btn').forEach(btn => {
+            btn.onclick = async (e) => {
+                const userToDelete = e.target.dataset.username;
+                const confirmMsg = getTranslatedText('deleteUserConfirm', { username: userToDelete });
+                if (confirm(confirmMsg)) {
+                    await deleteUser(userToDelete);
+                    fetchAndRenderMobileUsers();
+                }
+            };
+        });
+    } catch (error) {
+        listContainer.innerHTML = `<p style="color: var(--error-color);text-align:center;padding:20px;">${getTranslatedText(error.message)}</p>`;
+    }
+}
+
+async function createMobileUser(event) {
+    event.preventDefault();
+    const usernameInput = document.getElementById('mobile-new-username');
+    const passwordInput = document.getElementById('mobile-new-password');
+    const roleSelect = document.getElementById('mobile-new-user-role');
+
+    const userData = {
+        username: usernameInput.value.trim(),
+        password: passwordInput.value.trim(),
+        role: roleSelect.value
+    };
+
+    if (!userData.username || !userData.password) {
+        showToast(getTranslatedText('missing_user_data'), true);
+        return;
+    }
+
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/users/create`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(userData)
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        showToast(getTranslatedText(result.message));
+        usernameInput.value = '';
+        passwordInput.value = '';
+        fetchAndRenderMobileUsers();
+    } catch (error) {
+        showToast(getTranslatedText(error.message), true);
+    }
+}"use strict";
 const API_BASE_URL = 'https://backendchater.fly.dev';
 let userRole = null;
 let appContent = {};
@@ -763,7 +947,25 @@ function setupDarkMode() {
     };
     
     if (toggle) toggle.addEventListener('change', () => handleThemeChange(toggle.checked));
-    if (mobileToggle) mobileToggle.addEventListener('change', () => handleThemeChange(mobileToggle.checked));
+    if (mobileToggle) {
+        mobileToggle.addEventListener('change', () => handleThemeChange(mobileToggle.checked));
+    }
+    
+    // Mobile theme toggle fix
+    const mobileThemeToggleBtn = document.getElementById('mobile-theme-toggle');
+    if (mobileThemeToggleBtn) {
+        mobileThemeToggleBtn.addEventListener('click', (e) => {
+            if (e.target.classList.contains('mobile-toggle-switch') || 
+                e.target.classList.contains('mobile-slider') ||
+                e.target.tagName === 'INPUT') {
+                return;
+            }
+            if (mobileToggle) {
+                mobileToggle.checked = !mobileToggle.checked;
+                handleThemeChange(mobileToggle.checked);
+            }
+        });
+    }
 }
 
 function setupSearch() {
@@ -911,30 +1113,110 @@ async function loadMobileAnalytics() {
     content.innerHTML = `<p style="text-align:center;padding:40px;color:var(--text-secondary);">${getTranslatedText('loading')}</p>`;
     
     const token = getLocalStorage('chaterlabAuthToken', '');
+    let currentPeriod = 'day';
+    let selectedUser = null;
+    let fullData = null;
     
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/analytics?period=day`, { 
-            headers: { 'Authorization': `Bearer ${token}` } 
-        });
-        if (!response.ok) throw new Error(getTranslatedText('analytics_load_error'));
-        const data = await response.json();
-        
+    const fetchData = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/analytics?period=${currentPeriod}`, { 
+                headers: { 'Authorization': `Bearer ${token}` } 
+            });
+            if (!response.ok) throw new Error(getTranslatedText('analytics_load_error'));
+            fullData = await response.json();
+            renderMobileAnalytics();
+        } catch (error) {
+            content.innerHTML = `<p style="color: var(--error-color);text-align:center;padding:40px;">${error.message}</p>`;
+        }
+    };
+    
+    const renderMobileAnalytics = () => {
         const texts = uiTexts[getLocalStorage('chaterlabLang', 'ru')];
-        const totalClicks = data.detailed_log.length;
-        const topEmployee = data.employee_summary?.[0]?.username || '—';
-        const topTemplateId = data.template_summary?.[0]?.button_id;
-        const topTemplateLabel = topTemplateId ? (findButtonById(topTemplateId)?.label || '—') : '—';
-
-        content.innerHTML = `
-            <div class="kpi-grid">
-                <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${totalClicks}</h3></div>
-                <div class="kpi-card"><p class="kpi-card-title">${texts.kpiMostActive}</p><h3 class="kpi-card-value">${topEmployee}</h3></div>
+        
+        let html = `
+            <div class="mobile-analytics-period">
+                <button data-period="day" class="${currentPeriod === 'day' ? 'active' : ''}">${texts.periodDay}</button>
+                <button data-period="week" class="${currentPeriod === 'week' ? 'active' : ''}">${texts.periodWeek}</button>
+                <button data-period="month" class="${currentPeriod === 'month' ? 'active' : ''}">${texts.periodMonth}</button>
             </div>
-            <div class="kpi-card" style="margin-top: 16px;"><p class="kpi-card-title">${texts.kpiTopTemplate}</p><h3 class="kpi-card-value">${topTemplateLabel}</h3></div>
         `;
-    } catch (error) {
-        content.innerHTML = `<p style="color: var(--error-color);text-align:center;padding:40px;">${error.message}</p>`;
-    }
+        
+        if (selectedUser) {
+            const userData = fullData.employee_summary.find(e => e.username === selectedUser);
+            const userLog = fullData.detailed_log.filter(log => log.username === selectedUser);
+            const userTemplateCounts = userLog.reduce((acc, log) => {
+                acc[log.button_id] = (acc[log.button_id] || 0) + 1;
+                return acc;
+            }, {});
+            const topTemplateId = Object.keys(userTemplateCounts).sort((a, b) => userTemplateCounts[b] - userTemplateCounts[a])[0];
+            const topTemplateLabel = topTemplateId ? getButtonData(topTemplateId).label : '—';
+            
+            html += `
+                <button onclick="window.mobileAnalyticsBackToList()" style="margin:0 12px 16px;padding:10px;background:var(--background-card);border:1px solid var(--border-color);border-radius:12px;width:calc(100% - 24px);text-align:left;font-weight:600;color:var(--primary-blue);">← ${texts.employeeListTitle}</button>
+                <h3 style="margin:0 12px 12px;font-size:18px;">${selectedUser}</h3>
+                <div class="kpi-grid" style="padding:0 12px;">
+                    <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${userData?.count || 0}</h3></div>
+                    <div class="kpi-card"><p class="kpi-card-title">${texts.kpiFavTemplate}</p><h3 class="kpi-card-value" style="font-size:16px;">${topTemplateLabel}</h3></div>
+                </div>
+            `;
+        } else {
+            const totalClicks = fullData.detailed_log.length;
+            const topEmployee = fullData.employee_summary?.[0]?.username || '—';
+            const topTemplateId = fullData.template_summary?.[0]?.button_id;
+            const topTemplateLabel = topTemplateId ? getButtonData(topTemplateId).label : '—';
+
+            html += `
+                <div class="kpi-grid" style="padding:0 12px;">
+                    <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${totalClicks}</h3></div>
+                    <div class="kpi-card"><p class="kpi-card-title">${texts.kpiMostActive}</p><h3 class="kpi-card-value">${topEmployee}</h3></div>
+                </div>
+                <div class="kpi-card" style="margin:16px 12px;"><p class="kpi-card-title">${texts.kpiTopTemplate}</p><h3 class="kpi-card-value" style="font-size:18px;">${topTemplateLabel}</h3></div>
+                <ul class="mobile-user-list">
+            `;
+            
+            if (fullData.employee_summary && fullData.employee_summary.length > 0) {
+                fullData.employee_summary.forEach(emp => {
+                    html += `<li data-username="${emp.username}"><span class="username">${emp.username}</span><span class="count">${emp.count}</span></li>`;
+                });
+            }
+            
+            html += `</ul>`;
+        }
+        
+        content.innerHTML = html;
+        
+        // Period buttons
+        content.querySelectorAll('.mobile-analytics-period button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentPeriod = btn.dataset.period;
+                fetchData();
+            });
+        });
+        
+        // User list
+        content.querySelectorAll('.mobile-user-list li').forEach(li => {
+            li.addEventListener('click', () => {
+                selectedUser = li.dataset.username;
+                renderMobileAnalytics();
+            });
+        });
+    };
+    
+    const getButtonData = (buttonId) => {
+        if (!appContent.layout) return { label: `(ID: ${buttonId})`, section: 'N/A' };
+        for (const section of appContent.layout) {
+            const button = section.buttons.find(b => b.id === buttonId);
+            if (button) return { label: button.label, section: section.title };
+        }
+        return { label: `(ID: ${buttonId})`, section: 'N/A' };
+    };
+    
+    window.mobileAnalyticsBackToList = () => {
+        selectedUser = null;
+        renderMobileAnalytics();
+    };
+    
+    await fetchData();
 }
 
 function checkUserRoleAndSetupManagerUI() {

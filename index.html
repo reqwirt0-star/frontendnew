@@ -127,10 +127,10 @@
                                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                             </svg>
                             <span data-key="darkMode">Тёмная тема</span>
-                            <div class="mobile-toggle-switch">
+                            <label class="mobile-toggle-switch">
                                 <input type="checkbox" id="mobile-theme-checkbox" />
                                 <div class="mobile-slider"></div>
-                            </div>
+                            </label>
                         </button>
                         <div class="mobile-menu-item mobile-language-selector">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -179,9 +179,41 @@
                         <button data-tab="users" data-key="tabUsers">Пользователи</button>
                     </div>
                     <div class="mobile-editor-content">
-                        <div id="mobile-editor-notice" class="editor-unavailable-notice">
-                            <h4 data-key="editorUnavailable">Редактор</h4>
-                            <p data-key="editorUnavailableMsg">Полноценное редактирование доступно только в версии сайта для ПК.</p>
+                        <div id="mobile-editor-panel-layout" class="mobile-editor-panel active">
+                            <div class="editor-unavailable-notice">
+                                <h4 data-key="editorUnavailable">Редактор кнопок</h4>
+                                <p data-key="editorUnavailableMsg">Полноценное редактирование доступно только в версии сайта для ПК.</p>
+                            </div>
+                        </div>
+                        <div id="mobile-editor-panel-instructions" class="mobile-editor-panel">
+                            <div class="editor-unavailable-notice">
+                                <h4 data-key="instructionTitleRu">Редактор инструкций</h4>
+                                <p data-key="editorUnavailableMsg">Полноценное редактирование доступно только в версии сайта для ПК.</p>
+                            </div>
+                        </div>
+                        <div id="mobile-editor-panel-managers" class="mobile-editor-panel">
+                            <div class="editor-unavailable-notice">
+                                <h4 data-key="tabManagers">Редактор менеджеров</h4>
+                                <p data-key="editorUnavailableMsg">Полноценное редактирование доступно только в версии сайта для ПК.</p>
+                            </div>
+                        </div>
+                        <div id="mobile-editor-panel-users" class="mobile-editor-panel">
+                            <div class="editor-section">
+                                <h4 data-key="addUserTitle">Добавить нового пользователя</h4>
+                                <form id="mobile-add-user-form" style="display:flex;flex-direction:column;gap:12px;">
+                                    <input type="text" id="mobile-new-username" required data-key="newUserUsername" placeholder="Логин" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
+                                    <input type="password" id="mobile-new-password" required data-key="newUserPassword" placeholder="Пароль" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
+                                    <select id="mobile-new-user-role" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
+                                        <option value="employee" data-key="roleEmployee">Сотрудник</option>
+                                        <option value="manager" data-key="roleManager">Менеджер</option>
+                                    </select>
+                                    <button type="submit" class="add-btn" data-key="addUserBtn" style="padding:14px;background:var(--primary-blue);color:#fff;border:none;border-radius:12px;font-weight:600;font-size:15px;">Создать</button>
+                                </form>
+                            </div>
+                            <div class="editor-section" style="margin-top:24px;">
+                                <h4 data-key="existingUsersTitle">Существующие пользователи</h4>
+                                <div id="mobile-user-list"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
