@@ -3,3 +3,13 @@
 .manager-controls-segmented{align-items:stretch;min-width:max-content}
 .manager-controls-segmented button{display:flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:auto;text-align:center;white-space:nowrap;word-break:normal;line-height:1.2}
 .manager-controls-segmented .glider{will-change:left,width}
+/* Mobile dark-mode toggle visual state */
+.mobile-toggle-switch.checked{background-color:var(--primary-blue)}
+.mobile-toggle-switch.checked .mobile-slider{transform:translateX(24px)}
+.mobile-toggle-switch input:checked+.mobile-slider{transform:translateX(24px)}
+.mobile-toggle-switch:has(input:checked){background-color:var(--primary-blue)}
+/* Dark mode scrollbars (desktop) */
+body.dark-mode{scrollbar-color:#475569 #1e293b}
+body.dark-mode::-webkit-scrollbar{width:10px;height:10px}
+body.dark-mode::-webkit-scrollbar-track{background:#1e293b}
+body.dark-mode::-webkit-scrollbar-thumb{background-color:#475569;border-radius:8px;border:2px solid #1e293b}
