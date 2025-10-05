@@ -72,11 +72,10 @@ function setupMobileNavigation() {
         });
     });
     
-    // Setup mobile user form
-    const mobileUserForm = document.getElementById('mobile-add-user-form');
-    if (mobileUserForm) {
-        mobileUserForm.addEventListener('submit', createMobileUser);
-    }
+    // Attach to all mobile user forms
+    document.querySelectorAll('.mobile-user-form').forEach(form => {
+        form.addEventListener('submit', createMobileUser);
+    });
 }
 
 function setupMobileEditorTabs() {
@@ -100,10 +99,9 @@ function setupMobileEditorTabs() {
         });
     });
     
-    const mobileUserForm = document.getElementById('mobile-add-user-form');
-    if (mobileUserForm) {
-        mobileUserForm.addEventListener('submit', createMobileUser);
-    }
+    document.querySelectorAll('.mobile-user-form').forEach(form => {
+        form.addEventListener('submit', createMobileUser);
+    });
 }
 
 async function fetchAndRenderMobileUsers() {
@@ -154,14 +152,15 @@ async function fetchAndRenderMobileUsers() {
 
 async function createMobileUser(event) {
     event.preventDefault();
-    const usernameInput = document.getElementById('mobile-new-username');
-    const passwordInput = document.getElementById('mobile-new-password');
-    const roleSelect = document.getElementById('mobile-new-user-role');
+    const form = event.currentTarget || event.target;
+    const usernameInput = form.querySelector('[data-field="username"]');
+    const passwordInput = form.querySelector('[data-field="password"]');
+    const roleSelect = form.querySelector('[data-field="role"]');
 
     const userData = {
-        username: usernameInput.value.trim(),
-        password: passwordInput.value.trim(),
-        role: roleSelect.value
+        username: (usernameInput?.value || '').trim(),
+        password: (passwordInput?.value || '').trim(),
+        role: (roleSelect?.value || 'employee')
     };
 
     if (!userData.username || !userData.password) {
@@ -182,13 +181,15 @@ async function createMobileUser(event) {
         const result = await response.json();
         if (!response.ok) throw new Error(result.message);
         showToast(getTranslatedText(result.message));
-        usernameInput.value = '';
-        passwordInput.value = '';
+        if (usernameInput) usernameInput.value = '';
+        if (passwordInput) passwordInput.value = '';
         fetchAndRenderMobileUsers();
     } catch (error) {
         showToast(getTranslatedText(error.message), true);
     }
-}"use strict";
+}
+
+"use strict";
 const API_BASE_URL = 'https://backendchater.fly.dev';
 let userRole = null;
 let appContent = {};
@@ -1025,83 +1026,7 @@ function setupSearch() {
     }
 }
 
-function setupMobileNavigation() {
-    if (!isMobile()) return;
-    
-    const navItems = document.querySelectorAll('.mobile-bottom-nav .nav-item');
-    const screens = document.querySelectorAll('.mobile-screen');
-    const headerTitle = document.getElementById('mobile-header-title');
-    const backBtn = document.getElementById('mobile-back-btn');
-    
-    let currentScreen = 'templates';
-    
-    const switchScreen = (screenName) => {
-        screens.forEach(screen => screen.classList.remove('active'));
-        navItems.forEach(item => item.classList.remove('active'));
-        
-        const targetScreen = document.getElementById(`mobile-${screenName}-screen`);
-        const targetNavItem = document.querySelector(`.nav-item[data-screen="${screenName}"]`);
-        
-        if (targetScreen) targetScreen.classList.add('active');
-        if (targetNavItem) targetNavItem.classList.add('active');
-        
-        currentScreen = screenName;
-        
-        // Update header title
-        const titles = {
-            templates: 'ChaterLab',
-            instructions: getTranslatedText('navInstructions'),
-            menu: 'Меню',
-            analytics: getTranslatedText('navAnalytics'),
-            editor: getTranslatedText('navEditor')
-        };
-        headerTitle.textContent = titles[screenName] || 'ChaterLab';
-        
-        // Show/hide back button
-        backBtn.style.display = (screenName === 'analytics' || screenName === 'editor') ? 'flex' : 'none';
-    };
-    
-    navItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const screenName = item.dataset.screen;
-            switchScreen(screenName);
-        });
-    });
-    
-    backBtn.addEventListener('click', () => {
-        switchScreen('menu');
-    });
-    
-    // Mobile menu actions
-    const openEditorBtn = document.getElementById('mobile-open-editor-btn');
-    const analyticsBtn = document.getElementById('mobile-analytics-btn');
-    
-    if (userRole === 'manager' && openEditorBtn) {
-        openEditorBtn.style.display = 'flex';
-        openEditorBtn.addEventListener('click', () => {
-            switchScreen('editor');
-        });
-    }
-    
-    if (analyticsBtn) {
-        analyticsBtn.addEventListener('click', () => {
-            switchScreen('analytics');
-            if (userRole === 'manager') {
-                loadMobileAnalytics();
-            } else {
-                showAnalyticsStub();
-            }
-        });
-    }
-    
-    // Mobile language switcher
-    const mobileLangButtons = document.querySelectorAll('.mobile-lang-btn');
-    mobileLangButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            switchLanguage(btn.dataset.lang);
-        });
-    });
-}
+// [Removed duplicate setupMobileNavigation]
 
 function showAnalyticsStub() {
     const stub = document.getElementById('mobile-analytics-stub');
