@@ -1,12 +1,7 @@
 function setupMobileNavigation() {
-    if (!isMobile()) {
-        console.log('Not mobile, skipping mobile navigation setup');
-        return;
-    }
+    if (!isMobile()) return;
     
-    console.log('=== MOBILE NAVIGATION SETUP ===');
-    console.log('userRole:', userRole);
-    console.log('userName:', userName);
+    console.log('Setting up mobile navigation, userRole:', userRole);
     
     const navItems = document.querySelectorAll('.mobile-bottom-nav .nav-item');
     const screens = document.querySelectorAll('.mobile-screen');
@@ -16,19 +11,13 @@ function setupMobileNavigation() {
     let currentScreen = 'templates';
     
     const switchScreen = (screenName) => {
-        console.log('Switching to screen:', screenName);
         screens.forEach(screen => screen.classList.remove('active'));
         navItems.forEach(item => item.classList.remove('active'));
         
         const targetScreen = document.getElementById(`mobile-${screenName}-screen`);
         const targetNavItem = document.querySelector(`.nav-item[data-screen="${screenName}"]`);
         
-        if (targetScreen) {
-            targetScreen.classList.add('active');
-            console.log('Screen activated:', screenName);
-        } else {
-            console.error('Screen not found:', `mobile-${screenName}-screen`);
-        }
+        if (targetScreen) targetScreen.classList.add('active');
         if (targetNavItem) targetNavItem.classList.add('active');
         
         currentScreen = screenName;
@@ -44,8 +33,7 @@ function setupMobileNavigation() {
         };
         headerTitle.textContent = titles[screenName] || 'ChaterLab';
         
-        backBtn.style.display = (screenName === 'analytics' || screenName === 'editor' || 
-                                  screenName === 'editor-info' || screenName === 'users-management') ? 'flex' : 'none';
+        backBtn.style.display = (screenName === 'analytics' || screenName === 'editor' || screenName === 'editor-info' || screenName === 'users-management') ? 'flex' : 'none';
     };
     
     navItems.forEach(item => {
@@ -59,44 +47,40 @@ function setupMobileNavigation() {
         switchScreen('menu');
     });
     
-    // КРИТИЧЕСКИ ВАЖНАЯ ЧАСТЬ: настройка кнопок менеджера
     const editorInfoBtn = document.getElementById('mobile-editor-info-btn');
     const usersBtn = document.getElementById('mobile-users-btn');
     
-    console.log('Editor info button element:', editorInfoBtn);
-    console.log('Users button element:', usersBtn);
-    console.log('Is manager?', userRole === 'manager');
+    console.log('Editor info button:', editorInfoBtn);
+    console.log('Users button:', usersBtn);
     
     if (userRole === 'manager') {
-        console.log('✓ User is MANAGER - showing buttons');
-        
+        console.log('User is manager, showing buttons');
         if (editorInfoBtn) {
             editorInfoBtn.style.display = 'flex';
-            console.log('✓ Editor info button set to display:flex');
+            console.log('Editor info button displayed');
             editorInfoBtn.addEventListener('click', () => {
-                console.log('Editor info button clicked');
+                console.log('Editor info clicked');
                 switchScreen('editor-info');
             });
         } else {
-            console.error('✗ ERROR: mobile-editor-info-btn NOT FOUND in DOM!');
+            console.error('Editor info button not found!');
         }
         
         if (usersBtn) {
             usersBtn.style.display = 'flex';
-            console.log('✓ Users button set to display:flex');
+            console.log('Users button displayed');
             usersBtn.addEventListener('click', () => {
-                console.log('Users management button clicked');
+                console.log('Users management clicked');
                 switchScreen('users-management');
                 fetchAndRenderMobileUsers();
             });
         } else {
-            console.error('✗ ERROR: mobile-users-btn NOT FOUND in DOM!');
+            console.error('Users button not found!');
         }
     } else {
-        console.log('✗ User is NOT manager (role:', userRole, ') - buttons hidden');
+        console.log('User is not manager, hiding buttons');
     }
     
-    // Language switcher
     const mobileLangButtons = document.querySelectorAll('.mobile-lang-btn');
     mobileLangButtons.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -108,12 +92,8 @@ function setupMobileNavigation() {
     const mobileUserForm = document.getElementById('mobile-add-user-form');
     if (mobileUserForm) {
         mobileUserForm.addEventListener('submit', createMobileUser);
-        console.log('✓ Mobile user form listener added');
-    } else {
-        console.log('Mobile user form not found (это нормально, если не на экране управления пользователями)');
+        console.log('Mobile user form listener added');
     }
-    
-    console.log('=== MOBILE NAVIGATION SETUP COMPLETE ===');
 }
 
 function setupMobileEditorTabs() {
@@ -523,11 +503,7 @@ async function checkLogin() {
         updateFavoritesUI();
         setupDarkMode();
         renderUserStatusCard();
-        
-        // КРИТИЧЕСКИ ВАЖНО: setupMobileNavigation вызывается ПОСЛЕ установки userRole
-        if (isMobile()) {
-            setupMobileNavigation();
-        }
+        setupMobileNavigation();
         
         return true;
     } else {
@@ -585,11 +561,7 @@ async function handleLogin(event) {
             updateFavoritesUI();
             setupDarkMode();
             renderUserStatusCard();
-            
-            // КРИТИЧЕСКИ ВАЖНО: setupMobileNavigation вызывается ПОСЛЕ установки userRole
-            if (isMobile()) {
-                setupMobileNavigation();
-            }
+            setupMobileNavigation();
         }, 2500);
     } catch (error) {
         errorDiv.textContent = getTranslatedText(error.message);
@@ -980,13 +952,9 @@ function setupDarkMode() {
     const mobileToggleSwitchVisual = document.getElementById('mobile-theme-switch-visual');
     
     const applyTheme = (theme) => {
+        document.body.classList.toggle('dark-mode', theme === 'dark');
         const isDark = theme === 'dark';
-        document.body.classList.toggle('dark-mode', isDark);
-        
-        // Desktop toggle
         if (toggle) toggle.checked = isDark;
-        
-        // Mobile toggle - обновляем и чекбокс, и визуал
         if (mobileToggle) mobileToggle.checked = isDark;
         if (mobileToggleSwitchVisual) {
             if (isDark) {
@@ -995,50 +963,29 @@ function setupDarkMode() {
                 mobileToggleSwitchVisual.classList.remove('checked');
             }
         }
-        
-        // TinyMCE для desktop редактора
-        if (!isMobile() && document.getElementById('content-editor') && 
-            document.getElementById('content-editor').style.display === 'block') {
+        if (!isMobile() && document.getElementById('content-editor') && document.getElementById('content-editor').style.display === 'block') {
             tinymce.remove();
             initInstructionsEditor();
         }
     };
     
-    // Применяем сохраненную тему
     const savedTheme = getLocalStorage('chaterlabTheme', 'light');
     applyTheme(savedTheme);
     
-    // Обработчик изменения темы
     const handleThemeChange = (checked) => {
         const theme = checked ? 'dark' : 'light';
         setLocalStorage('chaterlabTheme', theme);
         applyTheme(theme);
     };
     
-    // Desktop переключатель
-    if (toggle) {
-        toggle.addEventListener('change', () => handleThemeChange(toggle.checked));
-    }
+    if (toggle) toggle.addEventListener('change', () => handleThemeChange(toggle.checked));
     
-    // Mobile переключатель - слушаем клик на всю кнопку
     const mobileThemeToggleBtn = document.getElementById('mobile-theme-toggle');
-    if (mobileThemeToggleBtn && mobileToggle && mobileToggleSwitchVisual) {
+    if (mobileThemeToggleBtn && mobileToggle) {
         mobileThemeToggleBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            e.stopPropagation();
-            
-            // Переключаем состояние
             const newState = !mobileToggle.checked;
             mobileToggle.checked = newState;
-            
-            // Обновляем визуал немедленно
-            if (newState) {
-                mobileToggleSwitchVisual.classList.add('checked');
-            } else {
-                mobileToggleSwitchVisual.classList.remove('checked');
-            }
-            
-            // Применяем тему
             handleThemeChange(newState);
         });
     }
