@@ -1,4 +1,194 @@
-"use strict";
+function setupMobileNavigation() {
+    if (!isMobile()) return;
+    
+    const navItems = document.querySelectorAll('.mobile-bottom-nav .nav-item');
+    const screens = document.querySelectorAll('.mobile-screen');
+    const headerTitle = document.getElementById('mobile-header-title');
+    const backBtn = document.getElementById('mobile-back-btn');
+    
+    let currentScreen = 'templates';
+    
+    const switchScreen = (screenName) => {
+        screens.forEach(screen => screen.classList.remove('active'));
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const targetScreen = document.getElementById(`mobile-${screenName}-screen`);
+        const targetNavItem = document.querySelector(`.nav-item[data-screen="${screenName}"]`);
+        
+        if (targetScreen) targetScreen.classList.add('active');
+        if (targetNavItem) targetNavItem.classList.add('active');
+        
+        currentScreen = screenName;
+        
+        const titles = {
+            templates: 'ChaterLab',
+            instructions: getTranslatedText('navInstructions'),
+            menu: 'Меню',
+            analytics: getTranslatedText('navAnalytics'),
+            editor: getTranslatedText('navEditor'),
+            'editor-info': getTranslatedText('navEditor'),
+            'users-management': getTranslatedText('tabUsers')
+        };
+        headerTitle.textContent = titles[screenName] || 'ChaterLab';
+        
+        backBtn.style.display = (screenName === 'analytics' || screenName === 'editor' || screenName === 'editor-info' || screenName === 'users-management') ? 'flex' : 'none';
+    };
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const screenName = item.dataset.screen;
+            switchScreen(screenName);
+        });
+    });
+    
+    backBtn.addEventListener('click', () => {
+        switchScreen('menu');
+    });
+    
+    const editorInfoBtn = document.getElementById('mobile-editor-info-btn');
+    const usersBtn = document.getElementById('mobile-users-btn');
+    
+    if (userRole === 'manager') {
+        if (editorInfoBtn) {
+            editorInfoBtn.style.display = 'flex';
+            editorInfoBtn.addEventListener('click', () => {
+                switchScreen('editor-info');
+            });
+        }
+        
+        if (usersBtn) {
+            usersBtn.style.display = 'flex';
+            usersBtn.addEventListener('click', () => {
+                switchScreen('users-management');
+                fetchAndRenderMobileUsers();
+            });
+        }
+    }
+    
+    const mobileLangButtons = document.querySelectorAll('.mobile-lang-btn');
+    mobileLangButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchLanguage(btn.dataset.lang);
+        });
+    });
+    
+    // Setup mobile user form
+    const mobileUserForm = document.getElementById('mobile-add-user-form');
+    if (mobileUserForm) {
+        mobileUserForm.addEventListener('submit', createMobileUser);
+    }
+}
+
+function setupMobileEditorTabs() {
+    const tabs = document.querySelectorAll('.mobile-editor-tabs button');
+    const panels = document.querySelectorAll('.mobile-editor-panel');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetTab = tab.dataset.tab;
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            panels.forEach(p => p.classList.remove('active'));
+            
+            tab.classList.add('active');
+            const targetPanel = document.getElementById(`mobile-editor-panel-${targetTab}`);
+            if (targetPanel) targetPanel.classList.add('active');
+            
+            if (targetTab === 'users') {
+                fetchAndRenderMobileUsers();
+            }
+        });
+    });
+    
+    const mobileUserForm = document.getElementById('mobile-add-user-form');
+    if (mobileUserForm) {
+        mobileUserForm.addEventListener('submit', createMobileUser);
+    }
+}
+
+async function fetchAndRenderMobileUsers() {
+    const listContainer = document.getElementById('mobile-user-list');
+    if (!listContainer) return;
+    
+    listContainer.innerHTML = `<p style="text-align:center;padding:20px;color:var(--text-secondary);">${getTranslatedText('loading')}</p>`;
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/users`, { 
+            headers: { 'Authorization': `Bearer ${token}` } 
+        });
+        const users = await response.json();
+        if (!response.ok) throw new Error(users.message);
+        
+        listContainer.innerHTML = '';
+        users.forEach(user => {
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user-list-item';
+            const roleText = getTranslatedText(user.role === 'manager' ? 'roleManager' : 'roleEmployee');
+            userDiv.innerHTML = `
+                <div class="user-info">
+                    <span class="username">${user.username}</span>
+                    <span class="role">${roleText}</span>
+                </div>
+                <div class="user-actions">
+                    <button class="delete-user-btn" data-username="${user.username}" ${userName === user.username ? 'disabled' : ''}>${getTranslatedText('deleteUserBtn')}</button>
+                </div>
+            `;
+            listContainer.appendChild(userDiv);
+        });
+
+        document.querySelectorAll('.delete-user-btn').forEach(btn => {
+            btn.onclick = async (e) => {
+                const userToDelete = e.target.dataset.username;
+                const confirmMsg = getTranslatedText('deleteUserConfirm', { username: userToDelete });
+                if (confirm(confirmMsg)) {
+                    await deleteUser(userToDelete);
+                    fetchAndRenderMobileUsers();
+                }
+            };
+        });
+    } catch (error) {
+        listContainer.innerHTML = `<p style="color: var(--error-color);text-align:center;padding:20px;">${getTranslatedText(error.message)}</p>`;
+    }
+}
+
+async function createMobileUser(event) {
+    event.preventDefault();
+    const usernameInput = document.getElementById('mobile-new-username');
+    const passwordInput = document.getElementById('mobile-new-password');
+    const roleSelect = document.getElementById('mobile-new-user-role');
+
+    const userData = {
+        username: usernameInput.value.trim(),
+        password: passwordInput.value.trim(),
+        role: roleSelect.value
+    };
+
+    if (!userData.username || !userData.password) {
+        showToast(getTranslatedText('missing_user_data'), true);
+        return;
+    }
+
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/users/create`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(userData)
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        showToast(getTranslatedText(result.message));
+        usernameInput.value = '';
+        passwordInput.value = '';
+        fetchAndRenderMobileUsers();
+    } catch (error) {
+        showToast(getTranslatedText(error.message), true);
+    }
+}"use strict";
 const API_BASE_URL = 'https://backendchater.fly.dev';
 let userRole = null;
 let appContent = {};
@@ -121,7 +311,8 @@ const uiTexts = {
         cannot_delete_self: 'Нельзя удалить самого себя.',
         user_deleted_successfully: 'Пользователь успешно удален!',
         server_error_deleting_user: 'Ошибка на сервере при удалении пользователя.',
-        server_error_fetching_users: 'Ошибка на сервере при получении списка пользователей.'
+        server_error_fetching_users: 'Ошибка на сервере при получении списка пользователей.',
+        analyticsNotAvailable: 'Аналитика доступна только менеджерам'
     },
     en: {
         lang_locale: 'en',
@@ -137,107 +328,9 @@ const uiTexts = {
         navInstructions: 'Instructions',
         navAnalytics: 'Analytics',
         navEditor: 'Editor',
-        mobileAdminTitle: 'Admin Panel',
         editorUnavailable: 'Editor',
-        editorUnavailableMsg: 'Full editing is only available on the desktop version of the site.',
-        tabLayout: 'Button Builder',
-        tabInstructions: 'Instructions',
-        tabManagers: 'Managers',
-        tabUsers: 'Users',
-        addUserTitle: 'Add New User',
-        newUserUsername: 'Username',
-        newUserPassword: 'Password',
-        roleEmployee: 'Employee',
-        roleManager: 'Manager',
-        addUserBtn: 'Create',
-        existingUsersTitle: 'Existing Users',
-        deleteUserBtn: 'Delete',
-        deleteUserConfirm: 'Are you sure you want to delete user {username}?',
-        addManager: '+ Add Manager',
-        managerNamePlaceholder: 'Manager Name (for the list)',
-        managerTelegramPlaceholder: 'Telegram contact (@username)',
-        managerWhatsappPlaceholder: 'WhatsApp contact (+123456)',
-        deleteManagerTitle: 'Delete Manager',
-        managerAssignmentTitle: 'Available Managers for this Button',
-        isContactButtonLabel: 'Make "Contact" button',
-        saveAll: 'Save All',
-        cancel: 'Cancel',
-        addSection: '+ Add New Section',
-        addButton: '+ Add Button to Section',
-        addVariant: '+ Add Variant',
-        sectionTitle: 'Section Title',
-        buttonLabel: 'Button Label',
-        deleteSectionConfirm: 'Delete this section with all buttons?',
-        deleteButtonTitle: 'Delete Section',
-        deleteButtonEntryTitle: 'Delete Button',
-        deleteVariantTitle: 'Delete Variant',
-        instructionTitleRu: 'Instructions (RU)',
-        instructionTitleEn: 'Instructions (EN)',
-        instructionTitleUk: 'Instructions (UA)',
-        analyticsTitle: 'Analytics',
-        periodDay: 'Day',
-        periodWeek: 'Week',
-        periodMonth: 'Month',
-        employeeListTitle: 'Overall Statistics',
-        overallSummaryHeader: 'Overall Statistics',
-        overallSummarySubheader: 'Summary report on the activity of the entire team.',
-        kpiTotalClicks: 'Total Actions',
-        kpiMostActive: 'Most Active',
-        kpiTopTemplate: 'Top Template',
-        kpiPeakTime: 'Peak Activity (UTC)',
-        top5Employees: 'Top 5 Employees',
-        top5Templates: 'Top 5 Templates',
-        tableEmployee: 'Employee',
-        tableActions: 'Actions',
-        tableTemplate: 'Template',
-        tableUses: 'Uses',
-        userDetailHeader: 'Statistics for:',
-        userDetailSubheader: 'Detailed activity report for the selected employee.',
-        kpiLastActivity: 'Last Activity',
-        kpiFavTemplate: 'Favorite Template',
-        activityFeedTitle: 'Activity Feed (last 100 actions)',
-        tableTime: 'Time',
-        tableSection: 'Section',
-        noData: 'No data for this period.',
-        loading: 'Loading...',
-        modalTitle: 'Create Contact',
-        modalChannelTitle: '1. Select Channel',
-        modalManagerTitle: '2. Select Manager',
-        modalCancel: 'Cancel',
-        modalConfirm: 'Generate & Copy',
-        modalError: 'Please select a channel and a manager.',
-        username_and_password_required: 'Username and password are required.',
-        invalid_credentials: 'Invalid credentials.',
-        server_error: 'Server error.',
-        content_not_found: 'Content not found.',
-        content_read_error: 'Error reading content.',
-        invalid_token: 'Invalid token.',
-        access_denied: 'Access denied.',
-        content_updated_successfully: 'Content updated successfully!',
-        server_error_on_save: 'Server error on save.',
-        user_not_found: 'User not found.',
-        invalid_data_format: 'Invalid data format.',
-        favorites_updated: 'Favorites updated.',
-        button_id_not_specified: 'Button ID not specified.',
-        click_tracking_error: 'Error tracking click.',
-        analytics_db_error: 'Error getting analytics from DB.',
-        analytics_server_error: 'Server error while getting analytics.',
-        analytics_load_error: 'Error loading statistics',
-        no_templates_for_button: 'No templates for this button',
-        copy_success: 'Copied ({current}/{total})',
-        copy_success_generic: 'Text copied successfully!',
-        favorites_load_error: 'Failed to load favorites',
-        favorites_save_error: 'Error saving favorites',
-        missing_user_data: 'Username and password are required.',
-        invalid_role: 'Invalid user role.',
-        user_created_successfully: 'User created successfully!',
-        user_already_exists: 'A user with this name already exists.',
-        server_error_creating_user: 'Server error while creating user.',
-        username_not_provided: 'Username for deletion not provided.',
-        cannot_delete_self: 'You cannot delete yourself.',
-        user_deleted_successfully: 'User deleted successfully!',
-        server_error_deleting_user: 'Server error while deleting user.',
-        server_error_fetching_users: 'Server error while fetching user list.'
+        editorUnavailableMsg: 'Full editing is only available on the desktop version.',
+        analyticsNotAvailable: 'Analytics available for managers only'
     },
     uk: {
         lang_locale: 'uk',
@@ -246,119 +339,35 @@ const uiTexts = {
         loginUsername: 'Логін', 
         loginPassword: 'Пароль', 
         loginBtn: 'Увійти',
-        searchPlaceholder: '🔎 Пошук по шаблонах...',
+        searchPlaceholder: '🔎 Пошук по шаблонам...',
         favoritesTitle: '⭐ Обране',
         darkMode: 'Темна тема',
         logout: 'Вийти',
         navInstructions: 'Інструкція',
         navAnalytics: 'Аналітика',
         navEditor: 'Редактор',
-        mobileAdminTitle: 'Адмін-панель',
         editorUnavailable: 'Редактор',
         editorUnavailableMsg: 'Повноцінне редагування доступне лише у версії сайту для ПК.',
-        tabLayout: 'Конструктор кнопок',
-        tabInstructions: 'Інструкція',
-        tabManagers: 'Менеджери',
-        tabUsers: 'Користувачі',
-        addUserTitle: 'Додати нового користувача',
-        newUserUsername: 'Логін',
-        newUserPassword: 'Пароль',
-        roleEmployee: 'Співробітник',
-        roleManager: 'Менеджер',
-        addUserBtn: 'Створити',
-        existingUsersTitle: 'Існуючі користувачі',
-        deleteUserBtn: 'Видалити',
-        deleteUserConfirm: 'Ви впевнені, що хочете видалити користувача {username}?',
-        addManager: '+ Додати менеджера',
-        managerNamePlaceholder: 'Ім\'я менеджера (для списку)',
-        managerTelegramPlaceholder: 'Telegram контакт (@username)',
-        managerWhatsappPlaceholder: 'WhatsApp контакт (+38012345)',
-        deleteManagerTitle: 'Видалити менеджера',
-        managerAssignmentTitle: 'Доступні менеджери для цієї кнопки',
-        isContactButtonLabel: 'Зробити кнопкою "Контакт"',
-        saveAll: 'Зберегти все',
-        cancel: 'Скасувати',
-        addSection: '+ Додати новий розділ',
-        addButton: '+ Додати кнопку до розділу',
-        addVariant: '+ Додати варіант',
-        sectionTitle: 'Назва розділу',
-        buttonLabel: 'Назва кнопки',
-        deleteSectionConfirm: 'Видалити цей розділ з усіма кнопками?',
-        deleteButtonTitle: 'Видалити розділ',
-        deleteButtonEntryTitle: 'Видалити кнопку',
-        deleteVariantTitle: 'Видалити варіант',
-        instructionTitleRu: 'Інструкція (RU)',
-        instructionTitleEn: 'Інструкція (EN)',
-        instructionTitleUk: 'Інструкція (UA)',
-        analyticsTitle: 'Аналітика',
-        periodDay: 'День',
-        periodWeek: 'Тиждень',
-        periodMonth: 'Місяць',
-        employeeListTitle: 'Загальна статистика',
-        overallSummaryHeader: 'Загальна статистика',
-        overallSummarySubheader: 'Зведений звіт про активність всієї команди.',
-        kpiTotalClicks: 'Всього дій',
-        kpiMostActive: 'Найактивніший',
-        kpiTopTemplate: 'Топ шаблон',
-        kpiPeakTime: 'Пік активності (UTC)',
-        top5Employees: 'Топ-5 Співробітників',
-        top5Templates: 'Топ-5 Шаблонів',
-        tableEmployee: 'Співробітник',
-        tableActions: 'Дій',
-        tableTemplate: 'Шаблон',
-        tableUses: 'Використань',
-        userDetailHeader: 'Статистика:',
-        userDetailSubheader: 'Детальний звіт про активність обраного співробітника.',
-        kpiLastActivity: 'Остання активність',
-        kpiFavTemplate: 'Улюблений шаблон',
-        activityFeedTitle: 'Стрічка активності (останні 100 дій)',
-        tableTime: 'Час',
-        tableSection: 'Розділ',
-        noData: 'Немає даних за цей період.',
-        loading: 'Завантаження...',
-        modalTitle: 'Створення контакту',
-        modalChannelTitle: '1. Оберіть канал зв\'язку',
-        modalManagerTitle: '2. Оберіть менеджера',
-        modalCancel: 'Скасувати',
-        modalConfirm: 'Згенерувати та скопіювати',
-        modalError: 'Будь ласка, оберіть канал та менеджера.',
-        username_and_password_required: 'Необхідно вказати ім\'я користувача та пароль.',
-        invalid_credentials: 'Невірні дані.',
-        server_error: 'Помилка на сервері.',
-        content_not_found: 'Контент не знайдено.',
-        content_read_error: 'Помилка читання контенту.',
-        invalid_token: 'Невірний токен.',
-        access_denied: 'Доступ заборонено.',
-        content_updated_successfully: 'Контент успішно оновлено!',
-        server_error_on_save: 'Помилка на сервері при збереженні.',
-        user_not_found: 'Користувача не знайдено.',
-        invalid_data_format: 'Невірний формат даних.',
-        favorites_updated: 'Обране оновлено.',
-        button_id_not_specified: 'Не вказано ID кнопки.',
-        click_tracking_error: 'Помилка запису кліку.',
-        analytics_db_error: 'Помилка при отриманні аналітики з БД.',
-        analytics_server_error: 'Помилка на сервері при отриманні аналітики.',
-        analytics_load_error: 'Помилка завантаження статистики',
-        no_templates_for_button: 'Немає шаблонів для цієї кнопки',
-        copy_success: 'Скопировано ({current}/{total})',
-        copy_success_generic: 'Текст успішно скопійовано!',
-        favorites_load_error: 'Не вдалося завантажити обране',
-        favorites_save_error: 'Помилка збереження обраного',
-        missing_user_data: 'Необхідно вказати ім\'я користувача та пароль.',
-        invalid_role: 'Невірна роль користувача.',
-        user_created_successfully: 'Користувача успішно створено!',
-        user_already_exists: 'Користувач з таким іменем вже існує.',
-        server_error_creating_user: 'Помилка на сервері при створенні користувача.',
-        username_not_provided: 'Не вказано ім\'я користувача для видалення.',
-        cannot_delete_self: 'Неможливо видалити самого себе.',
-        user_deleted_successfully: 'Користувача успішно видалено!',
-        server_error_deleting_user: 'Помилка на сервері при видаленні користувача.',
-        server_error_fetching_users: 'Помилка на сервері при отриманні списку користувачів.'
+        analyticsNotAvailable: 'Аналітика доступна лише менеджерам'
     }
 };
 
-function getLocalStorage(key, defaultValue) { try { const val = localStorage.getItem(key); return val ? JSON.parse(val) : defaultValue; } catch (e) { return defaultValue; } }
-function setLocalStorage(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.error(e); } }
+function getLocalStorage(key, defaultValue) { 
+    try { 
+        const val = localStorage.getItem(key); 
+        return val ? JSON.parse(val) : defaultValue; 
+    } catch (e) { 
+        return defaultValue; 
+    } 
+}
+
+function setLocalStorage(key, value) { 
+    try { 
+        localStorage.setItem(key, JSON.stringify(value)); 
+    } catch (e) { 
+        console.error(e); 
+    } 
+}
 
 function getTranslatedText(key, replacements = {}) {
     const lang = getLocalStorage('chaterlabLang', 'ru');
@@ -378,8 +387,36 @@ function showToast(message, isError = false) {
     setTimeout(() => t.classList.remove('show'), 2000); 
 }
 
-function generateId(prefix) { return prefix + Date.now() + Math.random().toString(16).slice(2); }
-const userStatusTexts = { ru: { user: 'Пользователь', status: 'Статус', admin: 'Менеджер', worker: 'Сотрудник', access: 'Разрешено редактирование', noAccess: 'Редактирование не доступно' }, en: { user: 'User', status: 'Status', admin: 'Manager', worker: 'Employee', access: 'Editing is allowed', noAccess: 'Editing is not available' }, uk: { user: 'Користувач', status: 'Статус', admin: 'Менеджер', worker: 'Співробітник', access: 'Дозволено редагування', noAccess: 'Редагування не доступно' } };
+function generateId(prefix) { 
+    return prefix + Date.now() + Math.random().toString(16).slice(2); 
+}
+
+const userStatusTexts = { 
+    ru: { 
+        user: 'Пользователь', 
+        status: 'Статус', 
+        admin: 'Менеджер', 
+        worker: 'Сотрудник', 
+        access: 'Разрешено редактирование', 
+        noAccess: 'Редактирование не доступно' 
+    }, 
+    en: { 
+        user: 'User', 
+        status: 'Status', 
+        admin: 'Manager', 
+        worker: 'Employee', 
+        access: 'Editing is allowed', 
+        noAccess: 'Editing is not available' 
+    }, 
+    uk: { 
+        user: 'Користувач', 
+        status: 'Статус', 
+        admin: 'Менеджер', 
+        worker: 'Співробітник', 
+        access: 'Дозволено редагування', 
+        noAccess: 'Редагування не доступно' 
+    } 
+};
 
 function applyTranslations() {
     const lang = getLocalStorage('chaterlabLang', 'ru');
@@ -391,8 +428,7 @@ function applyTranslations() {
                 el.placeholder = texts[key];
             } else if (el.title !== undefined && el.title !== '') {
                 el.title = texts[key]
-            }
-            else {
+            } else {
                 el.textContent = texts[key];
             }
         }
@@ -402,13 +438,27 @@ function applyTranslations() {
 function switchLanguage(lang) {
     setLocalStorage('chaterlabLang', lang);
     applyTranslations(); 
+    
     const langButtonsLogin = document.querySelectorAll('#language-switcher-login button');
-    langButtonsLogin.forEach(btn => { btn.classList.toggle('active', btn.dataset.lang === lang); });
+    langButtonsLogin.forEach(btn => { 
+        btn.classList.toggle('active', btn.dataset.lang === lang); 
+    });
+    
     if (document.getElementById('app-container').getAttribute('data-logged') === 'true') {
         const langButtonsApp = document.querySelectorAll('#language-switcher-app button');
-        langButtonsApp.forEach(btn => { btn.classList.toggle('active', btn.dataset.lang === lang); });
+        langButtonsApp.forEach(btn => { 
+            btn.classList.toggle('active', btn.dataset.lang === lang); 
+        });
+        
+        // Mobile language buttons
+        const mobileLangButtons = document.querySelectorAll('.mobile-lang-btn');
+        mobileLangButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lang === lang);
+        });
+        
         updateInstructions(lang);
         renderUserStatusCard();
+        
         const analyticsPanel = document.getElementById('analytics-panel');
         if (analyticsPanel && analyticsPanel.style.display === 'block') {
             analyticsPanel.dispatchEvent(new Event('languageChange'));
@@ -420,6 +470,7 @@ async function checkLogin() {
     const authToken = getLocalStorage('chaterlabAuthToken', null);
     const savedRole = getLocalStorage('chaterlabUserRole', null);
     const savedName = getLocalStorage('chaterlabUserName', null);
+    
     if (authToken && savedRole && savedName) {
         userRole = savedRole;
         userName = savedName;
@@ -429,11 +480,14 @@ async function checkLogin() {
         appContainer.setAttribute('data-logged', 'true');
         appContainer.style.opacity = '1';
         appContainer.style.display = 'flex';
+        
         await fetchContent();
         await fetchFavorites();
         updateFavoritesUI();
         setupDarkMode();
         renderUserStatusCard();
+        setupMobileNavigation();
+        
         return true;
     } else {
         logout(false);
@@ -448,23 +502,35 @@ async function handleLogin(event) {
     const errorDiv = document.getElementById('login-error');
     const username = usernameInput.value.trim();
     const password = passwordInput.value.trim();
+    
     errorDiv.classList.remove('show');
+    
     try {
-        const response = await fetch(`${API_BASE_URL}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+        const response = await fetch(`${API_BASE_URL}/login`, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ username, password }) 
+        });
         const data = await response.json();
+        
         if (!response.ok) throw new Error(data.message);
+        
         setLocalStorage('chaterlabAuthToken', data.token);
         setLocalStorage('chaterlabUserRole', data.role);
         setLocalStorage('chaterlabUserName', username);
         if (!getLocalStorage('chaterlabLang', null)) setLocalStorage('chaterlabLang', 'ru');
+        
         userRole = data.role;
         userName = username;
+        
         document.body.classList.remove('login-active');
         document.getElementById('login-screen').style.display = 'none';
+        
         const overlay = document.getElementById('animation-overlay');
         overlay.style.display = 'flex';
         void overlay.offsetHeight;
         overlay.classList.add('animate');
+        
         setTimeout(async () => {
             overlay.style.display = 'none';
             overlay.classList.remove('animate');
@@ -472,15 +538,17 @@ async function handleLogin(event) {
             appContainer.style.display = 'flex';
             appContainer.setAttribute('data-logged', 'true');
             appContainer.style.opacity = '1';
+            
             await fetchContent();
             await fetchFavorites();
             updateFavoritesUI();
             setupDarkMode();
             renderUserStatusCard();
+            setupMobileNavigation();
         }, 2500);
     } catch (error) {
         errorDiv.textContent = getTranslatedText(error.message);
-        errorDiv.classList.add('show'); // <-- Показываем ошибку
+        errorDiv.classList.add('show');
     }
 }
 
@@ -497,12 +565,11 @@ function logout(doUIRefresh = true) {
 
 async function fetchContent() {
     try {
-        // Публичный контент не требует токена
         const response = await fetch(`${API_BASE_URL}/content`);
         if (!response.ok) {
             const data = await response.json();
             throw new Error(data.message);
-        };
+        }
         appContent = await response.json();
         renderSidebar();
         const currentLang = getLocalStorage('chaterlabLang', 'ru');
@@ -556,7 +623,6 @@ function openContactModal(buttonData) {
     }
     
     confirmBtn.onclick = () => generateAndCopyContact(buttonData);
-    
     contactModal.classList.add('show');
 }
 
@@ -609,67 +675,119 @@ function generateAndCopyContact(buttonData) {
 }
 
 function renderSidebar() {
+    // Desktop render
     const container = document.getElementById('sidebar-content');
-    container.innerHTML = '';
-    appContent.layout?.forEach(section => {
-        const sectionDiv = document.createElement('div');
-        sectionDiv.className = 'sidebar-section';
-        const title = document.createElement('h2');
-        title.textContent = section.title;
-        sectionDiv.appendChild(title);
+    if (container) {
+        container.innerHTML = '';
+        appContent.layout?.forEach(section => {
+            const sectionDiv = document.createElement('div');
+            sectionDiv.className = 'sidebar-section';
+            const title = document.createElement('h2');
+            title.textContent = section.title;
+            sectionDiv.appendChild(title);
 
-        const buttonsContainer = document.createElement('div');
-        buttonsContainer.className = 'buttons-container';
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.className = 'buttons-container';
 
-        section.buttons.forEach(buttonData => {
-            const button = document.createElement('button');
-            button.className = 'sidebar-button';
-            button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span><div class="favorite-star" data-button-id="${buttonData.id}">☆</div>`;
-            button.onclick = (e) => { 
-                if (e.target.classList.contains('favorite-star')) return; 
-                handleSidebarButtonClick(buttonData.id);
-            };
-            buttonsContainer.appendChild(button);
+            section.buttons.forEach(buttonData => {
+                const button = document.createElement('button');
+                button.className = 'sidebar-button';
+                button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span><div class="favorite-star" data-button-id="${buttonData.id}">☆</div>`;
+                button.onclick = (e) => { 
+                    if (e.target.classList.contains('favorite-star')) return; 
+                    handleSidebarButtonClick(buttonData.id);
+                };
+                buttonsContainer.appendChild(button);
+            });
+            sectionDiv.appendChild(buttonsContainer);
+            container.appendChild(sectionDiv);
         });
-        sectionDiv.appendChild(buttonsContainer);
-        container.appendChild(sectionDiv);
-    });
-    document.querySelector('.sidebar-scrollable-content').addEventListener('click', handleFavoriteClick);
+        
+        const scrollableContent = document.querySelector('.sidebar-scrollable-content');
+        if (scrollableContent) {
+            scrollableContent.addEventListener('click', handleFavoriteClick);
+        }
+    }
+    
+    // Mobile render
+    const mobileContainer = document.getElementById('mobile-sidebar-content');
+    if (mobileContainer) {
+        mobileContainer.innerHTML = '';
+        appContent.layout?.forEach(section => {
+            const sectionDiv = document.createElement('div');
+            sectionDiv.className = 'mobile-section';
+            const title = document.createElement('h2');
+            title.textContent = section.title;
+            sectionDiv.appendChild(title);
+
+            section.buttons.forEach(buttonData => {
+                const button = document.createElement('button');
+                button.className = 'sidebar-button';
+                button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span><div class="favorite-star" data-button-id="${buttonData.id}">☆</div>`;
+                button.onclick = (e) => { 
+                    if (e.target.classList.contains('favorite-star')) return; 
+                    handleSidebarButtonClick(buttonData.id);
+                };
+                sectionDiv.appendChild(button);
+            });
+            
+            mobileContainer.appendChild(sectionDiv);
+        });
+        
+        mobileContainer.addEventListener('click', handleFavoriteClick);
+    }
 }
 
 function renderUserStatusCard() {
-    const card = document.getElementById('user-status-card');
-    if (!card || !userName || !userRole) return;
-    const currentLang = getLocalStorage('chaterlabLang', 'ru');
-    const texts = userStatusTexts[currentLang] || userStatusTexts.ru;
-    let statusText, accessText, statusColor;
-    if (userRole === 'manager') {
-        statusText = texts.admin;
-        accessText = texts.access;
-        statusColor = 'var(--accent-purple)';
-    } else {
-        statusText = texts.worker;
-        accessText = texts.noAccess;
-        statusColor = 'var(--text-secondary)';
-    }
-    card.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;"><span style="font-weight: 600; color: var(--text-primary);">${texts.user}:</span><span style="font-weight: 700; color: var(--primary-blue);">${userName}</span></div><div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-weight: 600; color: var(--text-primary);">${texts.status}:</span><span style="font-weight: 700; color: ${statusColor};">${statusText}</span></div><div style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; text-align: center;"><span style="color: ${userRole === 'manager' ? 'var(--success-color)' : 'var(--text-secondary)'}; font-weight: 500;">${accessText}</span></div>`;
+    const renderCard = (cardElement) => {
+        if (!cardElement || !userName || !userRole) return;
+        const currentLang = getLocalStorage('chaterlabLang', 'ru');
+        const texts = userStatusTexts[currentLang] || userStatusTexts.ru;
+        let statusText, accessText, statusColor;
+        
+        if (userRole === 'manager') {
+            statusText = texts.admin;
+            accessText = texts.access;
+            statusColor = 'var(--accent-purple)';
+        } else {
+            statusText = texts.worker;
+            accessText = texts.noAccess;
+            statusColor = 'var(--text-secondary)';
+        }
+        
+        cardElement.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;"><span style="font-weight: 600; color: var(--text-primary);">${texts.user}:</span><span style="font-weight: 700; color: var(--primary-blue);">${userName}</span></div><div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-weight: 600; color: var(--text-primary);">${texts.status}:</span><span style="font-weight: 700; color: ${statusColor};">${statusText}</span></div><div style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; text-align: center;"><span style="color: ${userRole === 'manager' ? 'var(--success-color)' : 'var(--text-secondary)'}; font-weight: 500;">${accessText}</span></div>`;
+    };
+    
+    const desktopCard = document.getElementById('user-status-card');
+    const mobileCard = document.getElementById('mobile-user-status-card');
+    
+    renderCard(desktopCard);
+    renderCard(mobileCard);
 }
 
 function updateInstructions(lang) {
-    const instructionsDiv = document.getElementById('instructions');
-    if (appContent.instructionsContent && appContent.instructionsContent[lang]) {
-        instructionsDiv.innerHTML = appContent.instructionsContent[lang];
-    } else {
-        const fallbackMessage = { 'ru': '<h3>Инструкция не найдена</h3><p>Для выбранного языка нет инструкции в базе данных.</p>', 'en': '<h3>Instructions Not Found</h3><p>No instructions are available for the selected language in the database.</p>', 'uk': '<h3>Інструкція не знайдена</h3><p>Для вибраної мови немає інструкції в базі даних.</p>' };
-        instructionsDiv.innerHTML = fallbackMessage[lang] || fallbackMessage['ru'];
-    }
+    const updateInstructionsContent = (instructionsDiv) => {
+        if (!instructionsDiv) return;
+        if (appContent.instructionsContent && appContent.instructionsContent[lang]) {
+            instructionsDiv.innerHTML = appContent.instructionsContent[lang];
+        } else {
+            const fallbackMessage = { 
+                'ru': '<h3>Инструкция не найдена</h3><p>Для выбранного языка нет инструкции в базе данных.</p>', 
+                'en': '<h3>Instructions Not Found</h3><p>No instructions are available for the selected language in the database.</p>', 
+                'uk': '<h3>Інструкція не знайдена</h3><p>Для вибраної мови немає інструкції в базі даних.</p>' 
+            };
+            instructionsDiv.innerHTML = fallbackMessage[lang] || fallbackMessage['ru'];
+        }
+    };
+    
+    updateInstructionsContent(document.getElementById('instructions'));
+    updateInstructionsContent(document.getElementById('mobile-instructions'));
 }
 
 async function trackClick(buttonId) {
     const token = getLocalStorage('chaterlabAuthToken', '');
     if (!token) return;
     try {
-        // ИЗМЕНЕНО: Добавлен заголовок Authorization
         await fetch(`${API_BASE_URL}/api/track-click`, {
             method: 'POST',
             headers: { 
@@ -706,7 +824,6 @@ async function fetchFavorites() {
     const token = getLocalStorage('chaterlabAuthToken', '');
     if (!token) return;
     try {
-         // ИЗМЕНЕНО: Добавлен заголовок Authorization
         const response = await fetch(`${API_BASE_URL}/api/favorites`, { 
             headers: { 'Authorization': `Bearer ${token}` } 
         });
@@ -723,7 +840,6 @@ async function saveFavorites() {
     const token = getLocalStorage('chaterlabAuthToken', '');
     if (!token) return;
     try {
-        // ИЗМЕНЕНО: Добавлен заголовок Authorization
         await fetch(`${API_BASE_URL}/api/favorites`, {
             method: 'POST',
             headers: { 
@@ -753,30 +869,54 @@ function handleFavoriteClick(event) {
 }
 
 function updateFavoritesUI() {
+    const allButtons = new Map();
+    appContent.layout?.forEach(section => { 
+        section.buttons.forEach(btn => allButtons.set(btn.id, btn)); 
+    });
+    
+    // Desktop favorites
     const favoritesContainer = document.getElementById('favorites-content');
     const favoritesSection = document.getElementById('favorites-section');
-    if (!favoritesContainer || !favoritesSection) return;
-    favoritesContainer.innerHTML = '';
-    const allButtons = new Map();
-    appContent.layout?.forEach(section => { section.buttons.forEach(btn => allButtons.set(btn.id, btn)); });
-    userFavorites.forEach(favId => {
-        const buttonData = allButtons.get(favId);
-        if (buttonData) {
-            const button = document.createElement('button');
-            button.className = 'sidebar-button';
-            button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span><div class="favorite-star favorited" data-button-id="${buttonData.id}">★</div>`;
-            button.onclick = (e) => { 
-                if (e.target.classList.contains('favorite-star')) return; 
-                handleSidebarButtonClick(buttonData.id);
-            };
-            favoritesContainer.appendChild(button);
-        }
-    });
-    if (userFavorites.length > 0) {
-        favoritesSection.style.display = 'block';
-    } else {
-        favoritesSection.style.display = 'none';
+    if (favoritesContainer && favoritesSection) {
+        favoritesContainer.innerHTML = '';
+        userFavorites.forEach(favId => {
+            const buttonData = allButtons.get(favId);
+            if (buttonData) {
+                const button = document.createElement('button');
+                button.className = 'sidebar-button';
+                button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span><div class="favorite-star favorited" data-button-id="${buttonData.id}">★</div>`;
+                button.onclick = (e) => { 
+                    if (e.target.classList.contains('favorite-star')) return; 
+                    handleSidebarButtonClick(buttonData.id);
+                };
+                favoritesContainer.appendChild(button);
+            }
+        });
+        favoritesSection.style.display = userFavorites.length > 0 ? 'block' : 'none';
     }
+    
+    // Mobile favorites
+    const mobileFavoritesContainer = document.getElementById('mobile-favorites-content');
+    const mobileFavoritesSection = document.getElementById('mobile-favorites-section');
+    if (mobileFavoritesContainer && mobileFavoritesSection) {
+        mobileFavoritesContainer.innerHTML = '';
+        userFavorites.forEach(favId => {
+            const buttonData = allButtons.get(favId);
+            if (buttonData) {
+                const button = document.createElement('button');
+                button.className = 'sidebar-button';
+                button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg><span>${buttonData.label}</span><div class="favorite-star favorited" data-button-id="${buttonData.id}">★</div>`;
+                button.onclick = (e) => { 
+                    if (e.target.classList.contains('favorite-star')) return; 
+                    handleSidebarButtonClick(buttonData.id);
+                };
+                mobileFavoritesContainer.appendChild(button);
+            }
+        });
+        mobileFavoritesSection.style.display = userFavorites.length > 0 ? 'block' : 'none';
+    }
+    
+    // Update all star icons
     document.querySelectorAll('.sidebar-button .favorite-star').forEach(star => {
         const buttonId = star.dataset.buttonId;
         if (userFavorites.includes(buttonId)) {
@@ -791,29 +931,56 @@ function updateFavoritesUI() {
 
 function setupDarkMode() {
     const toggle = document.getElementById('theme-checkbox');
+    const mobileToggle = document.getElementById('mobile-theme-checkbox');
+    const mobileToggleSwitch = document.querySelector('.mobile-toggle-switch');
+    
     const applyTheme = (theme) => {
         document.body.classList.toggle('dark-mode', theme === 'dark');
-        if (toggle) toggle.checked = (theme === 'dark');
+        const isDark = theme === 'dark';
+        if (toggle) toggle.checked = isDark;
+        if (mobileToggle) mobileToggle.checked = isDark;
+        if (mobileToggleSwitch) {
+            if (isDark) {
+                mobileToggleSwitch.classList.add('checked');
+            } else {
+                mobileToggleSwitch.classList.remove('checked');
+            }
+        }
         if (!isMobile() && document.getElementById('content-editor') && document.getElementById('content-editor').style.display === 'block') {
             tinymce.remove();
             initInstructionsEditor();
         }
     };
+    
     const savedTheme = getLocalStorage('chaterlabTheme', 'light');
     applyTheme(savedTheme);
-    if (toggle) toggle.addEventListener('change', () => {
-        const theme = toggle.checked ? 'dark' : 'light';
+    
+    const handleThemeChange = (checked) => {
+        const theme = checked ? 'dark' : 'light';
         setLocalStorage('chaterlabTheme', theme);
         applyTheme(theme);
-    });
+    };
+    
+    if (toggle) toggle.addEventListener('change', () => handleThemeChange(toggle.checked));
+    
+    const mobileThemeToggleBtn = document.getElementById('mobile-theme-toggle');
+    if (mobileThemeToggleBtn && mobileToggle) {
+        mobileThemeToggleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const newState = !mobileToggle.checked;
+            mobileToggle.checked = newState;
+            handleThemeChange(newState);
+        });
+    }
 }
 
 function setupSearch() {
     const searchInput = document.getElementById('searchInput');
-    if (!searchInput) return;
-    searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase().trim();
-        document.querySelectorAll('#sidebar-content .sidebar-section').forEach(section => {
+    const mobileSearchInput = document.getElementById('searchInputMobile');
+    
+    const handleSearch = (searchTerm, targetContainer) => {
+        const sections = targetContainer.querySelectorAll('.sidebar-section, .mobile-section');
+        sections.forEach(section => {
             let sectionHasVisibleButton = false;
             const buttons = section.querySelectorAll('.sidebar-button');
             buttons.forEach(button => {
@@ -825,46 +992,247 @@ function setupSearch() {
                     button.style.display = 'none';
                 }
             });
-
+            
             const sectionTitle = section.querySelector('h2');
-            if (isMobile()) {
-                 section.style.display = sectionHasVisibleButton ? 'block' : 'none';
-            } else {
-                 if(sectionTitle) sectionTitle.style.display = sectionHasVisibleButton ? 'block' : 'none';
+            if (sectionTitle) {
+                sectionTitle.style.display = sectionHasVisibleButton ? 'block' : 'none';
             }
         });
+    };
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            handleSearch(searchTerm, document.getElementById('sidebar-content'));
+        });
+    }
+    
+    if (mobileSearchInput) {
+        mobileSearchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            handleSearch(searchTerm, document.getElementById('mobile-sidebar-content'));
+        });
+    }
+}
+
+function setupMobileNavigation() {
+    if (!isMobile()) return;
+    
+    const navItems = document.querySelectorAll('.mobile-bottom-nav .nav-item');
+    const screens = document.querySelectorAll('.mobile-screen');
+    const headerTitle = document.getElementById('mobile-header-title');
+    const backBtn = document.getElementById('mobile-back-btn');
+    
+    let currentScreen = 'templates';
+    
+    const switchScreen = (screenName) => {
+        screens.forEach(screen => screen.classList.remove('active'));
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const targetScreen = document.getElementById(`mobile-${screenName}-screen`);
+        const targetNavItem = document.querySelector(`.nav-item[data-screen="${screenName}"]`);
+        
+        if (targetScreen) targetScreen.classList.add('active');
+        if (targetNavItem) targetNavItem.classList.add('active');
+        
+        currentScreen = screenName;
+        
+        // Update header title
+        const titles = {
+            templates: 'ChaterLab',
+            instructions: getTranslatedText('navInstructions'),
+            menu: 'Меню',
+            analytics: getTranslatedText('navAnalytics'),
+            editor: getTranslatedText('navEditor')
+        };
+        headerTitle.textContent = titles[screenName] || 'ChaterLab';
+        
+        // Show/hide back button
+        backBtn.style.display = (screenName === 'analytics' || screenName === 'editor') ? 'flex' : 'none';
+    };
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const screenName = item.dataset.screen;
+            switchScreen(screenName);
+        });
     });
+    
+    backBtn.addEventListener('click', () => {
+        switchScreen('menu');
+    });
+    
+    // Mobile menu actions
+    const openEditorBtn = document.getElementById('mobile-open-editor-btn');
+    const analyticsBtn = document.getElementById('mobile-analytics-btn');
+    
+    if (userRole === 'manager' && openEditorBtn) {
+        openEditorBtn.style.display = 'flex';
+        openEditorBtn.addEventListener('click', () => {
+            switchScreen('editor');
+        });
+    }
+    
+    if (analyticsBtn) {
+        analyticsBtn.addEventListener('click', () => {
+            switchScreen('analytics');
+            if (userRole === 'manager') {
+                loadMobileAnalytics();
+            } else {
+                showAnalyticsStub();
+            }
+        });
+    }
+    
+    // Mobile language switcher
+    const mobileLangButtons = document.querySelectorAll('.mobile-lang-btn');
+    mobileLangButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchLanguage(btn.dataset.lang);
+        });
+    });
+}
+
+function showAnalyticsStub() {
+    const stub = document.getElementById('mobile-analytics-stub');
+    const content = document.getElementById('mobile-analytics-content');
+    
+    if (stub && content) {
+        stub.style.display = 'flex';
+        content.style.display = 'none';
+        
+        const stubText = stub.querySelector('p');
+        if (stubText) {
+            stubText.textContent = getTranslatedText('analyticsNotAvailable');
+        }
+    }
+}
+
+async function loadMobileAnalytics() {
+    const stub = document.getElementById('mobile-analytics-stub');
+    const content = document.getElementById('mobile-analytics-content');
+    
+    if (!stub || !content) return;
+    
+    stub.style.display = 'none';
+    content.style.display = 'block';
+    content.innerHTML = `<p style="text-align:center;padding:40px;color:var(--text-secondary);">${getTranslatedText('loading')}</p>`;
+    
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    let currentPeriod = 'day';
+    let selectedUser = null;
+    let fullData = null;
+    
+    const fetchData = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/analytics?period=${currentPeriod}`, { 
+                headers: { 'Authorization': `Bearer ${token}` } 
+            });
+            if (!response.ok) throw new Error(getTranslatedText('analytics_load_error'));
+            fullData = await response.json();
+            renderMobileAnalytics();
+        } catch (error) {
+            content.innerHTML = `<p style="color: var(--error-color);text-align:center;padding:40px;">${error.message}</p>`;
+        }
+    };
+    
+    const renderMobileAnalytics = () => {
+        const texts = uiTexts[getLocalStorage('chaterlabLang', 'ru')];
+        
+        let html = `
+            <div class="mobile-analytics-period">
+                <button data-period="day" class="${currentPeriod === 'day' ? 'active' : ''}">${texts.periodDay}</button>
+                <button data-period="week" class="${currentPeriod === 'week' ? 'active' : ''}">${texts.periodWeek}</button>
+                <button data-period="month" class="${currentPeriod === 'month' ? 'active' : ''}">${texts.periodMonth}</button>
+            </div>
+        `;
+        
+        if (selectedUser) {
+            const userData = fullData.employee_summary.find(e => e.username === selectedUser);
+            const userLog = fullData.detailed_log.filter(log => log.username === selectedUser);
+            const userTemplateCounts = userLog.reduce((acc, log) => {
+                acc[log.button_id] = (acc[log.button_id] || 0) + 1;
+                return acc;
+            }, {});
+            const topTemplateId = Object.keys(userTemplateCounts).sort((a, b) => userTemplateCounts[b] - userTemplateCounts[a])[0];
+            const topTemplateLabel = topTemplateId ? getButtonData(topTemplateId).label : '—';
+            
+            html += `
+                <button onclick="window.mobileAnalyticsBackToList()" style="margin:0 12px 16px;padding:10px;background:var(--background-card);border:1px solid var(--border-color);border-radius:12px;width:calc(100% - 24px);text-align:left;font-weight:600;color:var(--primary-blue);">← ${texts.employeeListTitle}</button>
+                <h3 style="margin:0 12px 12px;font-size:18px;">${selectedUser}</h3>
+                <div class="kpi-grid" style="padding:0 12px;">
+                    <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${userData?.count || 0}</h3></div>
+                    <div class="kpi-card"><p class="kpi-card-title">${texts.kpiFavTemplate}</p><h3 class="kpi-card-value" style="font-size:16px;">${topTemplateLabel}</h3></div>
+                </div>
+            `;
+        } else {
+            const totalClicks = fullData.detailed_log.length;
+            const topEmployee = fullData.employee_summary?.[0]?.username || '—';
+            const topTemplateId = fullData.template_summary?.[0]?.button_id;
+            const topTemplateLabel = topTemplateId ? getButtonData(topTemplateId).label : '—';
+
+            html += `
+                <div class="kpi-grid" style="padding:0 12px;">
+                    <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${totalClicks}</h3></div>
+                    <div class="kpi-card"><p class="kpi-card-title">${texts.kpiMostActive}</p><h3 class="kpi-card-value">${topEmployee}</h3></div>
+                </div>
+                <div class="kpi-card" style="margin:16px 12px;"><p class="kpi-card-title">${texts.kpiTopTemplate}</p><h3 class="kpi-card-value" style="font-size:18px;">${topTemplateLabel}</h3></div>
+                <ul class="mobile-user-list">
+            `;
+            
+            if (fullData.employee_summary && fullData.employee_summary.length > 0) {
+                fullData.employee_summary.forEach(emp => {
+                    html += `<li data-username="${emp.username}"><span class="username">${emp.username}</span><span class="count">${emp.count}</span></li>`;
+                });
+            }
+            
+            html += `</ul>`;
+        }
+        
+        content.innerHTML = html;
+        
+        // Period buttons
+        content.querySelectorAll('.mobile-analytics-period button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentPeriod = btn.dataset.period;
+                fetchData();
+            });
+        });
+        
+        // User list
+        content.querySelectorAll('.mobile-user-list li').forEach(li => {
+            li.addEventListener('click', () => {
+                selectedUser = li.dataset.username;
+                renderMobileAnalytics();
+            });
+        });
+    };
+    
+    const getButtonData = (buttonId) => {
+        if (!appContent.layout) return { label: `(ID: ${buttonId})`, section: 'N/A' };
+        for (const section of appContent.layout) {
+            const button = section.buttons.find(b => b.id === buttonId);
+            if (button) return { label: button.label, section: section.title };
+        }
+        return { label: `(ID: ${buttonId})`, section: 'N/A' };
+    };
+    
+    window.mobileAnalyticsBackToList = () => {
+        selectedUser = null;
+        renderMobileAnalytics();
+    };
+    
+    await fetchData();
 }
 
 function checkUserRoleAndSetupManagerUI() {
     if (userRole === 'manager') {
         if (isMobile()) {
-            const toggleBtn = document.getElementById('mobile-admin-panel-toggle');
-            const overlay = document.getElementById('mobile-admin-overlay');
-            const closeBtn = document.getElementById('mobile-panel-close');
-            if(toggleBtn) toggleBtn.style.display = 'block';
-
-            if(toggleBtn) toggleBtn.onclick = () => {
-                if(overlay) {
-                    overlay.style.display = 'block';
-                    setTimeout(() => overlay.classList.add('show'), 10);
-                }
-                fetchAndRenderMobileAnalytics();
-            };
-            
-            const closePanel = () => {
-                 if(overlay) {
-                    overlay.classList.remove('show');
-                    setTimeout(() => { if(overlay) overlay.style.display = 'none'; }, 300);
-                }
-            };
-
-            if(closeBtn) closeBtn.onclick = closePanel;
-            if(overlay) overlay.onclick = (e) => { if (e.target === overlay) closePanel(); };
-
+            const openEditorBtn = document.getElementById('mobile-open-editor-btn');
+            if (openEditorBtn) openEditorBtn.style.display = 'flex';
         } else {
             const managerControls = document.querySelector('.manager-controls-segmented');
-            if(managerControls) managerControls.style.display = 'flex';
+            if (managerControls) managerControls.style.display = 'flex';
             const triggerAnalyticsLoad = setupAnalytics();
             
             const buttons = document.querySelectorAll('.manager-controls-segmented button');
@@ -882,16 +1250,15 @@ function checkUserRoleAndSetupManagerUI() {
             buttons.forEach(button => {
                 button.addEventListener('click', (e) => {
                     moveGlider(e.currentTarget);
-                    if(button.id === 'show-instructions-btn') switchManagerView('instructions');
-                    if(button.id === 'show-analytics-btn') switchManagerView('analytics');
-                    if(button.id === 'edit-mode-btn') switchManagerView('editor');
+                    if (button.id === 'show-instructions-btn') switchManagerView('instructions');
+                    if (button.id === 'show-analytics-btn') switchManagerView('analytics');
+                    if (button.id === 'edit-mode-btn') switchManagerView('editor');
                 });
             });
             
-            // Initial position
             const activeButton = document.querySelector('.manager-controls-segmented button.active');
-            if(activeButton) {
-                 setTimeout(() => moveGlider(activeButton), 50);
+            if (activeButton) {
+                setTimeout(() => moveGlider(activeButton), 50);
             }
 
             function switchManagerView(view) {
@@ -906,49 +1273,19 @@ function checkUserRoleAndSetupManagerUI() {
                         showContentEditor();
                     }
                 } else if (view === 'analytics') {
-                   if (analyticsPanel) analyticsPanel.style.display = 'block';
-                    if(triggerAnalyticsLoad) triggerAnalyticsLoad();
+                    if (analyticsPanel) analyticsPanel.style.display = 'block';
+                    if (triggerAnalyticsLoad) triggerAnalyticsLoad();
                 }
             }
             
-            document.getElementById('cancel-edit-btn').addEventListener('click', () => {
-                const instructionButton = document.getElementById('show-instructions-btn');
-                if (instructionButton) instructionButton.click();
-            });
+            const cancelBtn = document.getElementById('cancel-edit-btn');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', () => {
+                    const instructionButton = document.getElementById('show-instructions-btn');
+                    if (instructionButton) instructionButton.click();
+                });
+            }
         }
-    }
-}
-
-async function fetchAndRenderMobileAnalytics() {
-    const contentDiv = document.getElementById('mobile-analytics-content');
-    if(!contentDiv) return;
-    contentDiv.innerHTML = `<p>${getTranslatedText('loading')}</p>`;
-    const token = getLocalStorage('chaterlabAuthToken', '');
-    
-    try {
-        // ИЗМЕНЕНО: Добавлен заголовок Authorization
-        const response = await fetch(`${API_BASE_URL}/api/analytics?period=day`, { 
-            headers: { 'Authorization': `Bearer ${token}` } 
-        });
-        if (!response.ok) throw new Error(getTranslatedText('analytics_load_error'));
-        const data = await response.json();
-        
-        const texts = uiTexts[getLocalStorage('chaterlabLang', 'ru')];
-        const totalClicks = data.detailed_log.length;
-        const topEmployee = data.employee_summary?.[0]?.username || '—';
-        const topTemplateId = data.template_summary?.[0]?.button_id;
-        const topTemplateLabel = topTemplateId ? (findButtonById(topTemplateId)?.label || '—') : '—';
-
-        contentDiv.innerHTML = `
-            <div class="kpi-grid">
-                <div class="kpi-card"><p class="kpi-card-title">${texts.kpiTotalClicks}</p><h3 class="kpi-card-value">${totalClicks}</h3></div>
-                <div class="kpi-card"><p class="kpi-card-title">${texts.kpiMostActive}</p><h3 class="kpi-card-value">${topEmployee}</h3></div>
-            </div>
-             <div class="kpi-card" style="margin-top: 16px;"><p class="kpi-card-title">${texts.kpiTopTemplate}</p><h3 class="kpi-card-value">${topTemplateLabel}</h3></div>
-        `;
-
-    } catch (error) {
-        contentDiv.innerHTML = `<p style="color: var(--error-color);">${error.message}</p>`;
     }
 }
 
@@ -958,7 +1295,7 @@ function setupAnalytics() {
     const periodSelector = document.querySelector('.analytics-period-selector');
     const analyticsPanel = document.getElementById('analytics-panel');
     
-    if(!mainPanel || !employeeList || !periodSelector || !analyticsPanel) return;
+    if (!mainPanel || !employeeList || !periodSelector || !analyticsPanel) return;
 
     let currentPeriod = 'day';
     let selectedUser = null;
@@ -991,7 +1328,6 @@ function setupAnalytics() {
         const token = getLocalStorage('chaterlabAuthToken', '');
         
         try {
-            // ИЗМЕНЕНО: Добавлен заголовок Authorization
             const response = await fetch(`${API_BASE_URL}/api/analytics?period=${currentPeriod}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -999,7 +1335,6 @@ function setupAnalytics() {
             
             fullData = await response.json();
             renderAnalytics();
-
         } catch (error) {
             showToast(error.message, true);
             mainPanel.innerHTML = `<div class="no-data-message">${error.message}</div>`;
@@ -1020,7 +1355,7 @@ function setupAnalytics() {
     
     function renderEmployeeList(summary, texts) {
         employeeList.innerHTML = `<li data-username="all" class="${!selectedUser ? 'active' : ''}"><span class="employee-name">${texts.employeeListTitle}</span></li>`;
-        if(summary && summary.length > 0) {
+        if (summary && summary.length > 0) {
             summary.forEach(emp => {
                 const li = document.createElement('li');
                 li.dataset.username = emp.username;
@@ -1032,12 +1367,12 @@ function setupAnalytics() {
     }
 
     function getButtonData(buttonId) {
-         if (!appContent.layout) return { label: `(ID: ${buttonId})`, section: 'N/A' };
-         for (const section of appContent.layout) {
+        if (!appContent.layout) return { label: `(ID: ${buttonId})`, section: 'N/A' };
+        for (const section of appContent.layout) {
             const button = section.buttons.find(b => b.id === buttonId);
             if (button) return { label: button.label, section: section.title };
-         }
-         return { label: `(удален: ${buttonId})`, section: 'N/A' };
+        }
+        return { label: `(удален: ${buttonId})`, section: 'N/A' };
     }
 
     function formatRelativeTime(isoString, lang) {
@@ -1124,13 +1459,51 @@ function setupAnalytics() {
             </div>
         `;
     }
+    
     return fetchAndRenderAnalytics;
 }
 
-function switchEditorTab(tabName) { document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active')); document.querySelectorAll('.editor-tabs button').forEach(b => b.classList.remove('active')); document.getElementById(`panel-${tabName}`).classList.add('active'); document.getElementById(`tab-btn-${tabName}`).classList.add('active'); if(tabName === 'users') { fetchAndRenderUsers(); } applyTranslations(); }
-function showContentEditor() { document.getElementById('main-content-wrapper').style.display = 'block'; document.getElementById('content-editor').style.display = 'block'; document.getElementById('instructions').style.display = 'none'; buildLayoutEditor(); initInstructionsEditor(); buildManagerEditor(); switchEditorTab('layout'); applyTranslations(); }
-function hideContentEditor() { document.getElementById('main-content-wrapper').style.display = 'block'; document.getElementById('content-editor').style.display = 'none'; document.getElementById('instructions').style.display = 'block'; tinymce.remove(); }
-function buildLayoutEditor() { const container = document.getElementById('panel-layout'); if(!container) return; while (container.firstChild && container.firstChild.id !== 'add-section-btn') { container.removeChild(container.firstChild); } appContent.layout?.forEach(section => { const sectionNode = createSectionEditor(section); container.insertBefore(sectionNode, document.getElementById('add-section-btn')); }); }
+// Desktop editor functions (unchanged)
+function switchEditorTab(tabName) { 
+    document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active')); 
+    document.querySelectorAll('.editor-tabs button').forEach(b => b.classList.remove('active')); 
+    document.getElementById(`panel-${tabName}`).classList.add('active'); 
+    document.getElementById(`tab-btn-${tabName}`).classList.add('active'); 
+    if (tabName === 'users') { 
+        fetchAndRenderUsers(); 
+    } 
+    applyTranslations(); 
+}
+
+function showContentEditor() { 
+    document.getElementById('main-content-wrapper').style.display = 'block'; 
+    document.getElementById('content-editor').style.display = 'block'; 
+    document.getElementById('instructions').style.display = 'none'; 
+    buildLayoutEditor(); 
+    initInstructionsEditor(); 
+    buildManagerEditor(); 
+    switchEditorTab('layout'); 
+}
+
+function hideContentEditor() { 
+    document.getElementById('main-content-wrapper').style.display = 'block'; 
+    document.getElementById('content-editor').style.display = 'none'; 
+    document.getElementById('instructions').style.display = 'block'; 
+    tinymce.remove(); 
+}
+
+function buildLayoutEditor() { 
+    const container = document.getElementById('panel-layout'); 
+    if (!container) return; 
+    while (container.firstChild && container.firstChild.id !== 'add-section-btn') { 
+        container.removeChild(container.firstChild); 
+    } 
+    appContent.layout?.forEach(section => { 
+        const sectionNode = createSectionEditor(section); 
+        container.insertBefore(sectionNode, document.getElementById('add-section-btn')); 
+    }); 
+    applyTranslations(); 
+}
 
 function createSectionEditor(section) { 
     const sectionDiv = document.createElement('div'); 
@@ -1140,7 +1513,7 @@ function createSectionEditor(section) {
     const buttonsContainer = sectionDiv.querySelector('.buttons-container'); 
     section.buttons.forEach(button => { buttonsContainer.appendChild(createButtonEditor(button)); }); 
     sectionDiv.querySelector('.delete-btn').onclick = () => { if (confirm(getTranslatedText('deleteSectionConfirm'))) sectionDiv.remove(); }; 
-    sectionDiv.querySelector('.add-button-btn').onclick = () => { const newButton = { id: generateId('btn_'), label: getTranslatedText('buttonLabel'), templates: ['Новый шаблон'] }; buttonsContainer.appendChild(createButtonEditor(newButton)); applyTranslations(); }; 
+    sectionDiv.querySelector('.add-button-btn').onclick = () => { const newButton = { id: generateId('btn_'), label: getTranslatedText('buttonLabel'), templates: ['Новый шаблон'] }; buttonsContainer.appendChild(createButtonEditor(newButton)); }; 
     return sectionDiv; 
 }
 
@@ -1171,7 +1544,6 @@ function createButtonEditor(button) {
     assignmentContainer.className = 'manager-assignment-container';
     buttonDiv.querySelector('.button-options').insertAdjacentElement('afterend', assignmentContainer);
 
-
     const addVariantBtn = document.createElement('button');
     addVariantBtn.className = 'add-variant-btn';
     addVariantBtn.dataset.key = 'addVariant';
@@ -1180,7 +1552,6 @@ function createButtonEditor(button) {
         const newVariant = createVariantInput('');
         variantsContainer.appendChild(newVariant);
         newVariant.querySelector('textarea').focus();
-        applyTranslations();
     };
 
     buttonDiv.querySelector('.button-options').insertAdjacentElement('beforebegin', addVariantBtn);
@@ -1206,12 +1577,12 @@ function createButtonEditor(button) {
         } else {
             assignmentContainer.innerHTML = '';
         }
+         applyTranslations();
     };
 
     buttonDiv.querySelector('.is-contact-btn-toggle').addEventListener('change', () => {
         const tempData = { ...button, manager_ids: [] }; 
         renderManagerAssignment(tempData);
-        applyTranslations();
     });
     
     renderManagerAssignment(button);
@@ -1219,14 +1590,46 @@ function createButtonEditor(button) {
     return buttonDiv;
 }
 
-function createVariantInput(text) { const variantDiv = document.createElement('div'); variantDiv.className = 'template-variant'; variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" data-key="deleteVariantTitle" title="Удалить вариант">🗑</button>`; variantDiv.querySelector('.delete-variant-btn').onclick = () => variantDiv.remove(); return variantDiv; }
-function addSection() { const newSection = { id: generateId('sec_'), title: 'Новый раздел', buttons: [] }; const sectionNode = createSectionEditor(newSection); const container = document.getElementById('panel-layout'); container.insertBefore(sectionNode, document.getElementById('add-section-btn')); applyTranslations();}
-function initInstructionsEditor() { const skin = document.body.classList.contains('dark-mode') ? 'oxide-dark' : 'oxide'; const content_css = document.body.classList.contains('dark-mode') ? 'dark' : 'default'; tinymce.init({ selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk', height: 500, menubar: false, plugins: 'lists link image code help wordcount autoresize table', toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | table | help', skin: skin, content_css: content_css, setup: editor => { editor.on('init', () => { const langKey = editor.id.split('-')[2]; editor.setContent(appContent.instructionsContent?.[langKey] || ''); }); } }); }
+function createVariantInput(text) { 
+    const variantDiv = document.createElement('div'); 
+    variantDiv.className = 'template-variant'; 
+    variantDiv.innerHTML = `<textarea>${text}</textarea><button class="delete-variant-btn" data-key="deleteVariantTitle" title="Удалить вариант">🗑</button>`; 
+    variantDiv.querySelector('.delete-variant-btn').onclick = () => variantDiv.remove(); 
+    return variantDiv; 
+}
+
+function addSection() { 
+    const newSection = { id: generateId('sec_'), title: 'Новый раздел', buttons: [] }; 
+    const sectionNode = createSectionEditor(newSection); 
+    const container = document.getElementById('panel-layout'); 
+    container.insertBefore(sectionNode, document.getElementById('add-section-btn')); 
+    applyTranslations();
+}
+
+function initInstructionsEditor() { 
+    const skin = document.body.classList.contains('dark-mode') ? 'oxide-dark' : 'oxide'; 
+    const content_css = document.body.classList.contains('dark-mode') ? 'dark' : 'default'; 
+    tinymce.init({ 
+        selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk', 
+        height: 500, 
+        menubar: false, 
+        plugins: 'lists link image code help wordcount autoresize table', 
+        toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | table | help', 
+        skin: skin, 
+        content_css: content_css, 
+        setup: editor => { 
+            editor.on('init', () => { 
+                const langKey = editor.id.split('-')[2]; 
+                editor.setContent(appContent.instructionsContent?.[langKey] || ''); 
+            }); 
+        } 
+    }); 
+}
 
 function buildManagerEditor() {
     const container = document.getElementById('panel-managers');
     const addButton = document.getElementById('add-manager-btn');
-    if(!container || !addButton) return;
+    if (!container || !addButton) return;
     container.innerHTML = ''; 
     if (appContent.managers) {
         for (const [id, manager] of Object.entries(appContent.managers)) {
@@ -1235,6 +1638,7 @@ function buildManagerEditor() {
     }
     container.appendChild(addButton);
     addButton.onclick = addManagerEntry;
+    applyTranslations();
 }
 
 function createManagerEditorEntry(id, manager) {
@@ -1323,7 +1727,6 @@ async function saveContent() {
     const newContent = { layout: newLayout, instructionsContent: newInstructions, managers: newManagers };
     const token = getLocalStorage('chaterlabAuthToken', '');
     try {
-        // ИЗМЕНЕНО: Добавлен заголовок Authorization
         const response = await fetch(`${API_BASE_URL}/update-content`, { 
             method: 'POST', 
             headers: { 
@@ -1350,7 +1753,6 @@ async function fetchAndRenderUsers() {
     listContainer.innerHTML = `<p>${getTranslatedText('loading')}</p>`;
     const token = getLocalStorage('chaterlabAuthToken', '');
     try {
-        // ИЗМЕНЕНО: Добавлен заголовок Authorization
         const response = await fetch(`${API_BASE_URL}/api/users`, { 
             headers: { 'Authorization': `Bearer ${token}` } 
         });
@@ -1378,12 +1780,11 @@ async function fetchAndRenderUsers() {
             btn.onclick = async (e) => {
                 const userToDelete = e.target.dataset.username;
                 const confirmMsg = getTranslatedText('deleteUserConfirm', { username: userToDelete });
-                if(confirm(confirmMsg)){
+                if (confirm(confirmMsg)) {
                     await deleteUser(userToDelete);
                 }
             };
         });
-        applyTranslations();
     } catch (error) {
         listContainer.innerHTML = `<p style="color: var(--error-color);">${getTranslatedText(error.message)}</p>`;
     }
@@ -1401,14 +1802,13 @@ async function createUser(event) {
         role: roleSelect.value
     };
 
-    if(!userData.username || !userData.password) {
+    if (!userData.username || !userData.password) {
         showToast(getTranslatedText('missing_user_data'), true);
         return;
     }
 
     const token = getLocalStorage('chaterlabAuthToken', '');
     try {
-        // ИЗМЕНЕНО: Добавлен заголовок Authorization
         const response = await fetch(`${API_BASE_URL}/api/users/create`, {
             method: 'POST',
             headers: { 
@@ -1424,14 +1824,13 @@ async function createUser(event) {
         passwordInput.value = '';
         fetchAndRenderUsers();
     } catch (error) {
-         showToast(getTranslatedText(error.message), true);
+        showToast(getTranslatedText(error.message), true);
     }
 }
 
 async function deleteUser(username) {
-     const token = getLocalStorage('chaterlabAuthToken', '');
+    const token = getLocalStorage('chaterlabAuthToken', '');
     try {
-        // ИЗМЕНЕНО: Добавлен заголовок Authorization
         const response = await fetch(`${API_BASE_URL}/api/users/delete`, {
             method: 'POST',
             headers: { 
@@ -1445,7 +1844,7 @@ async function deleteUser(username) {
         showToast(getTranslatedText(result.message));
         fetchAndRenderUsers();
     } catch (error) {
-         showToast(getTranslatedText(error.message), true);
+        showToast(getTranslatedText(error.message), true);
     }
 }
 
@@ -1457,7 +1856,7 @@ function setupAccordion() {
         const header = e.target.closest('h2');
         if (header) {
             const section = header.parentElement;
-            if(section) section.classList.toggle('active');
+            if (section) section.classList.toggle('active');
         }
     });
 }
@@ -1465,29 +1864,37 @@ function setupAccordion() {
 document.addEventListener('DOMContentLoaded', () => {
     const initialLang = getLocalStorage('chaterlabLang', 'ru');
     switchLanguage(initialLang);
-    document.querySelectorAll('#language-switcher-login button').forEach(button => { button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang)); });
-    document.querySelectorAll('#language-switcher-app button').forEach(button => { button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang)); });
+    
+    document.querySelectorAll('#language-switcher-login button').forEach(button => { 
+        button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang)); 
+    });
+    
+    document.querySelectorAll('#language-switcher-app button').forEach(button => { 
+        button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang)); 
+    });
+    
     checkLogin();
+    
     document.getElementById('login-form').addEventListener('submit', handleLogin);
     
     const addUserForm = document.getElementById('add-user-form');
-    if(addUserForm) addUserForm.addEventListener('submit', createUser);
+    if (addUserForm) addUserForm.addEventListener('submit', createUser);
 
     const tabLayout = document.getElementById('tab-btn-layout');
-    if(tabLayout) tabLayout.addEventListener('click', () => switchEditorTab('layout'));
+    if (tabLayout) tabLayout.addEventListener('click', () => switchEditorTab('layout'));
     
     const tabInstructions = document.getElementById('tab-btn-instructions');
-    if(tabInstructions) tabInstructions.addEventListener('click', () => switchEditorTab('instructions'));
+    if (tabInstructions) tabInstructions.addEventListener('click', () => switchEditorTab('instructions'));
 
     const tabManagers = document.getElementById('tab-btn-managers');
-    if(tabManagers) tabManagers.addEventListener('click', () => switchEditorTab('managers'));
+    if (tabManagers) tabManagers.addEventListener('click', () => switchEditorTab('managers'));
 
     const tabUsers = document.getElementById('tab-btn-users');
-    if(tabUsers) tabUsers.addEventListener('click', () => switchEditorTab('users'));
+    if (tabUsers) tabUsers.addEventListener('click', () => switchEditorTab('users'));
 
     const saveBtn = document.getElementById('save-content-btn');
-    if(saveBtn) saveBtn.addEventListener('click', saveContent);
+    if (saveBtn) saveBtn.addEventListener('click', saveContent);
 
     const addSectionBtn = document.getElementById('add-section-btn');
-    if(addSectionBtn) addSectionBtn.addEventListener('click', addSection);
+    if (addSectionBtn) addSectionBtn.addEventListener('click', addSection);
 });
