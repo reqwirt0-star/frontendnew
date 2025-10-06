@@ -325,7 +325,7 @@
                         <div id="panel-notifications" class="editor-panel">
                             <div class="editor-section">
                                 <h4 data-key="tabNotifications">Оповещения</h4>
-                                <form id="notifications-form" style="display:grid;grid-template-columns:1fr;gap:12px;">
+                                <form id="notifications-form" class="notifications-form">
                                     <div>
                                         <label for="notif-title" style="display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;" data-key="notifyTitleLabel">Заголовок</label>
                                         <input type="text" id="notif-title" style="width:100%;padding:12px;border-radius:10px;border:2px solid var(--border-color);background-color:var(--background-main);font-size:14px;color:var(--text-primary);font-family:inherit;">
@@ -334,19 +334,15 @@
                                         <label for="notif-body" style="display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;" data-key="notifyBodyLabel">Текст</label>
                                         <textarea id="notif-body" style="width:100%;min-height:120px;resize:vertical;padding:12px;border-radius:12px;border:2px solid var(--border-color);background-color:var(--background-main);font-size:14px;color:var(--text-primary);font-family:inherit;"></textarea>
                                     </div>
-                                    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-                                        <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="notif-critical"> <span data-key="notifyCriticalLabel">Критическое оповещение</span></label>
-                                        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-                                            <span style="font-size:12px;font-weight:600;color:var(--text-secondary);" data-key="notifyLanguagesLabel">Языки:</span>
-                                            <label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" class="notif-lang" value="ru" checked> RU</label>
-                                            <label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" class="notif-lang" value="en" checked> EN</label>
-                                            <label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" class="notif-lang" value="uk" checked> UA</label>
-                                        </div>
-                                    </div>
+                                    <div class="checkbox-wrapper"><input type="checkbox" id="notif-critical"><label for="notif-critical" data-key="notifyCriticalLabel">Критическое оповещение</label></div>
                                     <div class="editor-buttons" style="justify-content:flex-end;">
                                         <button id="publish-notification-btn" type="submit" data-key="publishBtn">Опубликовать</button>
                                     </div>
                                 </form>
+                                <div class="editor-section" id="notifications-history-section">
+                                    <h4 data-key="notificationsHistory">История оповещений</h4>
+                                    <div id="notifications-history-list"></div>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -483,10 +483,7 @@ function getCurrentLanguage() {
     return getLocalStorage('chaterlabLang', 'ru');
 }
 
-function filterNotesByLanguage(notes) {
-    const lang = getCurrentLanguage();
-    return notes.filter(n => Array.isArray(n.languages) ? n.languages.includes(lang) : true);
-}
+function filterNotesByLanguage(notes) { return notes; }
 
 function updateNotificationBadges(unreadCount) {
     const desktopBadge = document.getElementById('notifications-badge');
@@ -506,7 +503,7 @@ function renderNotificationsList(notes) {
     wrap.innerHTML = '';
     filtered.forEach(n => {
         const item = document.createElement('div');
-        item.className = 'editor-section';
+        item.className = 'editor-section' + (n.is_critical ? ' critical' : '');
         const readMark = n.is_read ? '' : `<span style="color: var(--error-color);font-weight:600;margin-left:8px;">•</span>`;
         item.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
             <div style="flex:1;min-width:0">
@@ -598,8 +595,7 @@ function setupNotificationsEditor() {
 async function showCriticalIfAny() {
     try {
         const notes = await refreshNotificationsUI();
-        const langFiltered = filterNotesByLanguage(notes || []);
-        const critical = (langFiltered || []).find(n => n.is_critical && !n.is_read);
+        const critical = (notes || []).find(n => n.is_critical && !n.is_read);
         if (critical) {
             const modal = document.getElementById('critical-modal');
             const title = document.getElementById('critical-title');
@@ -616,6 +612,33 @@ async function showCriticalIfAny() {
                 };
             }
         }
+    } catch (_) {}
+}
+
+// History fetch and render
+async function fetchNotificationsHistory() {
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    const res = await fetch(`${API_BASE_URL}/api/notifications/history`, { headers: { 'Authorization': `Bearer ${token}` } });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    return data.notifications || [];
+}
+
+async function renderNotificationsHistory() {
+    try {
+        const list = document.getElementById('notifications-history-list');
+        if (!list) return;
+        list.innerHTML = `<p style="color: var(--text-secondary);">${getTranslatedText('loading')}</p>`;
+        const notes = await fetchNotificationsHistory();
+        if (!notes.length) { list.innerHTML = `<p style="color: var(--text-secondary);">${getTranslatedText('noData')}</p>`; return; }
+        list.innerHTML = '';
+        notes.forEach(n => {
+            const div = document.createElement('div');
+            div.className = 'history-item' + (n.is_critical ? ' critical' : '');
+            const date = new Date(n.created_at).toLocaleString();
+            div.innerHTML = `<div class="title">${n.title || ''}</div><div class="meta">${date}${n.is_critical ? ' • critical' : ''}</div>`;
+            list.appendChild(div);
+        });
     } catch (_) {}
 }
 
@@ -2102,6 +2125,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const tabNotifications = document.getElementById('tab-btn-notifications');
     if (tabNotifications) tabNotifications.addEventListener('click', () => switchEditorTab('notifications'));
+    // Load history when opening notifications tab
+    if (tabNotifications) tabNotifications.addEventListener('click', renderNotificationsHistory);
 
     const saveBtn = document.getElementById('save-content-btn');
     if (saveBtn) saveBtn.addEventListener('click', saveContent);
