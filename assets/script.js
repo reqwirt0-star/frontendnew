@@ -314,7 +314,9 @@ const uiTexts = {
         server_error_deleting_user: 'Ошибка на сервере при удалении пользователя.',
         server_error_fetching_users: 'Ошибка на сервере при получении списка пользователей.',
         analyticsNotAvailable: 'Аналитика доступна только менеджерам',
-        headerSubtitle: 'Быстрые ответы'
+        headerSubtitle: 'Быстрые ответы',
+        notificationsTitle: 'Оповещения',
+        criticalAckBtn: 'Я ознакомлен'
     },
     en: {
         lang_locale: 'en',
@@ -445,6 +447,135 @@ function applyTranslations() {
             if (typingEl) typingEl.textContent = '';
         }
     } catch (_) {}
+    // Modal static texts
+    const tTitle = document.querySelector('[data-key="notificationsTitle"]'); if (tTitle) tTitle.textContent = getTranslatedText('notificationsTitle') || 'Оповещения';
+    const ackBtn = document.querySelector('[data-key="criticalAckBtn"]'); if (ackBtn) ackBtn.textContent = getTranslatedText('criticalAckBtn') || 'Я ознакомлен';
+}
+// Notifications API helpers
+async function fetchNotifications() {
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    const res = await fetch(`${API_BASE_URL}/api/notifications`, { headers: { 'Authorization': `Bearer ${token}` } });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    return data.notifications || [];
+}
+
+async function publishNotification(note) {
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    const res = await fetch(`${API_BASE_URL}/api/notifications/publish`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(note) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    return true;
+}
+
+async function markNotificationRead(notificationId) {
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    const res = await fetch(`${API_BASE_URL}/api/notifications/read`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ notification_id: notificationId }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+}
+
+function getCurrentLanguage() {
+    return getLocalStorage('chaterlabLang', 'ru');
+}
+
+function filterNotesByLanguage(notes) {
+    const lang = getCurrentLanguage();
+    return notes.filter(n => Array.isArray(n.languages) ? n.languages.includes(lang) : true);
+}
+
+function updateNotificationBadges(unreadCount) {
+    const desktopBadge = document.getElementById('notifications-badge');
+    const mobileBadge = document.getElementById('mobile-notifications-badge');
+    if (desktopBadge) { desktopBadge.textContent = unreadCount; desktopBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none'; }
+    if (mobileBadge) { mobileBadge.textContent = unreadCount; mobileBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none'; }
+}
+
+function renderNotificationsList(notes) {
+    const wrap = document.getElementById('notifications-list');
+    if (!wrap) return;
+    const filtered = filterNotesByLanguage(notes);
+    if (filtered.length === 0) {
+        wrap.innerHTML = `<p style="color: var(--text-secondary);">${getTranslatedText('noData')}</p>`;
+        return;
+    }
+    wrap.innerHTML = '';
+    filtered.forEach(n => {
+        const item = document.createElement('div');
+        item.className = 'editor-section';
+        const readMark = n.is_read ? '' : `<span style="color: var(--error-color);font-weight:600;margin-left:8px;">•</span>`;
+        item.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+            <div style="flex:1;min-width:0">
+                <div style="font-weight:700;margin-bottom:6px;">${n.title || ''}${readMark}</div>
+                <div style="white-space:pre-wrap;color:var(--text-secondary)">${n.body || ''}</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-shrink:0">
+                ${n.is_read ? '' : `<button class="mark-read-btn" data-id="${n.id}">${getTranslatedText('criticalAckBtn')}</button>`}
+            </div>
+        </div>`;
+        wrap.appendChild(item);
+    });
+    wrap.querySelectorAll('.mark-read-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            await markNotificationRead(btn.dataset.id);
+            await refreshNotificationsUI();
+        });
+    });
+}
+
+async function refreshNotificationsUI() {
+    try {
+        const notes = await fetchNotifications();
+        const filtered = filterNotesByLanguage(notes);
+        const unread = filtered.filter(n => !n.is_read).length;
+        updateNotificationBadges(unread);
+        renderNotificationsList(notes);
+        return notes;
+    } catch (e) {
+        // silent failure to avoid blocking
+    }
+}
+
+function setupNotificationsUI() {
+    const btn = document.getElementById('notifications-btn');
+    const modal = document.getElementById('notifications-modal');
+    const closeBtn = document.getElementById('notifications-close-btn');
+    if (btn && modal && closeBtn) {
+        btn.onclick = async () => {
+            await refreshNotificationsUI();
+            modal.classList.add('show');
+        };
+        closeBtn.onclick = () => modal.classList.remove('show');
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
+    }
+    const mbtn = document.getElementById('mobile-notifications-btn');
+    if (mbtn && modal) {
+        mbtn.onclick = async () => { await refreshNotificationsUI(); modal.classList.add('show'); };
+    }
+}
+
+async function showCriticalIfAny() {
+    try {
+        const notes = await refreshNotificationsUI();
+        const langFiltered = filterNotesByLanguage(notes || []);
+        const critical = (langFiltered || []).find(n => n.is_critical && !n.is_read);
+        if (critical) {
+            const modal = document.getElementById('critical-modal');
+            const title = document.getElementById('critical-title');
+            const body = document.getElementById('critical-body');
+            const ack = document.getElementById('critical-ack-btn');
+            if (title) title.textContent = critical.title || 'Важное объявление';
+            if (body) body.textContent = critical.body || '';
+            if (modal && ack) {
+                modal.classList.add('show');
+                ack.onclick = async () => {
+                    await markNotificationRead(critical.id);
+                    modal.classList.remove('show');
+                    await refreshNotificationsUI();
+                };
+            }
+        }
+    } catch (_) {}
 }
 
 function switchLanguage(lang) {
@@ -510,6 +641,8 @@ async function checkLogin() {
         renderUserStatusCard();
         setupMobileNavigation();
         setupHeaderTypingOnAllTargets();
+        setupNotificationsUI();
+        showCriticalIfAny();
         
         return true;
     } else {
@@ -569,6 +702,8 @@ async function handleLogin(event) {
             renderUserStatusCard();
             setupMobileNavigation();
             setupHeaderTypingOnAllTargets();
+            setupNotificationsUI();
+            showCriticalIfAny();
         }, 2500);
     } catch (error) {
         errorDiv.textContent = getTranslatedText(error.message);

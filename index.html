@@ -36,8 +36,14 @@
     <div id="app-container" data-logged="false">
         <!-- Desktop Header -->
         <header class="desktop-only app-header">
-            <div class="app-header-title">ChaterLab</div>
-            <div class="app-header-subtitle"><span id="typing-text"></span><span class="typing-caret" aria-hidden="true"></span></div>
+            <div class="app-header-left">
+                <div class="app-header-title">ChaterLab</div>
+                <div class="app-header-subtitle"><span id="typing-text"></span><span class="typing-caret" aria-hidden="true"></span></div>
+            </div>
+            <button id="notifications-btn" class="notifications-btn" title="Оповещения">
+                <span class="bell">🔔</span>
+                <span id="notifications-badge" class="badge" style="display:none;">0</span>
+            </button>
         </header>
         
         <!-- Mobile Header -->
@@ -53,6 +59,7 @@
                     <span id="typing-text-mobile"></span><span class="typing-caret" aria-hidden="true"></span>
                 </div>
             </div>
+            <button id="mobile-notifications-btn" class="mobile-bell" title="Оповещения">🔔<span id="mobile-notifications-badge" class="badge" style="display:none;">0</span></button>
             <div class="mobile-header-spacer"></div>
         </header>
         
@@ -364,6 +371,28 @@
     </div>
     
     <div id="toast" class="toast-notification"></div>
+
+    <!-- Notifications Modal -->
+    <div id="notifications-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width:720px">
+            <h3 data-key="notificationsTitle">Оповещения</h3>
+            <div id="notifications-list"></div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+                <button id="notifications-close-btn" data-key="modalCancel">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Critical Notification Modal -->
+    <div id="critical-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width:720px">
+            <h3 id="critical-title">Важное объявление</h3>
+            <div id="critical-body" style="margin:12px 0"></div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+                <button id="critical-ack-btn" data-key="criticalAckBtn">Я ознакомлен</button>
+            </div>
+        </div>
+    </div>
 
     <div id="contact-generator-modal" class="modal-overlay">
         <div class="modal-content">
