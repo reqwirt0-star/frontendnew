@@ -313,7 +313,8 @@ const uiTexts = {
         user_deleted_successfully: 'Пользователь успешно удален!',
         server_error_deleting_user: 'Ошибка на сервере при удалении пользователя.',
         server_error_fetching_users: 'Ошибка на сервере при получении списка пользователей.',
-        analyticsNotAvailable: 'Аналитика доступна только менеджерам'
+        analyticsNotAvailable: 'Аналитика доступна только менеджерам',
+        headerSubtitle: 'Быстрые ответы'
     },
     en: {
         lang_locale: 'en',
@@ -331,7 +332,8 @@ const uiTexts = {
         navEditor: 'Editor',
         editorUnavailable: 'Editor',
         editorUnavailableMsg: 'Full editing is only available on the desktop version.',
-        analyticsNotAvailable: 'Analytics available for managers only'
+        analyticsNotAvailable: 'Analytics available for managers only',
+        headerSubtitle: 'Quick Replies'
     },
     uk: {
         lang_locale: 'uk',
@@ -349,7 +351,8 @@ const uiTexts = {
         navEditor: 'Редактор',
         editorUnavailable: 'Редактор',
         editorUnavailableMsg: 'Повноцінне редагування доступне лише у версії сайту для ПК.',
-        analyticsNotAvailable: 'Аналітика доступна лише менеджерам'
+        analyticsNotAvailable: 'Аналітика доступна лише менеджерам',
+        headerSubtitle: 'Швидкі відповіді'
     }
 };
 
@@ -434,6 +437,12 @@ function applyTranslations() {
             }
         }
     });
+
+    // Update desktop header subtitle immediately on language change (rest typed by animation)
+    if (!isMobile()) {
+        const typingEl = document.getElementById('typing-text');
+        if (typingEl) typingEl.textContent = '';
+    }
 }
 
 function switchLanguage(lang) {
@@ -498,6 +507,7 @@ async function checkLogin() {
         setupDarkMode();
         renderUserStatusCard();
         setupMobileNavigation();
+        setupDesktopHeaderTyping();
         
         return true;
     } else {
@@ -556,11 +566,75 @@ async function handleLogin(event) {
             setupDarkMode();
             renderUserStatusCard();
             setupMobileNavigation();
+            setupDesktopHeaderTyping();
         }, 2500);
     } catch (error) {
         errorDiv.textContent = getTranslatedText(error.message);
         errorDiv.classList.add('show');
     }
+}
+
+// Desktop-only typing animation for header subtitle
+function setupDesktopHeaderTyping() {
+    if (isMobile()) return; // gate to desktop only
+    const typingEl = document.getElementById('typing-text');
+    const caretEl = document.querySelector('.typing-caret');
+    if (!typingEl || !caretEl) return;
+
+    const getPhrase = () => getTranslatedText('headerSubtitle');
+    const typeDelayMs = 70;
+    const eraseDelayMs = 50;
+    const holdAfterTypeMs = 5000;
+    const pauseBetweenCyclesMs = 600;
+
+    let isErasing = false;
+    let charIndex = 0;
+    let phrase = getPhrase();
+    let activeTimer = null;
+
+    const clearTimer = () => { if (activeTimer) { clearTimeout(activeTimer); activeTimer = null; } };
+
+    const step = () => {
+        if (!document.body.contains(typingEl)) { clearTimer(); return; }
+        if (!isErasing) {
+            if (charIndex < phrase.length) {
+                typingEl.textContent = phrase.slice(0, charIndex + 1);
+                charIndex++;
+                activeTimer = setTimeout(step, typeDelayMs);
+            } else {
+                activeTimer = setTimeout(() => { isErasing = true; step(); }, holdAfterTypeMs);
+            }
+        } else {
+            if (charIndex > 0) {
+                typingEl.textContent = phrase.slice(0, charIndex - 1);
+                charIndex--;
+                activeTimer = setTimeout(step, eraseDelayMs);
+            } else {
+                isErasing = false;
+                phrase = getPhrase();
+                activeTimer = setTimeout(step, pauseBetweenCyclesMs);
+            }
+        }
+    };
+
+    clearTimer();
+    typingEl.textContent = '';
+    charIndex = 0;
+    isErasing = false;
+    phrase = getPhrase();
+    step();
+
+    // Re-run on language change events by observing mutations on elements with data-key
+    const langObserver = new MutationObserver(() => {
+        // Restart cycle with new phrase
+        clearTimer();
+        typingEl.textContent = '';
+        charIndex = 0;
+        isErasing = false;
+        phrase = getPhrase();
+        step();
+    });
+    langObserver.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-key'] });
 }
 
 function logout(doUIRefresh = true) {
