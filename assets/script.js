@@ -577,18 +577,17 @@ async function handleLogin(event) {
 }
 
 // Desktop-only typing animation for header subtitle
-function setupDesktopHeaderTyping() {
+function setupDesktopHeaderTyping(target = { typingId: 'typing-text', caretSelector: '.app-header-subtitle .typing-caret' }) {
     try {
-        if (isMobile()) return; // gate to desktop only
-        const typingEl = document.getElementById('typing-text');
-        const caretEl = document.querySelector('.typing-caret');
+        const typingEl = document.getElementById(target.typingId);
+        const caretEl = document.querySelector(target.caretSelector);
         if (!typingEl || !caretEl) return;
 
         const getPhrase = () => String(getTranslatedText('headerSubtitle') || '');
-        const typeDelayMs = 70;
-        const eraseDelayMs = 50;
+        const typeDelayMs = 120; // slower typing
+        const eraseDelayMs = 70;
         const holdAfterTypeMs = 5000;
-        const pauseBetweenCyclesMs = 600;
+        const pauseBetweenCyclesMs = 800;
 
         let isErasing = false;
         let charIndex = 0;
@@ -636,7 +635,7 @@ function setupDesktopHeaderTyping() {
     } catch (e) {
         // Absolute fail-safe
         try {
-            const typingEl = document.getElementById('typing-text');
+            const typingEl = document.getElementById(target.typingId);
             if (typingEl) typingEl.textContent = getTranslatedText('headerSubtitle');
         } catch (_) {}
     }
@@ -646,28 +645,15 @@ function setupDesktopHeaderTyping() {
 function setupHeaderTypingOnAllTargets() {
     try {
         // Desktop
-        setupDesktopHeaderTyping();
+        setupDesktopHeaderTyping({ typingId: 'typing-text', caretSelector: '.app-header-subtitle .typing-caret' });
         // Mobile
         const mobileSubtitle = document.getElementById('mobile-header-subtitle');
         const mobileTitle = document.getElementById('mobile-header-title');
         const mobileTyping = document.getElementById('typing-text-mobile');
         if (mobileSubtitle && mobileTitle && mobileTyping) {
             mobileSubtitle.style.display = 'flex';
-            // Ensure mobile shows two-line title like desktop
             mobileTitle.textContent = 'ChaterLab';
-            // Simple typing cycle on mobile using the same engine
-            try {
-                // Use a minimal instance by temporarily mapping mobile nodes to desktop IDs
-                const originalTypingEl = document.getElementById('typing-text');
-                const originalCaret = document.querySelector('.typing-caret');
-                mobileTyping.id = 'typing-text';
-                const caret = mobileSubtitle.querySelector('.typing-caret');
-                if (caret) caret.classList.add('typing-caret');
-                setupDesktopHeaderTyping();
-                // Restore IDs to avoid duplicates in DOM for later queries
-                mobileTyping.id = 'typing-text-mobile';
-                // Leave mobile animation running with closures captured
-            } catch (_) {}
+            setupDesktopHeaderTyping({ typingId: 'typing-text-mobile', caretSelector: '#mobile-header-subtitle .typing-caret' });
         }
     } catch (_) {}
 }
