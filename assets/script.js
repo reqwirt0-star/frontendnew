@@ -509,7 +509,7 @@ async function checkLogin() {
         setupDarkMode();
         renderUserStatusCard();
         setupMobileNavigation();
-        setupDesktopHeaderTyping();
+        setupHeaderTypingOnAllTargets();
         
         return true;
     } else {
@@ -568,7 +568,7 @@ async function handleLogin(event) {
             setupDarkMode();
             renderUserStatusCard();
             setupMobileNavigation();
-            setupDesktopHeaderTyping();
+            setupHeaderTypingOnAllTargets();
         }, 2500);
     } catch (error) {
         errorDiv.textContent = getTranslatedText(error.message);
@@ -640,6 +640,36 @@ function setupDesktopHeaderTyping() {
             if (typingEl) typingEl.textContent = getTranslatedText('headerSubtitle');
         } catch (_) {}
     }
+}
+
+// Reusable initializer to run typing on both desktop and mobile header areas
+function setupHeaderTypingOnAllTargets() {
+    try {
+        // Desktop
+        setupDesktopHeaderTyping();
+        // Mobile
+        const mobileSubtitle = document.getElementById('mobile-header-subtitle');
+        const mobileTitle = document.getElementById('mobile-header-title');
+        const mobileTyping = document.getElementById('typing-text-mobile');
+        if (mobileSubtitle && mobileTitle && mobileTyping) {
+            mobileSubtitle.style.display = 'flex';
+            // Ensure mobile shows two-line title like desktop
+            mobileTitle.textContent = 'ChaterLab';
+            // Simple typing cycle on mobile using the same engine
+            try {
+                // Use a minimal instance by temporarily mapping mobile nodes to desktop IDs
+                const originalTypingEl = document.getElementById('typing-text');
+                const originalCaret = document.querySelector('.typing-caret');
+                mobileTyping.id = 'typing-text';
+                const caret = mobileSubtitle.querySelector('.typing-caret');
+                if (caret) caret.classList.add('typing-caret');
+                setupDesktopHeaderTyping();
+                // Restore IDs to avoid duplicates in DOM for later queries
+                mobileTyping.id = 'typing-text-mobile';
+                // Leave mobile animation running with closures captured
+            } catch (_) {}
+        }
+    } catch (_) {}
 }
 
 function logout(doUIRefresh = true) {
