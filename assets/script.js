@@ -438,11 +438,13 @@ function applyTranslations() {
         }
     });
 
-    // Update desktop header subtitle immediately on language change (rest typed by animation)
-    if (!isMobile()) {
-        const typingEl = document.getElementById('typing-text');
-        if (typingEl) typingEl.textContent = '';
-    }
+    // On language change, clear desktop subtitle; typing setup will handle rendering
+    try {
+        if (!isMobile()) {
+            const typingEl = document.getElementById('typing-text');
+            if (typingEl) typingEl.textContent = '';
+        }
+    } catch (_) {}
 }
 
 function switchLanguage(lang) {
@@ -576,65 +578,68 @@ async function handleLogin(event) {
 
 // Desktop-only typing animation for header subtitle
 function setupDesktopHeaderTyping() {
-    if (isMobile()) return; // gate to desktop only
-    const typingEl = document.getElementById('typing-text');
-    const caretEl = document.querySelector('.typing-caret');
-    if (!typingEl || !caretEl) return;
+    try {
+        if (isMobile()) return; // gate to desktop only
+        const typingEl = document.getElementById('typing-text');
+        const caretEl = document.querySelector('.typing-caret');
+        if (!typingEl || !caretEl) return;
 
-    const getPhrase = () => getTranslatedText('headerSubtitle');
-    const typeDelayMs = 70;
-    const eraseDelayMs = 50;
-    const holdAfterTypeMs = 5000;
-    const pauseBetweenCyclesMs = 600;
+        const getPhrase = () => String(getTranslatedText('headerSubtitle') || '');
+        const typeDelayMs = 70;
+        const eraseDelayMs = 50;
+        const holdAfterTypeMs = 5000;
+        const pauseBetweenCyclesMs = 600;
 
-    let isErasing = false;
-    let charIndex = 0;
-    let phrase = getPhrase();
-    let activeTimer = null;
+        let isErasing = false;
+        let charIndex = 0;
+        let phrase = getPhrase();
+        let activeTimer = null;
 
-    const clearTimer = () => { if (activeTimer) { clearTimeout(activeTimer); activeTimer = null; } };
+        const clearTimer = () => { if (activeTimer) { clearTimeout(activeTimer); activeTimer = null; } };
 
-    const step = () => {
-        if (!document.body.contains(typingEl)) { clearTimer(); return; }
-        if (!isErasing) {
-            if (charIndex < phrase.length) {
-                typingEl.textContent = phrase.slice(0, charIndex + 1);
-                charIndex++;
-                activeTimer = setTimeout(step, typeDelayMs);
-            } else {
-                activeTimer = setTimeout(() => { isErasing = true; step(); }, holdAfterTypeMs);
+        const safeStep = () => {
+            try {
+                if (!document.body.contains(typingEl)) { clearTimer(); return; }
+                // Refresh phrase on each full cycle to reflect language changes
+                if (!isErasing && charIndex === 0) phrase = getPhrase();
+                if (!isErasing) {
+                    if (charIndex < phrase.length) {
+                        typingEl.textContent = phrase.slice(0, charIndex + 1);
+                        charIndex++;
+                        activeTimer = setTimeout(safeStep, typeDelayMs);
+                    } else {
+                        activeTimer = setTimeout(() => { isErasing = true; safeStep(); }, holdAfterTypeMs);
+                    }
+                } else {
+                    if (charIndex > 0) {
+                        typingEl.textContent = phrase.slice(0, charIndex - 1);
+                        charIndex--;
+                        activeTimer = setTimeout(safeStep, eraseDelayMs);
+                    } else {
+                        isErasing = false;
+                        activeTimer = setTimeout(safeStep, pauseBetweenCyclesMs);
+                    }
+                }
+            } catch (e) {
+                // Fail-safe: disable animation and show static text
+                clearTimer();
+                try { typingEl.textContent = getPhrase(); } catch (_) {}
             }
-        } else {
-            if (charIndex > 0) {
-                typingEl.textContent = phrase.slice(0, charIndex - 1);
-                charIndex--;
-                activeTimer = setTimeout(step, eraseDelayMs);
-            } else {
-                isErasing = false;
-                phrase = getPhrase();
-                activeTimer = setTimeout(step, pauseBetweenCyclesMs);
-            }
-        }
-    };
+        };
 
-    clearTimer();
-    typingEl.textContent = '';
-    charIndex = 0;
-    isErasing = false;
-    phrase = getPhrase();
-    step();
-
-    // Re-run on language change events by observing mutations on elements with data-key
-    const langObserver = new MutationObserver(() => {
-        // Restart cycle with new phrase
         clearTimer();
         typingEl.textContent = '';
         charIndex = 0;
         isErasing = false;
         phrase = getPhrase();
-        step();
-    });
-    langObserver.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-key'] });
+        safeStep();
+    } catch (e) {
+        // Absolute fail-safe
+        try {
+            const typingEl = document.getElementById('typing-text');
+            if (typingEl) typingEl.textContent = getTranslatedText('headerSubtitle');
+        } catch (_) {}
+    }
 }
 
 function logout(doUIRefresh = true) {
