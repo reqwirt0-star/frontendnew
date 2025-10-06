@@ -2100,6 +2100,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabUsers = document.getElementById('tab-btn-users');
     if (tabUsers) tabUsers.addEventListener('click', () => switchEditorTab('users'));
 
+    const tabNotifications = document.getElementById('tab-btn-notifications');
+    if (tabNotifications) tabNotifications.addEventListener('click', () => switchEditorTab('notifications'));
+
     const saveBtn = document.getElementById('save-content-btn');
     if (saveBtn) saveBtn.addEventListener('click', saveContent);
 
