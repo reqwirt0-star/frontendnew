@@ -335,7 +335,9 @@ const uiTexts = {
         editorUnavailable: 'Editor',
         editorUnavailableMsg: 'Full editing is only available on the desktop version.',
         analyticsNotAvailable: 'Analytics available for managers only',
-        headerSubtitle: 'Quick Replies'
+        headerSubtitle: 'Quick Replies',
+        notificationsTitle: 'Notifications',
+        criticalAckBtn: 'Acknowledge'
     },
     uk: {
         lang_locale: 'uk',
@@ -354,7 +356,9 @@ const uiTexts = {
         editorUnavailable: 'Редактор',
         editorUnavailableMsg: 'Повноцінне редагування доступне лише у версії сайту для ПК.',
         analyticsNotAvailable: 'Аналітика доступна лише менеджерам',
-        headerSubtitle: 'Швидкі відповіді'
+        headerSubtitle: 'Швидкі відповіді',
+        notificationsTitle: 'Сповіщення',
+        criticalAckBtn: 'Ознайомлений'
     }
 };
 
@@ -554,6 +558,43 @@ function setupNotificationsUI() {
     }
 }
 
+// Manager tab: notifications publish form
+function setupNotificationsEditor() {
+    const form = document.getElementById('notifications-form');
+    const tabBtn = document.getElementById('tab-btn-notifications');
+    const panel = document.getElementById('panel-notifications');
+    // Only show for managers
+    if (userRole !== 'manager') {
+        if (tabBtn) tabBtn.style.display = 'none';
+        if (panel) panel.style.display = 'none';
+        return;
+    }
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = (document.getElementById('notif-title')?.value || '').trim();
+            const body = (document.getElementById('notif-body')?.value || '').trim();
+            const is_critical = !!document.getElementById('notif-critical')?.checked;
+            const languages = Array.from(document.querySelectorAll('.notif-lang:checked')).map(el => el.value);
+            if (!title || !body || languages.length === 0) {
+                showToast(getTranslatedText('invalid_data_format'), true);
+                return;
+            }
+            try {
+                await publishNotification({ title, body, is_critical, languages, is_active: true });
+                showToast(getTranslatedText('content_updated_successfully'));
+                (document.getElementById('notif-title') || {}).value = '';
+                (document.getElementById('notif-body') || {}).value = '';
+                document.querySelectorAll('.notif-lang').forEach(el => { el.checked = true; });
+                document.getElementById('notif-critical').checked = false;
+                await refreshNotificationsUI();
+            } catch (err) {
+                showToast(getTranslatedText(err.message || 'server_error'), true);
+            }
+        });
+    }
+}
+
 async function showCriticalIfAny() {
     try {
         const notes = await refreshNotificationsUI();
@@ -704,6 +745,8 @@ async function handleLogin(event) {
             setupHeaderTypingOnAllTargets();
             setupNotificationsUI();
             showCriticalIfAny();
+            setupNotificationsEditor();
+            setupNotificationsEditor();
         }, 2500);
     } catch (error) {
         errorDiv.textContent = getTranslatedText(error.message);
