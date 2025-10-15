@@ -1688,15 +1688,22 @@ function setupAnalytics() {
 }
 
 // Desktop editor functions
-function switchEditorTab(tabName) { 
-    document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active')); 
-    document.querySelectorAll('.editor-tabs button').forEach(b => b.classList.remove('active')); 
-    document.getElementById(`panel-${tabName}`).classList.add('active'); 
-    document.getElementById(`tab-btn-${tabName}`).classList.add('active'); 
-    if (tabName === 'users') { 
-        fetchAndRenderUsers(); 
-    } 
-    applyTranslations(); 
+function switchEditorTab(tabName) {
+    document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.editor-tabs button').forEach(b => b.classList.remove('active'));
+    document.getElementById(`panel-${tabName}`).classList.add('active');
+    document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+    
+    // Call the correct function for each tab
+    if (tabName === 'users') {
+        fetchAndRenderUsers();
+    } else if (tabName === 'managers') {
+        buildManagerEditor();
+    } else if (tabName === 'notifications') {
+        renderNotificationsHistory();
+    }
+    
+    applyTranslations();
 }
 
 function showContentEditor() { 
@@ -1834,22 +1841,27 @@ function initInstructionsEditor() {
     const selectors = ['#instructions-editor-ru', '#instructions-editor-en', '#instructions-editor-uk'];
     selectors.forEach(selector => {
         const textarea = $(selector);
-        if (textarea.length) {
+        if (textarea.length && !textarea.hasClass('note-codable')) { // Initialize only if not already initialized
             textarea.summernote({
-                height: 300,
-                minHeight: 150,
+                height: 400,
+                minHeight: 200,
                 toolbar: [
                     ['style', ['style']],
-                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['font', ['bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', 'clear']],
+                    ['fontname', ['fontname']],
+                    ['fontsize', ['fontsize']],
+                    ['color', ['color']],
                     ['para', ['ul', 'ol', 'paragraph']],
+                    ['height', ['height']],
                     ['table', ['table']],
-                    ['insert', ['link']],
-                    ['view', ['codeview', 'help']]
+                    ['insert', ['link', 'picture', 'video']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
                 ],
                 callbacks: {
                     onInit: function() {
                         const langKey = this.id.split('-')[2];
-                        $(this).summernote('code', appContent.instructionsContent?.[langKey] || '');
+                        const content = appContent.instructionsContent?.[langKey] || '';
+                        $(this).summernote('code', content);
                     }
                 }
             });
@@ -1867,18 +1879,21 @@ function destroyInstructionsEditor() {
     });
 }
 
-
 function buildManagerEditor() {
     const container = document.getElementById('panel-managers');
     const addButton = document.getElementById('add-manager-btn');
     if (!container || !addButton) return;
-    container.innerHTML = ''; 
+    
+    // Clear previous entries but keep the add button
+    while (container.firstChild && container.firstChild.id !== 'add-manager-btn') {
+        container.removeChild(container.firstChild);
+    }
+
     if (appContent.managers) {
         for (const [id, manager] of Object.entries(appContent.managers)) {
-            container.appendChild(createManagerEditorEntry(id, manager));
+            container.insertBefore(createManagerEditorEntry(id, manager), addButton);
         }
     }
-    container.appendChild(addButton);
     addButton.onclick = addManagerEntry;
     applyTranslations();
 }
@@ -1921,54 +1936,54 @@ function addManagerEntry() {
 }
 
 async function saveContent() {
-    const newLayout = [];
-    document.querySelectorAll('#panel-layout .editor-section').forEach(sectionNode => {
-        const section = { id: sectionNode.dataset.id, title: sectionNode.querySelector('.section-title-input').value.trim(), buttons: [] };
-        if (!section.title) return;
-        sectionNode.querySelectorAll('.editor-button-entry').forEach(buttonNode => {
-            
-            const newButtonObject = { 
-                id: buttonNode.dataset.id, 
-                label: buttonNode.querySelector('.button-label-input').value.trim(), 
-                templates: Array.from(buttonNode.querySelectorAll('.variants-container .template-variant textarea')).map(t => t.value.trim()).filter(v => v)
-            };
-
-            const isContactToggle = buttonNode.querySelector('.is-contact-btn-toggle');
-            if (isContactToggle && isContactToggle.checked) {
-                newButtonObject.type = 'contact_generator';
-                const selectedIds = [];
-                const managerCheckboxes = buttonNode.querySelectorAll('.manager-checkbox:checked');
-                managerCheckboxes.forEach(checkbox => {
-                    selectedIds.push(checkbox.value);
-                });
-                newButtonObject.manager_ids = selectedIds;
-            }
-
-            if (newButtonObject.label) section.buttons.push(newButtonObject);
-        });
-        newLayout.push(section);
-    });
-
-    const newInstructions = {};
-    for (const lang of ['ru', 'en', 'uk']) {
-        const editorContent = $(`#instructions-editor-${lang}`).summernote('code');
-        newInstructions[lang] = editorContent;
-    }
-
-    const newManagers = {};
-    document.querySelectorAll('#panel-managers .manager-editor-entry').forEach(entryNode => {
-        const id = entryNode.dataset.id;
-        const name = entryNode.querySelector('.manager-name-input').value.trim();
-        const telegram = entryNode.querySelector('.manager-telegram-input').value.trim();
-        const whatsapp = entryNode.querySelector('.manager-whatsapp-input').value.trim();
-        if (name) {
-            newManagers[id] = { name, telegram, whatsapp };
-        }
-    });
-
-    const newContent = { layout: newLayout, instructionsContent: newInstructions, managers: newManagers };
-    const token = getLocalStorage('chaterlabAuthToken', '');
     try {
+        const newLayout = [];
+        document.querySelectorAll('#panel-layout .editor-section').forEach(sectionNode => {
+            const section = { id: sectionNode.dataset.id, title: sectionNode.querySelector('.section-title-input').value.trim(), buttons: [] };
+            if (!section.title) return;
+            sectionNode.querySelectorAll('.editor-button-entry').forEach(buttonNode => {
+                
+                const newButtonObject = { 
+                    id: buttonNode.dataset.id, 
+                    label: buttonNode.querySelector('.button-label-input').value.trim(), 
+                    templates: Array.from(buttonNode.querySelectorAll('.variants-container .template-variant textarea')).map(t => t.value.trim()).filter(v => v)
+                };
+
+                const isContactToggle = buttonNode.querySelector('.is-contact-btn-toggle');
+                if (isContactToggle && isContactToggle.checked) {
+                    newButtonObject.type = 'contact_generator';
+                    const selectedIds = [];
+                    const managerCheckboxes = buttonNode.querySelectorAll('.manager-checkbox:checked');
+                    managerCheckboxes.forEach(checkbox => {
+                        selectedIds.push(checkbox.value);
+                    });
+                    newButtonObject.manager_ids = selectedIds;
+                }
+
+                if (newButtonObject.label) section.buttons.push(newButtonObject);
+            });
+            newLayout.push(section);
+        });
+
+        const newInstructions = {};
+        for (const lang of ['ru', 'en', 'uk']) {
+            newInstructions[lang] = $(`#instructions-editor-${lang}`).summernote('code');
+        }
+
+        const newManagers = {};
+        document.querySelectorAll('#panel-managers .manager-editor-entry').forEach(entryNode => {
+            const id = entryNode.dataset.id;
+            const name = entryNode.querySelector('.manager-name-input').value.trim();
+            const telegram = entryNode.querySelector('.manager-telegram-input').value.trim();
+            const whatsapp = entryNode.querySelector('.manager-whatsapp-input').value.trim();
+            if (name) {
+                newManagers[id] = { name, telegram, whatsapp };
+            }
+        });
+
+        const newContent = { layout: newLayout, instructionsContent: newInstructions, managers: newManagers };
+        const token = getLocalStorage('chaterlabAuthToken', '');
+        
         const response = await fetch(`${API_BASE_URL}/update-content`, { 
             method: 'POST', 
             headers: { 
@@ -1979,13 +1994,19 @@ async function saveContent() {
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message);
+        
         showToast(getTranslatedText(data.message));
         appContent = newContent;
         renderSidebar();
         updateInstructions(getLocalStorage('chaterlabLang', 'ru'));
         hideContentEditor();
+        
+        // Return to instructions view after saving
+        const instructionButton = document.getElementById('show-instructions-btn');
+        if(instructionButton) instructionButton.click();
+
     } catch (error) {
-        showToast(getTranslatedText(error.message), true);
+        showToast(getTranslatedText(error.message || 'server_error_on_save'), true);
     }
 }
 
@@ -2136,8 +2157,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const tabNotifications = document.getElementById('tab-btn-notifications');
     if (tabNotifications) tabNotifications.addEventListener('click', () => switchEditorTab('notifications'));
-    // Load history when opening notifications tab
-    if (tabNotifications) tabNotifications.addEventListener('click', renderNotificationsHistory);
 
     const saveBtn = document.getElementById('save-content-btn');
     if (saveBtn) saveBtn.addEventListener('click', saveContent);
@@ -2145,3 +2164,4 @@ document.addEventListener('DOMContentLoaded', () => {
     const addSectionBtn = document.getElementById('add-section-btn');
     if (addSectionBtn) addSectionBtn.addEventListener('click', addSection);
 });
+
