@@ -1,10 +1,9 @@
-#panel-notifications .notifications-form{display:grid;grid-template-columns:1fr;gap:16px}
+#panel-notifications .notifications-form{display:grid;grid-template-columns:1fr;gap:12px}
 #panel-notifications .notifications-form input[type=text]{width:100%;padding:12px;border-radius:10px;border:2px solid var(--border-color);background-color:var(--background-main);font-size:14px;color:var(--text-primary);font-family:inherit}
 #panel-notifications .notifications-form textarea{width:100%;min-height:140px;resize:vertical;padding:12px;border-radius:12px;border:2px solid var(--border-color);background-color:var(--background-main);font-size:14px;color:var(--text-primary);font-family:inherit}
 #panel-notifications .checkbox-wrapper{display:flex;align-items:center;background-color:var(--background-main);padding:10px;border-radius:8px;border:1px solid var(--border-color);gap:10px}
 #panel-notifications .checkbox-wrapper input{width:18px;height:18px;margin-right:4px;accent-color:var(--primary-blue)}
 #panel-notifications .checkbox-wrapper label{font-weight:500;font-size:14px;color:var(--text-primary);cursor:pointer}
-.notify-lang-group{display:flex;gap:12px}
 #notifications-history-list .history-item{padding:12px;border:1px solid var(--border-color);border-radius:10px;background:var(--background-card);margin-bottom:10px}
 #notifications-history-list .history-item .title{font-weight:700}
 #notifications-history-list .history-item .meta{font-size:12px;color:var(--text-secondary)}
@@ -62,5 +61,4 @@ body.dark-mode::-webkit-scrollbar-thumb{background-color:#475569;border-radius:8
 .mobile-header-subtitle{margin-top:2px;font-size:12px;font-weight:600;color:var(--text-secondary);display:flex;align-items:baseline;gap:0;line-height:1}
 .mobile-header-subtitle .typing-caret{width:0;height:1em;border-right:2px solid var(--text-secondary);display:inline-block;animation:blink .9s steps(1,end) infinite;margin-left:0}
 }
-"
 
