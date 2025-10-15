@@ -769,7 +769,6 @@ async function handleLogin(event) {
             setupNotificationsUI();
             showCriticalIfAny();
             setupNotificationsEditor();
-            setupNotificationsEditor();
         }, 2500);
     } catch (error) {
         errorDiv.textContent = getTranslatedText(error.message);
@@ -1253,10 +1252,6 @@ function setupDarkMode() {
                 mobileToggleSwitch.classList.remove('checked');
             }
         }
-        if (!isMobile() && document.getElementById('content-editor') && document.getElementById('content-editor').style.display === 'block') {
-            tinymce.remove();
-            initInstructionsEditor();
-        }
     };
     
     const savedTheme = getLocalStorage('chaterlabTheme', 'light');
@@ -1321,8 +1316,6 @@ function setupSearch() {
         });
     }
 }
-
-// [Removed duplicate setupMobileNavigation]
 
 function showAnalyticsStub() {
     const stub = document.getElementById('mobile-analytics-stub');
@@ -1694,7 +1687,7 @@ function setupAnalytics() {
     return fetchAndRenderAnalytics;
 }
 
-// Desktop editor functions (unchanged)
+// Desktop editor functions
 function switchEditorTab(tabName) { 
     document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active')); 
     document.querySelectorAll('.editor-tabs button').forEach(b => b.classList.remove('active')); 
@@ -1720,7 +1713,7 @@ function hideContentEditor() {
     document.getElementById('main-content-wrapper').style.display = 'block'; 
     document.getElementById('content-editor').style.display = 'none'; 
     document.getElementById('instructions').style.display = 'block'; 
-    tinymce.remove(); 
+    destroyInstructionsEditor();
 }
 
 function buildLayoutEditor() { 
@@ -1837,25 +1830,43 @@ function addSection() {
     applyTranslations();
 }
 
-function initInstructionsEditor() { 
-    const skin = document.body.classList.contains('dark-mode') ? 'oxide-dark' : 'oxide'; 
-    const content_css = document.body.classList.contains('dark-mode') ? 'dark' : 'default'; 
-    tinymce.init({ 
-        selector: '#instructions-editor-ru, #instructions-editor-en, #instructions-editor-uk', 
-        height: 500, 
-        menubar: false, 
-        plugins: 'lists link image code help wordcount autoresize table', 
-        toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | code | table | help', 
-        skin: skin, 
-        content_css: content_css, 
-        setup: editor => { 
-            editor.on('init', () => { 
-                const langKey = editor.id.split('-')[2]; 
-                editor.setContent(appContent.instructionsContent?.[langKey] || ''); 
-            }); 
-        } 
-    }); 
+function initInstructionsEditor() {
+    const selectors = ['#instructions-editor-ru', '#instructions-editor-en', '#instructions-editor-uk'];
+    selectors.forEach(selector => {
+        const textarea = $(selector);
+        if (textarea.length) {
+            textarea.summernote({
+                height: 300,
+                minHeight: 150,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link']],
+                    ['view', ['codeview', 'help']]
+                ],
+                callbacks: {
+                    onInit: function() {
+                        const langKey = this.id.split('-')[2];
+                        $(this).summernote('code', appContent.instructionsContent?.[langKey] || '');
+                    }
+                }
+            });
+        }
+    });
 }
+
+function destroyInstructionsEditor() {
+    const selectors = ['#instructions-editor-ru', '#instructions-editor-en', '#instructions-editor-uk'];
+    selectors.forEach(selector => {
+        const textarea = $(selector);
+        if (textarea.length && textarea.hasClass('note-codable')) { // Check if initialized
+            textarea.summernote('destroy');
+        }
+    });
+}
+
 
 function buildManagerEditor() {
     const container = document.getElementById('panel-managers');
@@ -1940,8 +1951,8 @@ async function saveContent() {
 
     const newInstructions = {};
     for (const lang of ['ru', 'en', 'uk']) {
-        const editor = tinymce.get(`instructions-editor-${lang}`);
-        if (editor) newInstructions[lang] = editor.getContent();
+        const editorContent = $(`#instructions-editor-${lang}`).summernote('code');
+        newInstructions[lang] = editorContent;
     }
 
     const newManagers = {};

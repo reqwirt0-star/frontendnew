@@ -60,3 +60,85 @@ body.dark-mode::-webkit-scrollbar-thumb{background-color:#475569;border-radius:8
 #mobile-header-title{font-size:20px;font-weight:700;text-align:center;line-height:1}
 .mobile-header-subtitle{margin-top:2px;font-size:12px;font-weight:600;color:var(--text-secondary);display:flex;align-items:baseline;gap:0;line-height:1}
 .mobile-header-subtitle .typing-caret{width:0;height:1em;border-right:2px solid var(--text-secondary);display:inline-block;animation:blink .9s steps(1,end) infinite;margin-left:0}
+
+/* Summernote Customization */
+.note-editor.note-frame {
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    background-color: var(--background-card);
+}
+
+.note-toolbar {
+    background-color: var(--background-main);
+    border-bottom: 1px solid var(--border-color);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    padding: 10px 5px;
+}
+
+.note-editor .btn-group, .note-editor .note-btn-group {
+    margin: 2px;
+}
+
+.note-editor .note-btn {
+    background-color: var(--background-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px !important; /* Override bootstrap */
+    padding: 6px 10px;
+    transition: all 0.2s ease;
+}
+
+.note-editor .note-btn:hover,
+.note-editor .note-btn:focus,
+.note-editor .note-btn:active {
+    background-color: var(--light-blue-bg);
+    color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.note-editing-area .note-editable {
+    background-color: var(--background-card);
+    color: var(--text-primary);
+    padding: 20px;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.8;
+}
+
+.note-statusbar {
+    background-color: var(--background-main);
+    border-top: 1px solid var(--border-color);
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+/* Dropdown menu styling */
+.note-editor .dropdown-menu {
+    background-color: var(--background-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+}
+
+.note-editor .dropdown-item {
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.note-editor .dropdown-item:hover,
+.note-editor .dropdown-item:focus {
+    background-color: var(--light-blue-bg);
+    color: var(--primary-blue);
+}
+
+/* Fix dark mode popover */
+body.dark-mode .note-popover,
+body.dark-mode .note-modal-content {
+    background-color: var(--background-card);
+}
+
+body.dark-mode .note-modal-header {
+    background-color: var(--background-main);
+    border-bottom: 1px solid var(--border-color);
+}
