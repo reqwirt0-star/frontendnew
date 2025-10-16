@@ -584,8 +584,8 @@ function setupNotificationsEditor() {
                 return;
             }
             try {
-                // This is the corrected line. We no longer send the 'languages' field.
-                await publishNotification({ title, body, is_critical, is_active: true });
+                // This is the corrected line. We re-introduce 'languages' as it seems the backend requires it, despite the provided file.
+                await publishNotification({ title, body, is_critical, languages: ['ru', 'en', 'uk'], is_active: true });
                 showToast(getTranslatedText('content_updated_successfully'));
                 (document.getElementById('notif-title') || {}).value = '';
                 (document.getElementById('notif-body') || {}).value = '';
