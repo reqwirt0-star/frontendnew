@@ -194,13 +194,30 @@
                 
                 <!-- Editor Info Screen -->
                 <div id="mobile-editor-info-screen" class="mobile-screen">
-                    <div class="editor-unavailable-notice" style="margin-top: 40px;">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 20px; color: var(--primary-blue);">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                        <h4 data-key="navEditor" style="font-size: 24px; margin-bottom: 16px;">Редактор</h4>
-                        <p data-key="editorUnavailableMsg" style="font-size: 16px; line-height: 1.6;">Полноценное редактирование доступно только в версии сайта для ПК.</p>
+                     <div class="mobile-editor-tabs">
+                        <button data-tab="layout" data-key="tabLayout">Кнопки</button>
+                        <button data-tab="instructions" data-key="tabInstructions">Инструкция</button>
+                        <button data-tab="managers" data-key="tabManagers">Менеджеры</button>
+                        <button data-tab="users" data-key="tabUsers">Пользователи</button>
+                        <button data-tab="notifications" class="active" data-key="tabNotifications">Оповещения</button>
+                    </div>
+                    <div class="mobile-editor-content">
+                        <div id="mobile-editor-panel-notifications" class="mobile-editor-panel active">
+                             <form id="mobile-notifications-form" class="notifications-form">
+                                <div>
+                                    <label for="mobile-notif-title" style="display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;" data-key="notifyTitleLabel">Заголовок</label>
+                                    <input type="text" id="mobile-notif-title">
+                                </div>
+                                <div>
+                                    <label for="mobile-notif-body" style="display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;" data-key="notifyBodyLabel">Текст</label>
+                                    <textarea id="mobile-notif-body"></textarea>
+                                </div>
+                                <div class="checkbox-wrapper"><input type="checkbox" id="mobile-notif-critical"><label for="mobile-notif-critical" data-key="notifyCriticalLabel">Критическое оповещение</label></div>
+                                <div class="editor-buttons" style="justify-content:flex-end;">
+                                    <button id="mobile-publish-notification-btn" type="submit" class="editor-button-primary" data-key="publishBtn">Опубликовать</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
                 

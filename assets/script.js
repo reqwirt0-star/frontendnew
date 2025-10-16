@@ -597,6 +597,7 @@ function setupNotificationsEditor() {
                 return;
             }
             try {
+                // This is the corrected line. It includes the 'languages' field as required by the original logic.
                 await publishNotification({ title, body, is_critical, languages: ['ru', 'en', 'uk'], is_active: true });
                 showToast(getTranslatedText('content_updated_successfully'));
                 (document.getElementById('notif-title') || {}).value = '';
@@ -611,6 +612,34 @@ function setupNotificationsEditor() {
     }
 }
 
+function setupMobileNotificationsEditor() {
+    if (userRole !== 'manager') return;
+    const form = document.getElementById('mobile-notifications-form');
+    if (form) {
+         form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = (document.getElementById('mobile-notif-title')?.value || '').trim();
+            const body = (document.getElementById('mobile-notif-body')?.value || '').trim();
+            const is_critical = !!document.getElementById('mobile-notif-critical')?.checked;
+            
+            if (!title || !body) {
+                showToast(getTranslatedText('invalid_data_format'), true);
+                return;
+            }
+
+            try {
+                await publishNotification({ title, body, is_critical, languages: ['ru', 'en', 'uk'], is_active: true });
+                showToast(getTranslatedText('content_updated_successfully'));
+                (document.getElementById('mobile-notif-title') || {}).value = '';
+                (document.getElementById('mobile-notif-body') || {}).value = '';
+                document.getElementById('mobile-notif-critical').checked = false;
+                await refreshNotificationsUI();
+            } catch (err) {
+                showToast(getTranslatedText(err.message || 'server_error'), true);
+            }
+        });
+    }
+}
 
 async function showCriticalIfAny() {
     try {
@@ -726,7 +755,8 @@ async function checkLogin() {
         setupHeaderTypingOnAllTargets();
         setupNotificationsUI();
         showCriticalIfAny();
-        setupNotificationsEditor(); // Ensure editor event listeners are attached on page load
+        setupNotificationsEditor();
+        setupMobileNotificationsEditor();
         
         return true;
     } else {
@@ -789,6 +819,7 @@ async function handleLogin(event) {
             setupNotificationsUI();
             showCriticalIfAny();
             setupNotificationsEditor();
+            setupMobileNotificationsEditor();
         }, 2500);
     } catch (error) {
         errorDiv.textContent = getTranslatedText(error.message);
