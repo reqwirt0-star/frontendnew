@@ -76,16 +76,6 @@ function setupMobileNavigation() {
     document.querySelectorAll('.mobile-user-form').forEach(form => {
         form.addEventListener('submit', createMobileUser);
     });
-
-    // Mobile notifications button in menu
-    const mobileNotificationsBtn = document.getElementById('mobile-menu-notifications-btn');
-    const notificationsModal = document.getElementById('notifications-modal');
-    if (mobileNotificationsBtn && notificationsModal) {
-        mobileNotificationsBtn.addEventListener('click', async () => {
-            await refreshNotificationsUI();
-            notificationsModal.classList.add('show');
-        });
-    }
 }
 
 function setupMobileEditorTabs() {
@@ -104,7 +94,7 @@ function setupMobileEditorTabs() {
             if (targetPanel) targetPanel.classList.add('active');
             
             if (targetTab === 'users') {
-                fetchAndRenderMobileUsers(2);
+                fetchAndRenderMobileUsers();
             }
         });
     });
@@ -114,9 +104,8 @@ function setupMobileEditorTabs() {
     });
 }
 
-async function fetchAndRenderMobileUsers(formSuffix = '') {
-    const listContainerId = formSuffix ? `mobile-user-list-${formSuffix}` : 'mobile-user-list';
-    const listContainer = document.getElementById(listContainerId);
+async function fetchAndRenderMobileUsers() {
+    const listContainer = document.getElementById('mobile-user-list');
     if (!listContainer) return;
     
     listContainer.innerHTML = `<p style="text-align:center;padding:20px;color:var(--text-secondary);">${getTranslatedText('loading')}</p>`;
@@ -146,13 +135,13 @@ async function fetchAndRenderMobileUsers(formSuffix = '') {
             listContainer.appendChild(userDiv);
         });
 
-        document.querySelectorAll(`#${listContainerId} .delete-user-btn`).forEach(btn => {
+        document.querySelectorAll('.delete-user-btn').forEach(btn => {
             btn.onclick = async (e) => {
                 const userToDelete = e.target.dataset.username;
                 const confirmMsg = getTranslatedText('deleteUserConfirm', { username: userToDelete });
                 if (confirm(confirmMsg)) {
                     await deleteUser(userToDelete);
-                    fetchAndRenderMobileUsers(formSuffix);
+                    fetchAndRenderMobileUsers();
                 }
             };
         });
@@ -194,8 +183,7 @@ async function createMobileUser(event) {
         showToast(getTranslatedText(result.message));
         if (usernameInput) usernameInput.value = '';
         if (passwordInput) passwordInput.value = '';
-        const formSuffix = form.id.includes('-2') ? 2 : '';
-        fetchAndRenderMobileUsers(formSuffix);
+        fetchAndRenderMobileUsers();
     } catch (error) {
         showToast(getTranslatedText(error.message), true);
     }
@@ -328,13 +316,7 @@ const uiTexts = {
         analyticsNotAvailable: 'Аналитика доступна только менеджерам',
         headerSubtitle: 'Быстрые ответы',
         notificationsTitle: 'Оповещения',
-        criticalAckBtn: 'Я ознакомлен',
-        tabNotifications: 'Оповещения',
-        notifyTitleLabel: 'Заголовок',
-        notifyBodyLabel: 'Текст',
-        notifyCriticalLabel: 'Критическое оповещение',
-        publishBtn: 'Опубликовать',
-        notificationsHistory: 'История оповещений'
+        criticalAckBtn: 'Я ознакомлен'
     },
     en: {
         lang_locale: 'en',
@@ -462,17 +444,18 @@ function applyTranslations() {
         }
     });
 
+    // On language change, clear desktop subtitle; typing setup will handle rendering
     try {
         if (!isMobile()) {
             const typingEl = document.getElementById('typing-text');
             if (typingEl) typingEl.textContent = '';
         }
     } catch (_) {}
-
+    // Modal static texts
     const tTitle = document.querySelector('[data-key="notificationsTitle"]'); if (tTitle) tTitle.textContent = getTranslatedText('notificationsTitle') || 'Оповещения';
     const ackBtn = document.querySelector('[data-key="criticalAckBtn"]'); if (ackBtn) ackBtn.textContent = getTranslatedText('criticalAckBtn') || 'Я ознакомлен';
 }
-
+// Notifications API helpers
 async function fetchNotifications() {
     const token = getLocalStorage('chaterlabAuthToken', '');
     const res = await fetch(`${API_BASE_URL}/api/notifications`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -504,16 +487,9 @@ function filterNotesByLanguage(notes) { return notes; }
 
 function updateNotificationBadges(unreadCount) {
     const desktopBadge = document.getElementById('notifications-badge');
-    const mobileMenuBadge = document.getElementById('mobile-menu-notifications-badge');
-    
-    if (desktopBadge) { 
-        desktopBadge.textContent = unreadCount; 
-        desktopBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none'; 
-    }
-    if (mobileMenuBadge) { 
-        mobileMenuBadge.textContent = unreadCount; 
-        mobileMenuBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none'; 
-    }
+    const mobileBadge = document.getElementById('mobile-notifications-badge');
+    if (desktopBadge) { desktopBadge.textContent = unreadCount; desktopBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none'; }
+    if (mobileBadge) { mobileBadge.textContent = unreadCount; mobileBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none'; }
 }
 
 function renderNotificationsList(notes) {
@@ -573,13 +549,18 @@ function setupNotificationsUI() {
         closeBtn.onclick = () => modal.classList.remove('show');
         modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
     }
+    const mbtn = document.getElementById('mobile-notifications-btn');
+    if (mbtn && modal) {
+        mbtn.onclick = async () => { await refreshNotificationsUI(); modal.classList.add('show'); };
+    }
 }
 
+// Manager tab: notifications publish form
 function setupNotificationsEditor() {
     const form = document.getElementById('notifications-form');
     const tabBtn = document.getElementById('tab-btn-notifications');
     const panel = document.getElementById('panel-notifications');
-
+    // Only show for managers
     if (userRole !== 'manager') {
         if (tabBtn) tabBtn.style.display = 'none';
         if (panel) panel.style.display = 'none';
@@ -591,48 +572,18 @@ function setupNotificationsEditor() {
             const title = (document.getElementById('notif-title')?.value || '').trim();
             const body = (document.getElementById('notif-body')?.value || '').trim();
             const is_critical = !!document.getElementById('notif-critical')?.checked;
-
-            if (!title || !body) {
+            const languages = Array.from(document.querySelectorAll('.notif-lang:checked')).map(el => el.value);
+            if (!title || !body || languages.length === 0) {
                 showToast(getTranslatedText('invalid_data_format'), true);
                 return;
             }
             try {
-                // This is the corrected line. It includes the 'languages' field as required by the original logic.
-                await publishNotification({ title, body, is_critical, languages: ['ru', 'en', 'uk'], is_active: true });
+                await publishNotification({ title, body, is_critical, languages, is_active: true });
                 showToast(getTranslatedText('content_updated_successfully'));
                 (document.getElementById('notif-title') || {}).value = '';
                 (document.getElementById('notif-body') || {}).value = '';
+                document.querySelectorAll('.notif-lang').forEach(el => { el.checked = true; });
                 document.getElementById('notif-critical').checked = false;
-                await refreshNotificationsUI();
-                await renderNotificationsHistory(); 
-            } catch (err) {
-                showToast(getTranslatedText(err.message || 'server_error'), true);
-            }
-        });
-    }
-}
-
-function setupMobileNotificationsEditor() {
-    if (userRole !== 'manager') return;
-    const form = document.getElementById('mobile-notifications-form');
-    if (form) {
-         form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const title = (document.getElementById('mobile-notif-title')?.value || '').trim();
-            const body = (document.getElementById('mobile-notif-body')?.value || '').trim();
-            const is_critical = !!document.getElementById('mobile-notif-critical')?.checked;
-            
-            if (!title || !body) {
-                showToast(getTranslatedText('invalid_data_format'), true);
-                return;
-            }
-
-            try {
-                await publishNotification({ title, body, is_critical, languages: ['ru', 'en', 'uk'], is_active: true });
-                showToast(getTranslatedText('content_updated_successfully'));
-                (document.getElementById('mobile-notif-title') || {}).value = '';
-                (document.getElementById('mobile-notif-body') || {}).value = '';
-                document.getElementById('mobile-notif-critical').checked = false;
                 await refreshNotificationsUI();
             } catch (err) {
                 showToast(getTranslatedText(err.message || 'server_error'), true);
@@ -664,6 +615,7 @@ async function showCriticalIfAny() {
     } catch (_) {}
 }
 
+// History fetch and render
 async function fetchNotificationsHistory() {
     const token = getLocalStorage('chaterlabAuthToken', '');
     const res = await fetch(`${API_BASE_URL}/api/notifications/history`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -705,6 +657,7 @@ function switchLanguage(lang) {
             btn.classList.toggle('active', btn.dataset.lang === lang); 
         });
         
+        // Mobile language buttons
         const mobileLangButtons = document.querySelectorAll('.mobile-lang-btn');
         mobileLangButtons.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.lang === lang);
@@ -717,7 +670,7 @@ function switchLanguage(lang) {
         if (analyticsPanel && analyticsPanel.style.display === 'block') {
             analyticsPanel.dispatchEvent(new Event('languageChange'));
         }
-
+        // Recalculate segmented control glider after translated labels change width
         const managerControls = document.querySelector('.manager-controls-segmented');
         if (managerControls) {
             const glider = managerControls.querySelector('.glider');
@@ -751,12 +704,9 @@ async function checkLogin() {
         setupDarkMode();
         renderUserStatusCard();
         setupMobileNavigation();
-        setupMobileEditorTabs();
         setupHeaderTypingOnAllTargets();
         setupNotificationsUI();
         showCriticalIfAny();
-        setupNotificationsEditor();
-        setupMobileNotificationsEditor();
         
         return true;
     } else {
@@ -819,7 +769,6 @@ async function handleLogin(event) {
             setupNotificationsUI();
             showCriticalIfAny();
             setupNotificationsEditor();
-            setupMobileNotificationsEditor();
         }, 2500);
     } catch (error) {
         errorDiv.textContent = getTranslatedText(error.message);

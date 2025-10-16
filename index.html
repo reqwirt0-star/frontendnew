@@ -62,7 +62,10 @@
                     <span id="typing-text-mobile"></span><span class="typing-caret" aria-hidden="true"></span>
                 </div>
             </div>
-            <div class="mobile-header-spacer" style="width: 40px;"></div>
+            <button id="mobile-notifications-btn" class="mobile-bell" title="Оповещения">
+                🔔<span id="mobile-notifications-badge" class="badge" style="display:none;">0</span>
+            </button>
+            <div class="mobile-header-spacer"></div>
         </header>
         
         <main>
@@ -90,7 +93,7 @@
                         </label>
                     </div>
                     <button onclick="logout()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                             <path d="M16 17l5-5-5-5"/>
                             <path d="M21 12H9"/>
@@ -123,11 +126,6 @@
                 <div id="mobile-menu-screen" class="mobile-screen">
                     <div id="mobile-user-status-card"></div>
                     <div class="mobile-menu-items">
-                        <button id="mobile-menu-notifications-btn" class="mobile-menu-item">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                            <span data-key="notificationsTitle">Оповещения</span>
-                            <span id="mobile-menu-notifications-badge" class="badge">0</span>
-                        </button>
                         <button id="mobile-editor-info-btn" class="mobile-menu-item" style="display: none;">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -194,30 +192,13 @@
                 
                 <!-- Editor Info Screen -->
                 <div id="mobile-editor-info-screen" class="mobile-screen">
-                     <div class="mobile-editor-tabs">
-                        <button data-tab="layout" data-key="tabLayout">Кнопки</button>
-                        <button data-tab="instructions" data-key="tabInstructions">Инструкция</button>
-                        <button data-tab="managers" data-key="tabManagers">Менеджеры</button>
-                        <button data-tab="users" data-key="tabUsers">Пользователи</button>
-                        <button data-tab="notifications" class="active" data-key="tabNotifications">Оповещения</button>
-                    </div>
-                    <div class="mobile-editor-content">
-                        <div id="mobile-editor-panel-notifications" class="mobile-editor-panel active">
-                             <form id="mobile-notifications-form" class="notifications-form">
-                                <div>
-                                    <label for="mobile-notif-title" style="display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;" data-key="notifyTitleLabel">Заголовок</label>
-                                    <input type="text" id="mobile-notif-title">
-                                </div>
-                                <div>
-                                    <label for="mobile-notif-body" style="display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;" data-key="notifyBodyLabel">Текст</label>
-                                    <textarea id="mobile-notif-body"></textarea>
-                                </div>
-                                <div class="checkbox-wrapper"><input type="checkbox" id="mobile-notif-critical"><label for="mobile-notif-critical" data-key="notifyCriticalLabel">Критическое оповещение</label></div>
-                                <div class="editor-buttons" style="justify-content:flex-end;">
-                                    <button id="mobile-publish-notification-btn" type="submit" class="editor-button-primary" data-key="publishBtn">Опубликовать</button>
-                                </div>
-                            </form>
-                        </div>
+                    <div class="editor-unavailable-notice" style="margin-top: 40px;">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 20px; color: var(--primary-blue);">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        <h4 data-key="navEditor" style="font-size: 24px; margin-bottom: 16px;">Редактор</h4>
+                        <p data-key="editorUnavailableMsg" style="font-size: 16px; line-height: 1.6;">Полноценное редактирование доступно только в версии сайта для ПК.</p>
                     </div>
                 </div>
                 
@@ -271,10 +252,10 @@
                         <div id="mobile-editor-panel-users" class="mobile-editor-panel">
                             <div class="editor-section">
                                 <h4 data-key="addUserTitle">Добавить нового пользователя</h4>
-                                <form id="mobile-add-user-form-2" class="mobile-user-form" style="display:flex;flex-direction:column;gap:12px;">
-                                    <input type="text" data-field="username" required data-key="newUserUsername" placeholder="Логин" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
-                                    <input type="password" data-field="password" required data-key="newUserPassword" placeholder="Пароль" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
-                                    <select data-field="role" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
+                                <form id="mobile-add-user-form" class="mobile-user-form" style="display:flex;flex-direction:column;gap:12px;">
+                                    <input type="text" id="mobile-new-username" data-field="username" required data-key="newUserUsername" placeholder="Логин" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
+                                    <input type="password" id="mobile-new-password" data-field="password" required data-key="newUserPassword" placeholder="Пароль" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
+                                    <select id="mobile-new-user-role" data-field="role" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
                                         <option value="employee" data-key="roleEmployee">Сотрудник</option>
                                         <option value="manager" data-key="roleManager">Менеджер</option>
                                     </select>
@@ -283,7 +264,7 @@
                             </div>
                             <div class="editor-section" style="margin-top:24px;">
                                 <h4 data-key="existingUsersTitle">Существующие пользователи</h4>
-                                <div id="mobile-user-list-2"></div>
+                                <div id="mobile-user-list"></div>
                             </div>
                         </div>
                     </div>
@@ -352,15 +333,15 @@
                                 <form id="notifications-form" class="notifications-form">
                                     <div>
                                         <label for="notif-title" style="display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;" data-key="notifyTitleLabel">Заголовок</label>
-                                        <input type="text" id="notif-title">
+                                        <input type="text" id="notif-title" style="width:100%;padding:12px;border-radius:10px;border:2px solid var(--border-color);background-color:var(--background-main);font-size:14px;color:var(--text-primary);font-family:inherit;">
                                     </div>
                                     <div>
                                         <label for="notif-body" style="display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;" data-key="notifyBodyLabel">Текст</label>
-                                        <textarea id="notif-body"></textarea>
+                                        <textarea id="notif-body" style="width:100%;min-height:120px;resize:vertical;padding:12px;border-radius:12px;border:2px solid var(--border-color);background-color:var(--background-main);font-size:14px;color:var(--text-primary);font-family:inherit;"></textarea>
                                     </div>
                                     <div class="checkbox-wrapper"><input type="checkbox" id="notif-critical"><label for="notif-critical" data-key="notifyCriticalLabel">Критическое оповещение</label></div>
                                     <div class="editor-buttons" style="justify-content:flex-end;">
-                                        <button id="publish-notification-btn" type="submit" class="editor-button-primary" data-key="publishBtn">Опубликовать</button>
+                                        <button id="publish-notification-btn" type="submit" data-key="publishBtn">Опубликовать</button>
                                     </div>
                                 </form>
                                 <div class="editor-section" id="notifications-history-section">
@@ -424,9 +405,7 @@
     <div id="notifications-modal" class="modal-overlay">
         <div class="modal-content" style="max-width:720px">
             <h3 data-key="notificationsTitle">Оповещения</h3>
-            <div class="modal-content-body">
-                <div id="notifications-list"></div>
-            </div>
+            <div id="notifications-list"></div>
             <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
                 <button id="notifications-close-btn" data-key="modalCancel">Закрыть</button>
             </div>
@@ -476,9 +455,10 @@
     
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    
-    <!-- Summernote Lite JS (no Bootstrap.js needed) -->
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+    <!-- Bootstrap JS (required for Summernote) -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <!-- Summernote JS -->
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
     
     <!-- Your custom script, loaded LAST -->
     <script src="assets/script.js"></script>
