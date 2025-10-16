@@ -1,9 +1,11 @@
-#panel-notifications .notifications-form{display:grid;grid-template-columns:1fr;gap:12px}
+#panel-notifications .notifications-form{display:grid;grid-template-columns:1fr;gap:20px}
 #panel-notifications .notifications-form input[type=text]{width:100%;padding:12px;border-radius:10px;border:2px solid var(--border-color);background-color:var(--background-main);font-size:14px;color:var(--text-primary);font-family:inherit}
 #panel-notifications .notifications-form textarea{width:100%;min-height:140px;resize:vertical;padding:12px;border-radius:12px;border:2px solid var(--border-color);background-color:var(--background-main);font-size:14px;color:var(--text-primary);font-family:inherit}
 #panel-notifications .checkbox-wrapper{display:flex;align-items:center;background-color:var(--background-main);padding:10px;border-radius:8px;border:1px solid var(--border-color);gap:10px}
 #panel-notifications .checkbox-wrapper input{width:18px;height:18px;margin-right:4px;accent-color:var(--primary-blue)}
 #panel-notifications .checkbox-wrapper label{font-weight:500;font-size:14px;color:var(--text-primary);cursor:pointer}
+.editor-buttons .editor-button-primary{background-color:var(--primary-blue);color:#fff;box-shadow:0 2px 8px rgba(59,130,246,.3)}
+.editor-buttons .editor-button-primary:hover{background-color:var(--primary-blue-hover);transform:translateY(-2px);box-shadow:0 4px 12px rgba(59,130,246,.4)}
 #notifications-history-list .history-item{padding:12px;border:1px solid var(--border-color);border-radius:10px;background:var(--background-card);margin-bottom:10px}
 #notifications-history-list .history-item .title{font-weight:700}
 #notifications-history-list .history-item .meta{font-size:12px;color:var(--text-secondary)}
@@ -36,8 +38,10 @@ body.dark-mode::-webkit-scrollbar-thumb{background-color:#475569;border-radius:8
 .notifications-btn .badge{position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:10px;padding:0 6px;font-size:12px;line-height:18px;min-width:18px;text-align:center}
 .mobile-bell{position:relative;background:none;border:none;margin-left:8px}
 .mobile-bell .badge{position:absolute;top:-6px;right:-10px;background:#ef4444;color:#fff;border-radius:10px;padding:0 6px;font-size:10px;line-height:16px;min-width:16px;text-align:center}
+#mobile-menu-notifications-badge{margin-left:auto;background-color:var(--error-color);color:#fff;border-radius:10px;padding:0 6px;font-size:12px;line-height:18px;min-width:18px;text-align:center}
 
 /* Notifications modal styling like contact modal */
+#notifications-modal .modal-content-body{max-height:60vh;overflow-y:auto;padding-right:10px;margin-right:-10px}
 #notifications-modal .modal-content{background-color:var(--background-card);border:1px solid var(--border-color);border-radius:16px;padding:24px}
 #notifications-modal h3{margin-top:0;font-size:22px;color:var(--text-primary)}
 #notifications-modal .editor-section{margin:12px 0}

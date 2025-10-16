@@ -62,10 +62,7 @@
                     <span id="typing-text-mobile"></span><span class="typing-caret" aria-hidden="true"></span>
                 </div>
             </div>
-            <button id="mobile-notifications-btn" class="mobile-bell" title="Оповещения">
-                🔔<span id="mobile-notifications-badge" class="badge" style="display:none;">0</span>
-            </button>
-            <div class="mobile-header-spacer"></div>
+            <div class="mobile-header-spacer" style="width: 40px;"></div>
         </header>
         
         <main>
@@ -126,6 +123,11 @@
                 <div id="mobile-menu-screen" class="mobile-screen">
                     <div id="mobile-user-status-card"></div>
                     <div class="mobile-menu-items">
+                        <button id="mobile-menu-notifications-btn" class="mobile-menu-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                            <span data-key="notificationsTitle">Оповещения</span>
+                            <span id="mobile-menu-notifications-badge" class="badge">0</span>
+                        </button>
                         <button id="mobile-editor-info-btn" class="mobile-menu-item" style="display: none;">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -341,7 +343,7 @@
                                     </div>
                                     <div class="checkbox-wrapper"><input type="checkbox" id="notif-critical"><label for="notif-critical" data-key="notifyCriticalLabel">Критическое оповещение</label></div>
                                     <div class="editor-buttons" style="justify-content:flex-end;">
-                                        <button id="publish-notification-btn" type="submit" data-key="publishBtn">Опубликовать</button>
+                                        <button id="publish-notification-btn" type="submit" class="editor-button-primary" data-key="publishBtn">Опубликовать</button>
                                     </div>
                                 </form>
                                 <div class="editor-section" id="notifications-history-section">
@@ -405,7 +407,9 @@
     <div id="notifications-modal" class="modal-overlay">
         <div class="modal-content" style="max-width:720px">
             <h3 data-key="notificationsTitle">Оповещения</h3>
-            <div id="notifications-list"></div>
+            <div class="modal-content-body">
+                <div id="notifications-list"></div>
+            </div>
             <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
                 <button id="notifications-close-btn" data-key="modalCancel">Закрыть</button>
             </div>

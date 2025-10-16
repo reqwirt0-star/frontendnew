@@ -76,6 +76,16 @@ function setupMobileNavigation() {
     document.querySelectorAll('.mobile-user-form').forEach(form => {
         form.addEventListener('submit', createMobileUser);
     });
+
+    // Mobile notifications button in menu
+    const mobileNotificationsBtn = document.getElementById('mobile-menu-notifications-btn');
+    const notificationsModal = document.getElementById('notifications-modal');
+    if (mobileNotificationsBtn && notificationsModal) {
+        mobileNotificationsBtn.addEventListener('click', async () => {
+            await refreshNotificationsUI();
+            notificationsModal.classList.add('show');
+        });
+    }
 }
 
 function setupMobileEditorTabs() {
@@ -494,9 +504,16 @@ function filterNotesByLanguage(notes) { return notes; }
 
 function updateNotificationBadges(unreadCount) {
     const desktopBadge = document.getElementById('notifications-badge');
-    const mobileBadge = document.getElementById('mobile-notifications-badge');
-    if (desktopBadge) { desktopBadge.textContent = unreadCount; desktopBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none'; }
-    if (mobileBadge) { mobileBadge.textContent = unreadCount; mobileBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none'; }
+    const mobileMenuBadge = document.getElementById('mobile-menu-notifications-badge');
+    
+    if (desktopBadge) { 
+        desktopBadge.textContent = unreadCount; 
+        desktopBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none'; 
+    }
+    if (mobileMenuBadge) { 
+        mobileMenuBadge.textContent = unreadCount; 
+        mobileMenuBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none'; 
+    }
 }
 
 function renderNotificationsList(notes) {
@@ -556,10 +573,6 @@ function setupNotificationsUI() {
         closeBtn.onclick = () => modal.classList.remove('show');
         modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
     }
-    const mbtn = document.getElementById('mobile-notifications-btn');
-    if (mbtn && modal) {
-        mbtn.onclick = async () => { await refreshNotificationsUI(); modal.classList.add('show'); };
-    }
 }
 
 function setupNotificationsEditor() {
@@ -584,14 +597,13 @@ function setupNotificationsEditor() {
                 return;
             }
             try {
-                // This is the corrected line. It includes the 'languages' field as required by the original logic.
                 await publishNotification({ title, body, is_critical, languages: ['ru', 'en', 'uk'], is_active: true });
                 showToast(getTranslatedText('content_updated_successfully'));
                 (document.getElementById('notif-title') || {}).value = '';
                 (document.getElementById('notif-body') || {}).value = '';
                 document.getElementById('notif-critical').checked = false;
                 await refreshNotificationsUI();
-                await renderNotificationsHistory();
+                await renderNotificationsHistory(); 
             } catch (err) {
                 showToast(getTranslatedText(err.message || 'server_error'), true);
             }
