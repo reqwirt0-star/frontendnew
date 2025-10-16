@@ -584,13 +584,14 @@ function setupNotificationsEditor() {
                 return;
             }
             try {
-                // This is the corrected line. We re-introduce 'languages' as it seems the backend requires it, despite the provided file.
+                // This is the corrected line. It includes the 'languages' field as required.
                 await publishNotification({ title, body, is_critical, languages: ['ru', 'en', 'uk'], is_active: true });
                 showToast(getTranslatedText('content_updated_successfully'));
                 (document.getElementById('notif-title') || {}).value = '';
                 (document.getElementById('notif-body') || {}).value = '';
                 document.getElementById('notif-critical').checked = false;
                 await refreshNotificationsUI();
+                await renderNotificationsHistory(); 
             } catch (err) {
                 showToast(getTranslatedText(err.message || 'server_error'), true);
             }
