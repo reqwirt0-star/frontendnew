@@ -146,7 +146,13 @@ async function fetchAndRenderMobileUsers() {
             };
         });
     } catch (error) {
-        listContainer.innerHTML = `<p style="color: var(--error-color);text-align:center;padding:20px;">${getTranslatedText(error.message)}</p>`;
+        const errorKey = error.message || 'server_error_on_save';
+        showToast(getTranslatedText(errorKey), true);
+        
+        // Добавьте эту проверку:
+        if (errorKey === 'invalid_token' || errorKey === 'access_denied') {
+            logout(); // Принудительный выход из системы
+        }
     }
 }
 
