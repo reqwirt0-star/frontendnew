@@ -973,6 +973,7 @@ function generateAndCopyContact(buttonData) {
     let finalText = baseTemplate; 
     finalText = finalText.replace(/\{contact_method\}/g, channelName);
     finalText = finalText.replace(/\{manager_contact\}/g, managerContact);
+    finalText = finalText.replace(/\{manager_name\}/g, manager.name);
     
     navigator.clipboard.writeText(finalText).then(() => {
         let message = getTranslatedText('copy_success');
