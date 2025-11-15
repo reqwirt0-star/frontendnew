@@ -32,6 +32,7 @@ function setupMobileNavigation() {
         };
         headerTitle.textContent = titles[screenName] || 'ChaterLab';
         
+        // --- ИЗМЕНЕНИЕ: Добавлена 'schedule' в список для кнопки "назад" ---
         backBtn.style.display = (screenName === 'analytics' || screenName === 'editor' || screenName === 'editor-info' || screenName === 'users-management' || screenName === 'schedule') ? 'flex' : 'none';
     };
     
@@ -43,6 +44,7 @@ function setupMobileNavigation() {
     });
     
     backBtn.addEventListener('click', () => {
+        // --- ИЗМЕНЕНИЕ: Кнопка "назад" теперь возвращает в МЕНЮ ---
         switchScreen('menu');
     });
     
@@ -338,6 +340,7 @@ const uiTexts = {
         dayOffDeleted: 'Выходной удален.',
         deleteDayOffConfirm: 'Вы уверены, что хотите удалить этот выходной?',
         deleteForUserConfirm: 'Удалить выходной для пользователя {username}?',
+        schedule_future_blocked: 'Бронирование доступно только на 2 месяца вперед.', // НОВЫЙ
 
         analyticsNotAvailable: 'Аналитика доступна только менеджерам',
         headerSubtitle: 'Быстрые ответы',
@@ -364,7 +367,8 @@ const uiTexts = {
         analyticsNotAvailable: 'Analytics available for managers only',
         headerSubtitle: 'Quick Replies',
         notificationsTitle: 'Notifications',
-        criticalAckBtn: 'Acknowledge'
+        criticalAckBtn: 'Acknowledge',
+        schedule_future_blocked: 'Booking is only available 2 months in advance.', // НОВЫЙ
     },
     uk: {
         lang_locale: 'uk',
@@ -386,7 +390,8 @@ const uiTexts = {
         analyticsNotAvailable: 'Аналітика доступна лише менеджерам',
         headerSubtitle: 'Швидкі відповіді',
         notificationsTitle: 'Сповіщення',
-        criticalAckBtn: 'Ознайомлений'
+        criticalAckBtn: 'Ознайомлений',
+        schedule_future_blocked: 'Бронювання доступне лише на 2 місяці вперед.', // НОВЫЙ
     }
 };
 
@@ -2164,7 +2169,7 @@ function setupAccordion() {
 document.addEventListener('DOMContentLoaded', () => {
     // --- ИСПРАВЛЕНИЕ: Инициализация вынесена сюда ---
     // Эта строка теперь безопасна, так как DOM (и luxon из <head>) гарантированно загружены
-    scheduleCurrentDate = luxon.DateTime.local().startOf('day');
+    scheduleCurrentDate = luxon.DateTime.local().startOf('month'); // <-- ИЗМЕНЕНИЕ: Начинаем с НАЧАЛА текущего месяца
     
     const initialLang = getLocalStorage('chaterlabLang', 'ru');
     switchLanguage(initialLang);
@@ -2209,6 +2214,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- ЛОГИКА МОДУЛЯ ГРАФИКА ВЫХОДНЫХ (НОВЫЙ КОД) ---
 
+// --- НОВАЯ ЖЕСТКАЯ ЛОГИКА: ОТПРАВНАЯ ТОЧКА ---
+// Мы жестко задаем, что раньше этой даты ничего не существует
+const SCHEDULE_START_DATE = luxon.DateTime.fromISO('2025-11-01').startOf('month');
+
 function setupScheduleCalendar() {
     // Привязка кнопок управления месяцем
     const targets = [
@@ -2231,7 +2240,19 @@ function setupScheduleCalendar() {
         };
     });
 
-    fetchAndRenderSchedule(); // Теперь этот вызов безопасен
+    // Убедимся, что при первой загрузке мы не на прошлом месяце
+    const now = luxon.DateTime.local().startOf('month');
+    if (scheduleCurrentDate < SCHEDULE_START_DATE) {
+        scheduleCurrentDate = SCHEDULE_START_DATE;
+    }
+    // Если текущая дата (сегодня) раньше, чем СТАРТ, то начинаем со СТАРТ
+    if (now < SCHEDULE_START_DATE) {
+        scheduleCurrentDate = SCHEDULE_START_DATE;
+    } else {
+        scheduleCurrentDate = now; // В нормальной ситуации начинаем с "сегодня"
+    }
+
+    fetchAndRenderSchedule(); 
 }
 
 async function fetchAndRenderSchedule() {
@@ -2260,8 +2281,8 @@ async function fetchAndRenderSchedule() {
 
 function renderScheduleUI(isLoading, data, errorMsg = '') {
     const targets = [
-        { container: 'schedule-container', monthYear: 'schedule-month-year', legend: 'schedule-legend' },
-        { container: 'mobile-schedule-container', monthYear: 'mobile-schedule-month-year', legend: 'mobile-schedule-legend' }
+        { container: 'schedule-container', monthYear: 'schedule-month-year', legend: 'schedule-legend', prev: 'schedule-prev-month', next: 'schedule-next-month' },
+        { container: 'mobile-schedule-container', monthYear: 'mobile-schedule-month-year', legend: 'mobile-schedule-legend', prev: 'mobile-schedule-prev-month', next: 'mobile-schedule-next-month' }
     ];
     
     const monthName = scheduleCurrentDate.setLocale(getLocalStorage('chaterlabLang', 'ru')).toFormat('LLLL yyyy');
@@ -2276,20 +2297,31 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
 
         if (!container || !monthYearEl || !legendEl) return;
 
-        // --- ИЗМЕНЕНИЕ: Логика ограничения навигации ---
+        // --- ИЗМЕНЕНИЕ: НОВАЯ ЖЕСТКАЯ ЛОГИКА НАВИГАЦИИ ---
         if (prevBtn && nextBtn) {
             const now = luxon.DateTime.local().startOf('month');
-            // Правило: Показываем 1 прошлый месяц
-            const minMonth = now.minus({ months: 1 });
-            // Правило: Показываем 2 будущих месяца (текущий + 2 = 3)
+            
+            // Правило "1 месяц назад":
+            // 1. Берем "сегодня" (startOf('month'))
+            // 2. Отнимаем 1 месяц.
+            // 3. Выбираем БОЛЬШЕЕ из (полученной даты, ДАТЫ_СТАРТА)
+            // Это гарантирует, что мы никогда не уйдем раньше СТАРТА
+            const minMonth = luxon.DateTime.max(
+                SCHEDULE_START_DATE, 
+                now.minus({ months: 1 })
+            );
+
+            // Правило "2 месяца вперед":
+            // 1. Берем "сегодня" (startOf('month'))
+            // 2. Добавляем 2 месяца.
             const maxMonth = now.plus({ months: 2 }); 
 
-            // --- ИСПРАВЛЕНИЕ: Сравниваем начало месяца с началом месяца ---
             const currentMonthStart = scheduleCurrentDate.startOf('month');
 
-            // Блокируем кнопку "назад", если это раньше, чем 1 прошлый месяц
+            // Блокируем кнопку "назад"
             prevBtn.disabled = currentMonthStart <= minMonth;
-            // Блокируем кнопку "вперед", если это дальше, чем 2 будущих месяца
+            
+            // Блокируем кнопку "вперед"
             nextBtn.disabled = currentMonthStart >= maxMonth;
         }
         // --- КОНЕЦ ИЗМЕНЕНИЯ ---
@@ -2340,7 +2372,8 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
             dayEl.dataset.date = dayDate;
 
             // Правило: Проверяем, является ли день прошедшим
-            const isPastDay = dayLuxon < today;
+            // (ИЛИ раньше, чем наша ОТПРАВНАЯ ТОЧКА)
+            const isPastDay = dayLuxon < today || dayLuxon < SCHEDULE_START_DATE.startOf('day');
             // --- КОНЕЦ ИЗМЕНЕНИЯ ---
             
             let status = 'available';
@@ -2354,7 +2387,7 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
                 const usersOnDay = data.filter(d => d.date_off === dayDate);
                 
                 if (usersOnDay.length > 0) {
-                    const myBooking = usersOnDay.find(d => d.user.id === myUserId);
+                    const myBooking = usersOnDay.find(d => (d.user_id || d.user.id) === myUserId);
                     if (myBooking) {
                         status = 'my-day'; // Менеджер видит свой день
                         dayEl.dataset.users = JSON.stringify([myBooking]); // Только себя
@@ -2437,8 +2470,7 @@ async function handleDayClick(event) {
     
     // Сравниваем начало месяца, в который кликнули, с максимально разрешенным
     if (dayLuxon.startOf('month') > maxMonth) {
-        // Используем твой текст, т.к. перевода может не быть
-        showToast("Бронирование доступно только на 2 месяца вперед.", true);
+        showToast(getTranslatedText('schedule_future_blocked'), true);
         return;
     }
     // --- КОНЕЦ ИЗМЕНЕНИЯ ---
@@ -2488,8 +2520,12 @@ async function handleDayClick(event) {
     } else if (userRole === 'manager' && (status.includes('manager-occupied') || status.includes('group-conflict'))) {
         if (dayEl.dataset.users) {
             const usersOnDay = JSON.parse(dayEl.dataset.users);
-            const userToDelete = usersOnDay[0]; // Удаляем первого в списке
-            const confirmMsg = getTranslatedText('deleteForUserConfirm', { username: userToDelete.user.username });
+            // --- ИСПРАВЛЕНИЕ: Убедимся, что user.id существует (он вложен) ---
+            const userToDelete = usersOnDay[0]; 
+            const userIdToDelete = userToDelete.user?.id || userToDelete.user_id;
+            const usernameToDelete = userToDelete.user?.username || '???';
+            // ---
+            const confirmMsg = getTranslatedText('deleteForUserConfirm', { username: usernameToDelete });
             
             if (confirm(confirmMsg)) {
                 try {
@@ -2497,7 +2533,7 @@ async function handleDayClick(event) {
                         method: 'DELETE',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                         // ВАЖНО: передаем ID пользователя, которого хотим удалить
-                        body: JSON.stringify({ date: date, userId: userToDelete.user.id }) 
+                        body: JSON.stringify({ date: date, userId: userIdToDelete }) 
                     });
                     const result = await response.json();
                     if (!response.ok) throw new Error(result.message);
