@@ -23,7 +23,7 @@ function setupMobileNavigation() {
         const titles = {
             templates: 'ChaterLab',
             instructions: getTranslatedText('navInstructions'),
-            schedule: getTranslatedText('navSchedule'), // <-- ИЗМЕНЕНИЕ (которое было)
+            schedule: getTranslatedText('navSchedule'), // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
             menu: 'Меню',
             analytics: getTranslatedText('navAnalytics'),
             editor: getTranslatedText('navEditor'),
@@ -704,10 +704,20 @@ function switchLanguage(lang) {
             analyticsPanel.dispatchEvent(new Event('languageChange'));
         }
         // Recalculate segmented control glider after translated labels change width
+        // --- ИЗМЕНЕНИЕ: Добавлена проверка на оба меню ---
         const managerControls = document.querySelector('.manager-controls-segmented');
         if (managerControls) {
             const glider = managerControls.querySelector('.glider');
             const activeBtn = managerControls.querySelector('button.active');
+            if (glider && activeBtn) {
+                glider.style.width = `${activeBtn.offsetWidth}px`;
+                glider.style.left = `${activeBtn.offsetLeft}px`;
+            }
+        }
+        const employeeControls = document.querySelector('#employee-controls-segmented');
+         if (employeeControls) {
+            const glider = employeeControls.querySelector('.glider');
+            const activeBtn = employeeControls.querySelector('button.active');
             if (glider && activeBtn) {
                 glider.style.width = `${activeBtn.offsetWidth}px`;
                 glider.style.left = `${activeBtn.offsetLeft}px`;
@@ -1501,6 +1511,7 @@ function checkUserRoleAndSetupManagerUI() {
             const analyticsPanel = document.getElementById('analytics-panel');
 
             function moveGlider(target) {
+                if (!glider || !target) return; // --- Добавлена проверка ---
                 buttons.forEach(btn => btn.classList.remove('active'));
                 target.classList.add('active');
                 glider.style.width = `${target.offsetWidth}px`;
@@ -1552,7 +1563,56 @@ function checkUserRoleAndSetupManagerUI() {
                 });
             }
         }
-    }
+    } else { // --- НОВЫЙ БЛОК ELSE ДЛЯ СОТРУДНИКОВ ---
+        // Это для 'employee'
+        if (!isMobile()) {
+            const employeeControls = document.getElementById('employee-controls-segmented');
+            if (employeeControls) employeeControls.style.display = 'flex';
+
+            const buttons = document.querySelectorAll('#employee-controls-segmented button');
+            const glider = document.querySelector('#employee-controls-segmented .glider');
+            
+            const mainContentPanel = document.getElementById('main-content-wrapper');
+            const schedulePanel = document.getElementById('schedule-panel');
+
+            function moveEmployeeGlider(target) {
+                if (!glider || !target) return;
+                buttons.forEach(btn => btn.classList.remove('active'));
+                target.classList.add('active');
+                glider.style.width = `${target.offsetWidth}px`;
+                glider.style.left = `${target.offsetLeft}px`;
+            }
+
+            buttons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    moveEmployeeGlider(e.currentTarget);
+                    if (button.id === 'show-instructions-btn-employee') switchEmployeeView('instructions');
+                    if (button.id === 'show-schedule-btn-employee') switchEmployeeView('schedule');
+                });
+            });
+
+            const activeButton = document.querySelector('#employee-controls-segmented button.active');
+            if (activeButton) {
+                setTimeout(() => moveEmployeeGlider(activeButton), 50);
+            }
+
+            function switchEmployeeView(view) {
+                // Сначала все прячем
+                mainContentPanel.style.display = 'none';
+                if (schedulePanel) schedulePanel.style.display = 'none';
+                
+                if (view === 'instructions') {
+                    mainContentPanel.style.display = 'block';
+                    // У сотрудника нет редактора, просто показываем инструкции
+                    document.getElementById('content-editor').style.display = 'none'; 
+                    document.getElementById('instructions').style.display = 'block';
+                } else if (view === 'schedule') {
+                    if (schedulePanel) schedulePanel.style.display = 'block';
+                    fetchAndRenderSchedule(); // Обновляем при переключении
+                }
+            }
+        }
+    } // --- КОНЕЦ БЛОКА ELSE ---
 }
 
 function setupAnalytics() {
@@ -2242,15 +2302,14 @@ function setupScheduleCalendar() {
 
     // Убедимся, что при первой загрузке мы не на прошлом месяце
     const now = luxon.DateTime.local().startOf('month');
-    if (scheduleCurrentDate < SCHEDULE_START_DATE) {
-        scheduleCurrentDate = SCHEDULE_START_DATE;
-    }
+    
     // Если текущая дата (сегодня) раньше, чем СТАРТ, то начинаем со СТАРТ
     if (now < SCHEDULE_START_DATE) {
         scheduleCurrentDate = SCHEDULE_START_DATE;
     } else {
         scheduleCurrentDate = now; // В нормальной ситуации начинаем с "сегодня"
     }
+    // (Эта строка заменяет scheduleCurrentDate = luxon.DateTime.local().startOf('month'); в DOMContentLoaded)
 
     fetchAndRenderSchedule(); 
 }
