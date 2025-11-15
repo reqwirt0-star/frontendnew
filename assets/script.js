@@ -2284,10 +2284,13 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
             // Правило: Показываем 2 будущих месяца (текущий + 2 = 3)
             const maxMonth = now.plus({ months: 2 }); 
 
+            // --- ИСПРАВЛЕНИЕ: Сравниваем начало месяца с началом месяца ---
+            const currentMonthStart = scheduleCurrentDate.startOf('month');
+
             // Блокируем кнопку "назад", если это раньше, чем 1 прошлый месяц
-            prevBtn.disabled = scheduleCurrentDate <= minMonth;
+            prevBtn.disabled = currentMonthStart <= minMonth;
             // Блокируем кнопку "вперед", если это дальше, чем 2 будущих месяца
-            nextBtn.disabled = scheduleCurrentDate >= maxMonth;
+            nextBtn.disabled = currentMonthStart >= maxMonth;
         }
         // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
@@ -2426,6 +2429,20 @@ async function handleDayClick(event) {
     const date = dayEl.dataset.date;
     const status = dayEl.className;
     const token = getLocalStorage('chaterlabAuthToken', '');
+
+    // --- ИЗМЕНЕНИЕ: Запрет на бронирование в далеком будущем ---
+    const dayLuxon = luxon.DateTime.fromISO(date);
+    const now = luxon.DateTime.local().startOf('month');
+    const maxMonth = now.plus({ months: 2 });
+    
+    // Сравниваем начало месяца, в который кликнули, с максимально разрешенным
+    if (dayLuxon.startOf('month') > maxMonth) {
+        // Используем твой текст, т.к. перевода может не быть
+        showToast("Бронирование доступно только на 2 месяца вперед.", true);
+        return;
+    }
+    // --- КОНЕЦ ИЗМЕНЕНИЯ ---
+
 
     // --- ИЗМЕНЕНИЕ: Полностью переписана логика ---
 
