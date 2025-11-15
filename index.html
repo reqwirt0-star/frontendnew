@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/luxon@2.3.1/build/global/luxon.min.js"></script>
     
-    <!-- Summernote Lite CSS -->
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
     
     <link rel="stylesheet" href="style.css">
@@ -37,7 +36,6 @@
     </div>
     
     <div id="app-container" data-logged="false">
-        <!-- Desktop Header -->
         <header class="desktop-only app-header">
             <div class="app-header-left">
                 <div class="app-header-title">ChaterLab</div>
@@ -49,7 +47,6 @@
             </button>
         </header>
         
-        <!-- Mobile Header -->
         <header class="mobile-only mobile-header">
             <button id="mobile-back-btn" class="mobile-back-btn" style="display: none;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -69,7 +66,6 @@
         </header>
         
         <main>
-            <!-- Desktop Sidebar -->
             <div class="sidebar desktop-only">
                 <div class="sidebar-scrollable-content">
                     <div class="search-wrapper"><input type="search" id="searchInput" data-key="searchPlaceholder"></div>
@@ -103,9 +99,7 @@
                 </div>
             </div>
             
-            <!-- Mobile Content Wrapper -->
             <div class="mobile-content-wrapper mobile-only">
-                <!-- Templates Screen -->
                 <div id="mobile-templates-screen" class="mobile-screen active">
                     <div class="search-wrapper mobile-search">
                         <input type="search" id="searchInputMobile" data-key="searchPlaceholder">
@@ -117,12 +111,10 @@
                     <div id="mobile-sidebar-content"></div>
                 </div>
                 
-                <!-- Instructions Screen -->
                 <div id="mobile-instructions-screen" class="mobile-screen">
                     <div class="mobile-instructions" id="mobile-instructions"></div>
                 </div>
                 
-                <!-- Menu Screen -->
                 <div id="mobile-menu-screen" class="mobile-screen">
                     <div id="mobile-user-status-card"></div>
                     <div class="mobile-menu-items">
@@ -175,7 +167,6 @@
                     </div>
                 </div>
                 
-                <!-- Analytics Screen -->
                 <div id="mobile-analytics-screen" class="mobile-screen">
                     <div class="mobile-analytics-stub" id="mobile-analytics-stub">
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -190,7 +181,26 @@
                     <div id="mobile-analytics-content" style="display: none;"></div>
                 </div>
                 
-                <!-- Editor Info Screen -->
+                <div id="mobile-schedule-screen" class="mobile-screen">
+                    <div class="schedule-container-wrapper">
+                        <div class="schedule-header">
+                            <button id="mobile-schedule-prev-month">‹</button>
+                            <h2 id="mobile-schedule-month-year"></h2>
+                            <button id="mobile-schedule-next-month">›</button>
+                        </div>
+                        <div id="mobile-schedule-container" class="schedule-container">
+                            <div class="schedule-day-header">Пн</div>
+                            <div class="schedule-day-header">Вт</div>
+                            <div class="schedule-day-header">Ср</div>
+                            <div class="schedule-day-header">Чт</div>
+                            <div class="schedule-day-header">Пт</div>
+                            <div class="schedule-day-header">Сб</div>
+                            <div class="schedule-day-header">Вс</div>
+                             </div>
+                        <div id="mobile-schedule-legend" class="schedule-legend"></div>
+                    </div>
+                </div>
+                
                 <div id="mobile-editor-info-screen" class="mobile-screen">
                     <div class="editor-unavailable-notice" style="margin-top: 40px;">
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 20px; color: var(--primary-blue);">
@@ -202,7 +212,6 @@
                     </div>
                 </div>
                 
-                <!-- Users Management Screen -->
                 <div id="mobile-users-management-screen" class="mobile-screen">
                     <div class="editor-section">
                         <h4 data-key="addUserTitle">Добавить нового пользователя</h4>
@@ -222,7 +231,6 @@
                     </div>
                 </div>
                 
-                <!-- Editor Screen -->
                 <div id="mobile-editor-screen" class="mobile-screen">
                     <div class="mobile-editor-tabs">
                         <button data-tab="layout" class="active" data-key="tabLayout">Кнопки</button>
@@ -271,13 +279,13 @@
                 </div>
             </div>
             
-            <!-- Desktop Info Block -->
             <div class="info desktop-only" id="infoBlock">
                 <div class="info-header-controls">
                     <div id="user-status-card"></div>
                     <div class="manager-controls-segmented" style="display: none;">
                         <div class="glider"></div>
                         <button id="show-instructions-btn" data-key="navInstructions" class="active">Инструкция</button>
+                        <button id="show-schedule-btn" data-key="navSchedule">График</button>
                         <button id="show-analytics-btn" data-key="navAnalytics">Аналитика</button>
                         <button id="edit-mode-btn" data-key="navEditor">Редактор</button>
                     </div>
@@ -352,6 +360,26 @@
                         </div>
                     </div>
                 </div>
+                <div id="schedule-panel" style="display: none;">
+                    <div classs="schedule-container-wrapper">
+                        <div class="schedule-header">
+                            <button id="schedule-prev-month">‹</button>
+                            <h2 id="schedule-month-year"></h2>
+                            <button id="schedule-next-month">›</button>
+                        </div>
+                        <div id="schedule-container" class="schedule-container">
+                            <div class="schedule-day-header">Пн</div>
+                            <div class="schedule-day-header">Вт</div>
+                            <div class="schedule-day-header">Ср</div>
+                            <div class="schedule-day-header">Чт</div>
+                            <div class="schedule-day-header">Пт</div>
+                            <div class="schedule-day-header">Сб</div>
+                            <div class="schedule-day-header">Вс</div>
+                            </div>
+                        <div id="schedule-legend" class="schedule-legend"></div>
+                    </div>
+                </div>
+                
                 <div id="analytics-panel">
                     <div class="analytics-container">
                         <div class="analytics-sidebar">
@@ -369,7 +397,6 @@
                 </div>
             </div>
             
-            <!-- Mobile Bottom Navigation -->
             <nav class="mobile-bottom-nav mobile-only">
                 <button data-screen="templates" class="nav-item active">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -387,6 +414,15 @@
                     </svg>
                     <span data-key="navInstructions">Инструкция</span>
                 </button>
+                <button data-screen="schedule" class="nav-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span data-key="navSchedule">График</span>
+                </button>
                 <button data-screen="menu" class="nav-item">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="3"/>
@@ -401,7 +437,6 @@
     
     <div id="toast" class="toast-notification"></div>
 
-    <!-- Notifications Modal -->
     <div id="notifications-modal" class="modal-overlay">
         <div class="modal-content" style="max-width:720px">
             <h3 data-key="notificationsTitle">Оповещения</h3>
@@ -412,7 +447,6 @@
         </div>
     </div>
 
-    <!-- Critical Notification Modal -->
     <div id="critical-modal" class="modal-overlay">
         <div class="modal-content" style="max-width:720px">
             <h3 id="critical-title">Важное объявление</h3>
@@ -450,18 +484,10 @@
         </div>
     </div>
 
-    <!-- SCRIPTS -->
-    <!-- IMPORTANT: Load libraries BEFORE your custom script -->
-    
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <!-- Bootstrap JS (required for Summernote) -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-    <!-- Summernote JS -->
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
     
-    <!-- Your custom script, loaded LAST -->
     <script src="assets/script.js"></script>
 </body>
 </html>
-

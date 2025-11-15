@@ -23,6 +23,7 @@ function setupMobileNavigation() {
         const titles = {
             templates: 'ChaterLab',
             instructions: getTranslatedText('navInstructions'),
+            schedule: getTranslatedText('navSchedule'), // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
             menu: 'Меню',
             analytics: getTranslatedText('navAnalytics'),
             editor: getTranslatedText('navEditor'),
@@ -31,7 +32,7 @@ function setupMobileNavigation() {
         };
         headerTitle.textContent = titles[screenName] || 'ChaterLab';
         
-        backBtn.style.display = (screenName === 'analytics' || screenName === 'editor' || screenName === 'editor-info' || screenName === 'users-management') ? 'flex' : 'none';
+        backBtn.style.display = (screenName === 'analytics' || screenName === 'editor' || screenName === 'editor-info' || screenName === 'users-management' || screenName === 'schedule') ? 'flex' : 'none';
     };
     
     navItems.forEach(item => {
@@ -201,6 +202,9 @@ let userRole = null;
 let appContent = {};
 let userName = null;
 let userFavorites = [];
+// НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ ГРАФИКА
+let scheduleData = [];
+let scheduleCurrentDate = luxon.DateTime.local().startOf('day');
 const isMobile = () => window.matchMedia("(max-width: 768px)").matches;
 
 const uiTexts = {
@@ -319,6 +323,22 @@ const uiTexts = {
         user_deleted_successfully: 'Пользователь успешно удален!',
         server_error_deleting_user: 'Ошибка на сервере при удалении пользователя.',
         server_error_fetching_users: 'Ошибка на сервере при получении списка пользователей.',
+        
+        // НОВЫЕ ПЕРЕВОДЫ ДЛЯ ГРАФИКА
+        navSchedule: 'График',
+        scheduleLoading: 'Загрузка графика...',
+        legendAvailable: 'Доступно',
+        legendMyDay: 'Мой выходной',
+        legendGroupConflict: 'Занято (группа)',
+        legendRuleConflict: 'Конфликт (правило)',
+        legendManagerAll: 'Занято (другие)',
+        conflict_group_conflict: 'Этот день уже занят кем-то из вашей группы.',
+        conflict_weekly_limit: 'Вы уже выбрали выходной на этой неделе.',
+        conflict_consecutive_day: 'Нельзя брать два выходных дня подряд.',
+        dayOffDeleted: 'Выходной удален.',
+        deleteDayOffConfirm: 'Вы уверены, что хотите удалить этот выходной?',
+        deleteForUserConfirm: 'Удалить выходной для пользователя {username}?',
+
         analyticsNotAvailable: 'Аналитика доступна только менеджерам',
         headerSubtitle: 'Быстрые ответы',
         notificationsTitle: 'Оповещения',
@@ -338,6 +358,7 @@ const uiTexts = {
         navInstructions: 'Instructions',
         navAnalytics: 'Analytics',
         navEditor: 'Editor',
+        navSchedule: 'Schedule', // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
         editorUnavailable: 'Editor',
         editorUnavailableMsg: 'Full editing is only available on the desktop version.',
         analyticsNotAvailable: 'Analytics available for managers only',
@@ -359,6 +380,7 @@ const uiTexts = {
         navInstructions: 'Інструкція',
         navAnalytics: 'Аналітика',
         navEditor: 'Редактор',
+        navSchedule: 'Графік', // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
         editorUnavailable: 'Редактор',
         editorUnavailableMsg: 'Повноцінне редагування доступне лише у версії сайту для ПК.',
         analyticsNotAvailable: 'Аналітика доступна лише менеджерам',
@@ -713,6 +735,7 @@ async function checkLogin() {
         setupHeaderTypingOnAllTargets();
         setupNotificationsUI();
         showCriticalIfAny();
+        setupScheduleCalendar(); // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
         
         return true;
     } else {
@@ -775,6 +798,7 @@ async function handleLogin(event) {
             setupNotificationsUI();
             showCriticalIfAny();
             setupNotificationsEditor();
+            setupScheduleCalendar(); // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
         }, 2500);
     } catch (error) {
         errorDiv.textContent = getTranslatedText(error.message);
@@ -1482,6 +1506,7 @@ function checkUserRoleAndSetupManagerUI() {
                 button.addEventListener('click', (e) => {
                     moveGlider(e.currentTarget);
                     if (button.id === 'show-instructions-btn') switchManagerView('instructions');
+                    if (button.id === 'show-schedule-btn') switchManagerView('schedule'); // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
                     if (button.id === 'show-analytics-btn') switchManagerView('analytics');
                     if (button.id === 'edit-mode-btn') switchManagerView('editor');
                 });
@@ -1493,8 +1518,10 @@ function checkUserRoleAndSetupManagerUI() {
             }
 
             function switchManagerView(view) {
+                const schedulePanel = document.getElementById('schedule-panel'); // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
                 mainContentPanel.style.display = 'none';
                 if (analyticsPanel) analyticsPanel.style.display = 'none';
+                if (schedulePanel) schedulePanel.style.display = 'none'; // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
                 
                 if (view === 'instructions' || view === 'editor') {
                     mainContentPanel.style.display = 'block';
@@ -1506,6 +1533,9 @@ function checkUserRoleAndSetupManagerUI() {
                 } else if (view === 'analytics') {
                     if (analyticsPanel) analyticsPanel.style.display = 'block';
                     if (triggerAnalyticsLoad) triggerAnalyticsLoad();
+                } else if (view === 'schedule') { // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
+                    if (schedulePanel) schedulePanel.style.display = 'block';
+                    fetchAndRenderSchedule(); // Обновляем при переключении
                 }
             }
             
@@ -2162,7 +2192,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabUsers = document.getElementById('tab-btn-users');
     if (tabUsers) tabUsers.addEventListener('click', () => switchEditorTab('users'));
 
-    const tabNotifications = document.getElementById('tab-btn-notifications');
+D    const tabNotifications = document.getElementById('tab-btn-notifications');
     if (tabNotifications) tabNotifications.addEventListener('click', () => switchEditorTab('notifications'));
 
     const saveBtn = document.getElementById('save-content-btn');
@@ -2172,3 +2202,267 @@ document.addEventListener('DOMContentLoaded', () => {
     if (addSectionBtn) addSectionBtn.addEventListener('click', addSection);
 });
 
+// --- ЛОГИКА МОДУЛЯ ГРАФИКА ВЫХОДНЫХ (НОВЫЙ КОД) ---
+
+function setupScheduleCalendar() {
+    // Привязка кнопок управления месяцем
+    const targets = [
+        { container: 'schedule-container', prev: 'schedule-prev-month', next: 'schedule-next-month', monthYear: 'schedule-month-year', legend: 'schedule-legend' },
+        { container: 'mobile-schedule-container', prev: 'mobile-schedule-prev-month', next: 'mobile-schedule-next-month', monthYear: 'mobile-schedule-month-year', legend: 'mobile-schedule-legend' }
+    ];
+
+    targets.forEach(target => {
+        const prevBtn = document.getElementById(target.prev);
+        const nextBtn = document.getElementById(target.next);
+        
+        if(prevBtn) prevBtn.onclick = () => {
+            scheduleCurrentDate = scheduleCurrentDate.minus({ months: 1 });
+            fetchAndRenderSchedule();
+        };
+        
+        if(nextBtn) nextBtn.onclick = () => {
+            scheduleCurrentDate = scheduleCurrentDate.plus({ months: 1 });
+            fetchAndRenderSchedule();
+        };
+    });
+
+    // fetchAndRenderSchedule(); // Убрал, т.к. checkLogin/handleLogin уже вызывают его
+}
+
+async function fetchAndRenderSchedule() {
+    const start = scheduleCurrentDate.startOf('month').toISODate();
+    const end = scheduleCurrentDate.endOf('month').toISODate();
+    
+    // Показываем лоадер
+    renderScheduleUI(true, []);
+    
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/days-off/schedule?start=${start}&end=${end}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
+        
+        scheduleData = data;
+        renderScheduleUI(false, scheduleData);
+    } catch (error) {
+        console.error("Failed to fetch schedule", error);
+        showToast(getTranslatedText(error.message || 'server_error'), true);
+        renderScheduleUI(false, [], getTranslatedText(error.message));
+    }
+}
+
+function renderScheduleUI(isLoading, data, errorMsg = '') {
+    const targets = [
+        { container: 'schedule-container', monthYear: 'schedule-month-year', legend: 'schedule-legend' },
+        { container: 'mobile-schedule-container', monthYear: 'mobile-schedule-month-year', legend: 'mobile-schedule-legend' }
+    ];
+    
+    const monthName = scheduleCurrentDate.setLocale(getLocalStorage('chaterlabLang', 'ru')).toFormat('LLLL yyyy');
+    
+    targets.forEach(target => {
+        const container = document.getElementById(target.container);
+        const monthYearEl = document.getElementById(target.monthYear);
+        const legendEl = document.getElementById(target.legend);
+
+        if (!container || !monthYearEl || !legendEl) return;
+
+        monthYearEl.textContent = monthName;
+
+        // Очищаем старые дни (сохраняем заголовки)
+        const dayHeaders = container.querySelectorAll('.schedule-day-header');
+        container.innerHTML = '';
+        dayHeaders.forEach(header => container.appendChild(header));
+
+        if (isLoading) {
+            container.innerHTML += `<div class="schedule-loader">${getTranslatedText('scheduleLoading')}</div>`;
+            return;
+        }
+        
+        if (errorMsg) {
+             container.innerHTML += `<div class="schedule-loader" style="color:var(--error-color)">${errorMsg}</div>`;
+            return;
+        }
+
+        const startOfMonth = scheduleCurrentDate.startOf('month');
+        const firstDayOfWeek = startOfMonth.weekday; // 1 = Пн, 7 = Вс
+
+        // Добавляем пустые ячейки для отступа
+        for (let i = 1; i < firstDayOfWeek; i++) {
+            container.appendChild(document.createElement('div'));
+        }
+
+        const daysInMonth = scheduleCurrentDate.daysInMonth;
+        const jwtData = parseJwt(getLocalStorage('chaterlabAuthToken', ''));
+        if (!jwtData) return; // Не можем работать без данных пользователя
+        
+        const myUserId = jwtData.id;
+        const mySchedule = data.filter(d => (d.user_id || d.user?.id) === myUserId).map(d => d.date_off);
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayEl = document.createElement('div');
+            dayEl.className = 'schedule-day';
+            
+            const dayDate = scheduleCurrentDate.set({ day: day }).toISODate();
+            dayEl.dataset.date = dayDate;
+            
+            let status = 'available';
+            let label = '';
+            
+            const dayData = data.find(d => d.date_off === dayDate);
+
+            if (userRole === 'manager') {
+                // --- ЛОГИКА МЕНЕДЖЕРА ---
+                dayEl.innerHTML = `<span>${day}</span>`;
+                const usersOnDay = data.filter(d => d.date_off === dayDate);
+                if (usersOnDay.length > 0) {
+                    status = 'manager-occupied';
+                    label = usersOnDay.map(d => d.user.username).join(', ');
+                    dayEl.innerHTML += `<div class="schedule-day-label">${label}</div>`;
+                    dayEl.dataset.users = JSON.stringify(usersOnDay);
+                }
+            } else {
+                // --- ЛОГИКА СОТРУДНИКА ---
+                dayEl.innerHTML = `<span>${day}</span>`;
+                const [reqYear, reqWeek] = getWeekNumber(new Date(dayDate));
+                const weekConflict = mySchedule.find(d => {
+                    if (d === dayDate) return false;
+                    const [dYear, dWeek] = getWeekNumber(new Date(d));
+                    return dYear === reqYear && dWeek === reqWeek;
+                });
+                
+                const dayBefore = luxon.DateTime.fromISO(dayDate).minus({ days: 1 }).toISODate();
+                const dayAfter = luxon.DateTime.fromISO(dayDate).plus({ days: 1 }).toISODate();
+                const consecutiveConflict = mySchedule.find(d => d === dayBefore || d === dayAfter);
+
+                if (mySchedule.includes(dayDate)) {
+                    status = 'my-day';
+                } else if (dayData) { // Занято кем-то другим (из группы)
+                    status = 'group-conflict';
+                } else if (weekConflict || consecutiveConflict) {
+                    status = 'rule-conflict';
+                }
+            }
+            
+            dayEl.classList.add(status);
+            dayEl.onclick = handleDayClick;
+            container.appendChild(dayEl);
+        }
+        
+        // Рендер легенды
+        if (userRole === 'manager') {
+            legendEl.innerHTML = `
+                <span class="legend-item available">${getTranslatedText('legendAvailable')}</span>
+                <span class="legend-item manager-occupied">${getTranslatedText('legendManagerAll')}</span>
+            `;
+        } else {
+             legendEl.innerHTML = `
+                <span class="legend-item available">${getTranslatedText('legendAvailable')}</span>
+                <span class="legend-item my-day">${getTranslatedText('legendMyDay')}</span>
+                <span class="legend-item group-conflict">${getTranslatedText('legendGroupConflict')}</span>
+                <span class="legend-item rule-conflict">${getTranslatedText('legendRuleConflict')}</span>
+            `;
+        }
+    });
+}
+
+async function handleDayClick(event) {
+    const dayEl = event.currentTarget;
+    const date = dayEl.dataset.date;
+    const status = dayEl.className;
+    const token = getLocalStorage('chaterlabAuthToken', '');
+
+    if (userRole === 'manager') {
+        // --- ЛОГИКА КЛИКА МЕНЕДЖЕРА ---
+        if (dayEl.dataset.users) {
+            const usersOnDay = JSON.parse(dayEl.dataset.users);
+            const userToDelete = usersOnDay[0]; // Для простоты удаляем первого
+            const confirmMsg = getTranslatedText('deleteForUserConfirm', { username: userToDelete.user.username });
+            
+            if (confirm(confirmMsg)) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ date: date, userId: userToDelete.user.id })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message);
+                    showToast(getTranslatedText('dayOffDeleted'));
+                    fetchAndRenderSchedule();
+                } catch (error) {
+                    showToast(getTranslatedText(error.message), true);
+                }
+            }
+        }
+        return; // Менеджер не может "выбирать" дни, только удалять
+    }
+
+    // --- ЛОГИКА КЛИКА СОТРУДНИКА ---
+    if (status.includes('available')) {
+        // Попытка забронировать
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ date: date })
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                // Используем ключ из ответа сервера для перевода
+                const errorKey = `conflict_${result.reason}`;
+                showToast(getTranslatedText(errorKey) || result.message, true);
+            } else {
+                showToast(getTranslatedText('OK')); // 'OK' - это просто успешный ответ, можно заменить на 'dayOffBooked'
+                fetchAndRenderSchedule();
+            }
+        } catch (error) {
+            showToast(getTranslatedText('server_error'), true);
+        }
+    } else if (status.includes('my-day')) {
+        // Попытка удалить
+        if (confirm(getTranslatedText('deleteDayOffConfirm'))) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ date: date })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+                showToast(getTranslatedText('dayOffDeleted'));
+                fetchAndRenderSchedule();
+            } catch (error) {
+                showToast(getTranslatedText(error.message), true);
+            }
+        }
+    } else {
+        // Клик по недоступному дню
+        if(status.includes('group-conflict')) showToast(getTranslatedText('conflict_group_conflict'), true);
+        if(status.includes('rule-conflict')) showToast(getTranslatedText('conflict_consecutive_day'), true);
+    }
+}
+
+// Хелпер для парсинга JWT
+function parseJwt (token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        return null; // Ошибка парсинга
+    }
+}
+
+// Хелпер для календаря
+const getWeekNumber = (d) => {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return [d.getUTCFullYear(), weekNo];
+};
