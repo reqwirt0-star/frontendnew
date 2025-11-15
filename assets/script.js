@@ -23,7 +23,7 @@ function setupMobileNavigation() {
         const titles = {
             templates: 'ChaterLab',
             instructions: getTranslatedText('navInstructions'),
-            schedule: getTranslatedText('navSchedule'), // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
+            schedule: getTranslatedText('navSchedule'), // <-- ИЗМЕНЕНИЕ (которое было)
             menu: 'Меню',
             analytics: getTranslatedText('navAnalytics'),
             editor: getTranslatedText('navEditor'),
@@ -705,7 +705,7 @@ function switchLanguage(lang) {
         }
         // Recalculate segmented control glider after translated labels change width
         // --- ИЗМЕНЕНИЕ: Добавлена проверка на оба меню ---
-        const managerControls = document.querySelector('.manager-controls-segmented');
+        const managerControls = document.querySelector('div.manager-controls-segmented:not(#employee-controls-segmented)');
         if (managerControls) {
             const glider = managerControls.querySelector('.glider');
             const activeBtn = managerControls.querySelector('button.active');
@@ -1501,12 +1501,16 @@ function checkUserRoleAndSetupManagerUI() {
             const openEditorBtn = document.getElementById('mobile-open-editor-btn');
             if (openEditorBtn) openEditorBtn.style.display = 'flex';
         } else {
-            const managerControls = document.querySelector('.manager-controls-segmented');
+            // --- ИСПРАВЛЕНИЕ: Используем более конкретный селектор ---
+            const managerControls = document.querySelector('div.manager-controls-segmented:not(#employee-controls-segmented)');
             if (managerControls) managerControls.style.display = 'flex';
+            
             const triggerAnalyticsLoad = setupAnalytics();
             
-            const buttons = document.querySelectorAll('.manager-controls-segmented button');
-            const glider = document.querySelector('.manager-controls-segmented .glider');
+            // --- ИСПРАВЛЕНИЕ: Используем более конкретный селектор ---
+            const buttons = document.querySelectorAll('div.manager-controls-segmented:not(#employee-controls-segmented) button');
+            const glider = document.querySelector('div.manager-controls-segmented:not(#employee-controls-segmented) .glider');
+            
             const mainContentPanel = document.getElementById('main-content-wrapper');
             const analyticsPanel = document.getElementById('analytics-panel');
 
@@ -1528,7 +1532,8 @@ function checkUserRoleAndSetupManagerUI() {
                 });
             });
             
-            const activeButton = document.querySelector('.manager-controls-segmented button.active');
+            // --- ИСПРАВЛЕНИЕ: Используем более конкретный селектор ---
+            const activeButton = document.querySelector('div.manager-controls-segmented:not(#employee-controls-segmented) button.active');
             if (activeButton) {
                 setTimeout(() => moveGlider(activeButton), 50);
             }
@@ -2446,13 +2451,15 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
                 const usersOnDay = data.filter(d => d.date_off === dayDate);
                 
                 if (usersOnDay.length > 0) {
-                    const myBooking = usersOnDay.find(d => (d.user_id || d.user.id) === myUserId);
+                    // --- ИСПРАВЛЕНИЕ: (d.user.id) -> (d.user?.id) ---
+                    const myBooking = usersOnDay.find(d => (d.user_id || d.user?.id) === myUserId);
                     if (myBooking) {
                         status = 'my-day'; // Менеджер видит свой день
                         dayEl.dataset.users = JSON.stringify([myBooking]); // Только себя
                     } else {
                         status = 'manager-occupied'; // Чужие дни
-                        label = usersOnDay.map(d => d.user.username).join(', ');
+                        // --- ИСПРАВЛЕНИЕ: (d.user.username) -> (d.user?.username) ---
+                        label = usersOnDay.map(d => d.user?.username || '???').join(', ');
                         dayEl.innerHTML += `<div class="schedule-day-label">${label}</div>`;
                         dayEl.dataset.users = JSON.stringify(usersOnDay);
                     }
@@ -2525,6 +2532,7 @@ async function handleDayClick(event) {
     // --- ИЗМЕНЕНИЕ: Запрет на бронирование в далеком будущем ---
     const dayLuxon = luxon.DateTime.fromISO(date);
     const now = luxon.DateTime.local().startOf('month');
+    // Правило "2 месяца вперед"
     const maxMonth = now.plus({ months: 2 });
     
     // Сравниваем начало месяца, в который кликнули, с максимально разрешенным
