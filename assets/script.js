@@ -23,7 +23,7 @@ function setupMobileNavigation() {
         const titles = {
             templates: 'ChaterLab',
             instructions: getTranslatedText('navInstructions'),
-            schedule: getTranslatedText('navSchedule'), // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
+            schedule: getTranslatedText('navSchedule'), // <-- ИЗМЕНЕНИЕ (которое было)
             menu: 'Меню',
             analytics: getTranslatedText('navAnalytics'),
             editor: getTranslatedText('navEditor'),
@@ -204,7 +204,7 @@ let userName = null;
 let userFavorites = [];
 // НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ ГРАФИКА
 let scheduleData = [];
-let scheduleCurrentDate = luxon.DateTime.local().startOf('day');
+let scheduleCurrentDate = null; // <-- ИСПРАВЛЕНО: Убрана инициализация luxon
 const isMobile = () => window.matchMedia("(max-width: 768px)").matches;
 
 const uiTexts = {
@@ -358,7 +358,7 @@ const uiTexts = {
         navInstructions: 'Instructions',
         navAnalytics: 'Analytics',
         navEditor: 'Editor',
-        navSchedule: 'Schedule', // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
+        navSchedule: 'Schedule', // <-- ИЗМЕНЕНИЕ (которое было)
         editorUnavailable: 'Editor',
         editorUnavailableMsg: 'Full editing is only available on the desktop version.',
         analyticsNotAvailable: 'Analytics available for managers only',
@@ -380,7 +380,7 @@ const uiTexts = {
         navInstructions: 'Інструкція',
         navAnalytics: 'Аналітика',
         navEditor: 'Редактор',
-        navSchedule: 'Графік', // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
+        navSchedule: 'Графік', // <-- ИЗМЕНЕНИЕ (которое было)
         editorUnavailable: 'Редактор',
         editorUnavailableMsg: 'Повноцінне редагування доступне лише у версії сайту для ПК.',
         analyticsNotAvailable: 'Аналітика доступна лише менеджерам',
@@ -735,7 +735,7 @@ async function checkLogin() {
         setupHeaderTypingOnAllTargets();
         setupNotificationsUI();
         showCriticalIfAny();
-        setupScheduleCalendar(); // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
+        setupScheduleCalendar(); // <-- ИЗМЕНЕНИЕ (которое было)
         
         return true;
     } else {
@@ -798,7 +798,7 @@ async function handleLogin(event) {
             setupNotificationsUI();
             showCriticalIfAny();
             setupNotificationsEditor();
-            setupScheduleCalendar(); // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
+            setupScheduleCalendar(); // <-- ИЗМЕНЕНИЕ (которое было)
         }, 2500);
     } catch (error) {
         errorDiv.textContent = getTranslatedText(error.message);
@@ -1506,7 +1506,7 @@ function checkUserRoleAndSetupManagerUI() {
                 button.addEventListener('click', (e) => {
                     moveGlider(e.currentTarget);
                     if (button.id === 'show-instructions-btn') switchManagerView('instructions');
-                    if (button.id === 'show-schedule-btn') switchManagerView('schedule'); // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
+                    if (button.id === 'show-schedule-btn') switchManagerView('schedule'); // <-- ИЗМЕНЕНИЕ (которое было)
                     if (button.id === 'show-analytics-btn') switchManagerView('analytics');
                     if (button.id === 'edit-mode-btn') switchManagerView('editor');
                 });
@@ -1518,10 +1518,10 @@ function checkUserRoleAndSetupManagerUI() {
             }
 
             function switchManagerView(view) {
-                const schedulePanel = document.getElementById('schedule-panel'); // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
+                const schedulePanel = document.getElementById('schedule-panel'); // <-- ИЗМЕНЕНИЕ (которое было)
                 mainContentPanel.style.display = 'none';
                 if (analyticsPanel) analyticsPanel.style.display = 'none';
-                if (schedulePanel) schedulePanel.style.display = 'none'; // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
+                if (schedulePanel) schedulePanel.style.display = 'none'; // <-- ИЗМЕНЕНИЕ (которое было)
                 
                 if (view === 'instructions' || view === 'editor') {
                     mainContentPanel.style.display = 'block';
@@ -1533,7 +1533,7 @@ function checkUserRoleAndSetupManagerUI() {
                 } else if (view === 'analytics') {
                     if (analyticsPanel) analyticsPanel.style.display = 'block';
                     if (triggerAnalyticsLoad) triggerAnalyticsLoad();
-                } else if (view === 'schedule') { // <-- ИЗМЕНЕНИЕ ДОБАВЛЕНО
+                } else if (view === 'schedule') { // <-- ИЗМЕНЕНИЕ (которое было)
                     if (schedulePanel) schedulePanel.style.display = 'block';
                     fetchAndRenderSchedule(); // Обновляем при переключении
                 }
@@ -2162,6 +2162,10 @@ function setupAccordion() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // --- ИСПРАВЛЕНИЕ: Инициализация вынесена сюда ---
+    // Эта строка теперь безопасна, так как DOM (и luxon из <head>) гарантированно загружены
+    scheduleCurrentDate = luxon.DateTime.local().startOf('day');
+    
     const initialLang = getLocalStorage('chaterlabLang', 'ru');
     switchLanguage(initialLang);
     
@@ -2192,7 +2196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabUsers = document.getElementById('tab-btn-users');
     if (tabUsers) tabUsers.addEventListener('click', () => switchEditorTab('users'));
 
-D    const tabNotifications = document.getElementById('tab-btn-notifications');
+    const tabNotifications = document.getElementById('tab-btn-notifications');
     if (tabNotifications) tabNotifications.addEventListener('click', () => switchEditorTab('notifications'));
 
     const saveBtn = document.getElementById('save-content-btn');
@@ -2201,6 +2205,7 @@ D    const tabNotifications = document.getElementById('tab-btn-notifications');
     const addSectionBtn = document.getElementById('add-section-btn');
     if (addSectionBtn) addSectionBtn.addEventListener('click', addSection);
 });
+
 
 // --- ЛОГИКА МОДУЛЯ ГРАФИКА ВЫХОДНЫХ (НОВЫЙ КОД) ---
 
@@ -2226,7 +2231,7 @@ function setupScheduleCalendar() {
         };
     });
 
-    // fetchAndRenderSchedule(); // Убрал, т.к. checkLogin/handleLogin уже вызывают его
+    fetchAndRenderSchedule(); // Теперь этот вызов безопасен
 }
 
 async function fetchAndRenderSchedule() {
