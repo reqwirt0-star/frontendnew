@@ -2329,7 +2329,10 @@ async function fetchAndRenderSchedule() {
     const token = getLocalStorage('chaterlabAuthToken', '');
     try {
         const response = await fetch(`${API_BASE_URL}/api/days-off/schedule?start=${start}&end=${end}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Cache-Control': 'no-cache'
+            }
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message);
@@ -2476,12 +2479,18 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
             } else {
                 // --- ЛОГИКА СОТРУДНИКА ---
                 dayEl.innerHTML = `<span>${day}</span>`;
-                const [reqYear, reqWeek] = getWeekNumber(new Date(dayDate));
+                
+                // --- ИЗМЕНЕНИЕ: Используем Luxon для определения недели (Пн-Вс) ---
+                const dayLuxonForWeek = luxon.DateTime.fromISO(dayDate);
+                const weekStart = dayLuxonForWeek.startOf('week'); // Понедельник
+                const weekEnd = dayLuxonForWeek.endOf('week'); // Воскресенье
+                
                 const weekConflict = mySchedule.find(d => {
                     if (d === dayDate) return false;
-                    const [dYear, dWeek] = getWeekNumber(new Date(d));
-                    return dYear === reqYear && dWeek === reqWeek;
+                    const dLuxon = luxon.DateTime.fromISO(d);
+                    return dLuxon >= weekStart && dLuxon <= weekEnd;
                 });
+                // --- КОНЕЦ ИЗМЕНЕНИЯ ---
                 
                 const dayBefore = luxon.DateTime.fromISO(dayDate).minus({ days: 1 }).toISODate();
                 const dayAfter = luxon.DateTime.fromISO(dayDate).plus({ days: 1 }).toISODate();
@@ -2489,7 +2498,7 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
 
                 if (mySchedule.includes(dayDate)) {
                     status = 'my-day';
-                } else if (dayData) { // Занято кем-то другим (из группы)
+                } else if (dayData && dayData.user_id !== myUserId) { // Занято кем-то другим (из группы)
                     status = 'group-conflict';
                 } else if (weekConflict || consecutiveConflict) {
                     status = 'rule-conflict';
@@ -2557,7 +2566,11 @@ async function handleDayClick(event) {
         try {
             const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}`,
+                    'Cache-Control': 'no-cache'
+                },
                 body: JSON.stringify({ date: date })
             });
             const result = await response.json();
@@ -2578,7 +2591,11 @@ async function handleDayClick(event) {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
                     method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}`,
+                        'Cache-Control': 'no-cache'
+                    },
                     body: JSON.stringify({ date: date }) // Сервер удалит по userId из токена
                 });
                 const result = await response.json();
@@ -2605,7 +2622,11 @@ async function handleDayClick(event) {
                 try {
                     const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
                         method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        headers: { 
+                            'Content-Type': 'application/json', 
+                            'Authorization': `Bearer ${token}`,
+                            'Cache-Control': 'no-cache'
+                        },
                         // ВАЖНО: передаем ID пользователя, которого хотим удалить
                         body: JSON.stringify({ date: date, userId: userIdToDelete }) 
                     });
