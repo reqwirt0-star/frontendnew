@@ -2420,7 +2420,17 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
         if (!jwtData) return; // Не можем работать без данных пользователя
         
         const myUserId = jwtData.id;
-        const mySchedule = data.filter(d => (d.user_id || d.user?.id) === myUserId).map(d => d.date_off);
+        
+        // --- ИЗМЕНЕНИЕ: Разная логика для mySchedule ---
+        let mySchedule = [];
+        if (userRole === 'manager') {
+            // Менеджер получает data с { user: {id: ...} }
+            mySchedule = data.filter(d => d.user && d.user.id === myUserId).map(d => d.date_off);
+        } else {
+            // Сотрудник получает data с { user_id: ... }
+            mySchedule = data.filter(d => d.user_id === myUserId).map(d => d.date_off);
+        }
+        // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
         // --- ИЗМЕНЕНИЕ: Определяем "сегодня" ---
         const today = luxon.DateTime.local().startOf('day');
@@ -2446,25 +2456,22 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
             const dayData = data.find(d => d.date_off === dayDate);
 
             if (userRole === 'manager') {
-                // --- ИЗМЕНЕНИЕ: Улучшенная логика для МЕНЕДЖЕРА ---
+                // --- ИЗМЕНЕНИЕ: Упрощена логика для МЕНЕДЖЕРА ---
                 dayEl.innerHTML = `<span>${day}</span>`;
                 const usersOnDay = data.filter(d => d.date_off === dayDate);
                 
                 if (usersOnDay.length > 0) {
-                    // --- ИСПРАВЛЕНИЕ: (d.user.id) -> (d.user?.id) ---
-                    const myBooking = usersOnDay.find(d => (d.user_id || d.user?.id) === myUserId);
+                    const myBooking = usersOnDay.find(d => d.user.id === myUserId); // <--- Только d.user.id
                     if (myBooking) {
-                        status = 'my-day'; // Менеджер видит свой день
-                        dayEl.dataset.users = JSON.stringify([myBooking]); // Только себя
+                        status = 'my-day'; 
+                        dayEl.dataset.users = JSON.stringify([myBooking]); 
                     } else {
-                        status = 'manager-occupied'; // Чужие дни
-                        // --- ИСПРАВЛЕНИЕ: (d.user.username) -> (d.user?.username) ---
-                        label = usersOnDay.map(d => d.user?.username || '???').join(', ');
+                        status = 'manager-occupied'; 
+                        label = usersOnDay.map(d => d.user.username).join(', '); // <--- Только d.user.username
                         dayEl.innerHTML += `<div class="schedule-day-label">${label}</div>`;
                         dayEl.dataset.users = JSON.stringify(usersOnDay);
                     }
                 }
-                // (если usersOnDay.length === 0, status остается 'available')
                 // --- КОНЕЦ ИЗМЕНЕНИЯ ---
             } else {
                 // --- ЛОГИКА СОТРУДНИКА ---
@@ -2589,8 +2596,8 @@ async function handleDayClick(event) {
             const usersOnDay = JSON.parse(dayEl.dataset.users);
             // --- ИСПРАВЛЕНИЕ: Убедимся, что user.id существует (он вложен) ---
             const userToDelete = usersOnDay[0]; 
-            const userIdToDelete = userToDelete.user?.id || userToDelete.user_id;
-            const usernameToDelete = userToDelete.user?.username || '???';
+            const userIdToDelete = userToDelete.user?.id || userToDelete.user_id; // Используем user.id
+            const usernameToDelete = userToDelete.user?.username || '???'; // Используем user.username
             // ---
             const confirmMsg = getTranslatedText('deleteForUserConfirm', { username: usernameToDelete });
             
