@@ -2279,13 +2279,15 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
         // --- ИЗМЕНЕНИЕ: Логика ограничения навигации ---
         if (prevBtn && nextBtn) {
             const now = luxon.DateTime.local().startOf('month');
-            // Ограничиваем +2 месяца (всего 3 месяца: текущий, +1, +2)
-            const maxFuture = now.plus({ months: 2 }); 
+            // Правило: Показываем 1 прошлый месяц
+            const minMonth = now.minus({ months: 1 });
+            // Правило: Показываем 2 будущих месяца (текущий + 2 = 3)
+            const maxMonth = now.plus({ months: 2 }); 
 
-            // Блокируем кнопку "назад", если это текущий месяц или раньше
-            prevBtn.disabled = scheduleCurrentDate <= now;
-            // Блокируем кнопку "вперед", если это на 2 месяца вперед или дальше
-            nextBtn.disabled = scheduleCurrentDate >= maxFuture;
+            // Блокируем кнопку "назад", если это раньше, чем 1 прошлый месяц
+            prevBtn.disabled = scheduleCurrentDate <= minMonth;
+            // Блокируем кнопку "вперед", если это дальше, чем 2 будущих месяца
+            nextBtn.disabled = scheduleCurrentDate >= maxMonth;
         }
         // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
@@ -2321,12 +2323,22 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
         const myUserId = jwtData.id;
         const mySchedule = data.filter(d => (d.user_id || d.user?.id) === myUserId).map(d => d.date_off);
 
+        // --- ИЗМЕНЕНИЕ: Определяем "сегодня" ---
+        const today = luxon.DateTime.local().startOf('day');
+        // --- КОНЕЦ ИЗМЕНЕНИЯ ---
+
         for (let day = 1; day <= daysInMonth; day++) {
             const dayEl = document.createElement('div');
             dayEl.className = 'schedule-day';
             
-            const dayDate = scheduleCurrentDate.set({ day: day }).toISODate();
+            // --- ИЗМЕНЕНИЕ: Получаем дату как объект Luxon ---
+            const dayLuxon = scheduleCurrentDate.set({ day: day });
+            const dayDate = dayLuxon.toISODate();
             dayEl.dataset.date = dayDate;
+
+            // Правило: Проверяем, является ли день прошедшим
+            const isPastDay = dayLuxon < today;
+            // --- КОНЕЦ ИЗМЕНЕНИЯ ---
             
             let status = 'available';
             let label = '';
@@ -2376,7 +2388,16 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
             }
             
             dayEl.classList.add(status);
-            dayEl.onclick = handleDayClick;
+
+            // --- ИЗМЕНЕНИЕ: Блокируем клики на прошедших днях ---
+            if (isPastDay) {
+                dayEl.classList.add('past-day');
+                // Не добавляем .onclick, делая ячейку неактивной
+            } else {
+                dayEl.onclick = handleDayClick; // Клики разрешены
+            }
+            // --- КОНЕЦ ИЗМЕНЕНИЯ ---
+            
             container.appendChild(dayEl);
         }
         
