@@ -2498,7 +2498,8 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
 
                 if (mySchedule.includes(dayDate)) {
                     status = 'my-day';
-                } else if (dayData && dayData.user_id !== myUserId) { // Занято кем-то другим (из группы)
+                } else if (dayData && dayData.user_id !== myUserId) { 
+                    // --- ИСПРАВЛЕНИЕ: День занят кем-то другим (не важно, из группы или нет) ---
                     status = 'group-conflict';
                 } else if (weekConflict || consecutiveConflict) {
                     status = 'rule-conflict';
@@ -2579,7 +2580,11 @@ async function handleDayClick(event) {
                 showToast(getTranslatedText(errorKey) || result.message, true);
             } else {
                 showToast(getTranslatedText('OK')); 
-                fetchAndRenderSchedule();
+                // --- КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительно обновляем UI после успешного бронирования ---
+                // Добавляем небольшую задержку, чтобы сервер успел обработать запрос
+                setTimeout(() => {
+                    fetchAndRenderSchedule();
+                }, 100);
             }
         } catch (error) {
             showToast(getTranslatedText('server_error'), true);
@@ -2601,7 +2606,10 @@ async function handleDayClick(event) {
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.message);
                 showToast(getTranslatedText('dayOffDeleted'));
-                fetchAndRenderSchedule();
+                // --- ИСПРАВЛЕНИЕ: Обновляем UI после удаления ---
+                setTimeout(() => {
+                    fetchAndRenderSchedule();
+                }, 100);
             } catch (error) {
                 showToast(getTranslatedText(error.message), true);
             }
