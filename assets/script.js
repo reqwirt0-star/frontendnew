@@ -2270,8 +2270,24 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
         const container = document.getElementById(target.container);
         const monthYearEl = document.getElementById(target.monthYear);
         const legendEl = document.getElementById(target.legend);
+        // --- ИЗМЕНЕНИЕ: Получаем кнопки навигации ---
+        const prevBtn = document.getElementById(target.prev);
+        const nextBtn = document.getElementById(target.next);
 
         if (!container || !monthYearEl || !legendEl) return;
+
+        // --- ИЗМЕНЕНИЕ: Логика ограничения навигации ---
+        if (prevBtn && nextBtn) {
+            const now = luxon.DateTime.local().startOf('month');
+            // Ограничиваем +2 месяца (всего 3 месяца: текущий, +1, +2)
+            const maxFuture = now.plus({ months: 2 }); 
+
+            // Блокируем кнопку "назад", если это текущий месяц или раньше
+            prevBtn.disabled = scheduleCurrentDate <= now;
+            // Блокируем кнопку "вперед", если это на 2 месяца вперед или дальше
+            nextBtn.disabled = scheduleCurrentDate >= maxFuture;
+        }
+        // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
         monthYearEl.textContent = monthName;
 
@@ -2318,15 +2334,24 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
             const dayData = data.find(d => d.date_off === dayDate);
 
             if (userRole === 'manager') {
-                // --- ЛОГИКА МЕНЕДЖЕРА ---
+                // --- ИЗМЕНЕНИЕ: Улучшенная логика для МЕНЕДЖЕРА ---
                 dayEl.innerHTML = `<span>${day}</span>`;
                 const usersOnDay = data.filter(d => d.date_off === dayDate);
+                
                 if (usersOnDay.length > 0) {
-                    status = 'manager-occupied';
-                    label = usersOnDay.map(d => d.user.username).join(', ');
-                    dayEl.innerHTML += `<div class="schedule-day-label">${label}</div>`;
-                    dayEl.dataset.users = JSON.stringify(usersOnDay);
+                    const myBooking = usersOnDay.find(d => d.user.id === myUserId);
+                    if (myBooking) {
+                        status = 'my-day'; // Менеджер видит свой день
+                        dayEl.dataset.users = JSON.stringify([myBooking]); // Только себя
+                    } else {
+                        status = 'manager-occupied'; // Чужие дни
+                        label = usersOnDay.map(d => d.user.username).join(', ');
+                        dayEl.innerHTML += `<div class="schedule-day-label">${label}</div>`;
+                        dayEl.dataset.users = JSON.stringify(usersOnDay);
+                    }
                 }
+                // (если usersOnDay.length === 0, status остается 'available')
+                // --- КОНЕЦ ИЗМЕНЕНИЯ ---
             } else {
                 // --- ЛОГИКА СОТРУДНИКА ---
                 dayEl.innerHTML = `<span>${day}</span>`;
@@ -2357,10 +2382,13 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
         
         // Рендер легенды
         if (userRole === 'manager') {
+            // --- ИЗМЕНЕНИЕ: Менеджер теперь видит "Мой выходной" ---
             legendEl.innerHTML = `
                 <span class="legend-item available">${getTranslatedText('legendAvailable')}</span>
+                <span class="legend-item my-day">${getTranslatedText('legendMyDay')}</span>
                 <span class="legend-item manager-occupied">${getTranslatedText('legendManagerAll')}</span>
             `;
+            // --- КОНЕЦ ИЗМЕНЕНИЯ ---
         } else {
              legendEl.innerHTML = `
                 <span class="legend-item available">${getTranslatedText('legendAvailable')}</span>
@@ -2378,11 +2406,51 @@ async function handleDayClick(event) {
     const status = dayEl.className;
     const token = getLocalStorage('chaterlabAuthToken', '');
 
-    if (userRole === 'manager') {
-        // --- ЛОГИКА КЛИКА МЕНЕДЖЕРА ---
+    // --- ИЗМЕНЕНИЕ: Полностью переписана логика ---
+
+    // 1. Попытка забронировать (для всех: менеджер + сотрудник)
+    if (status.includes('available')) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ date: date })
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                const errorKey = `conflict_${result.reason}`;
+                showToast(getTranslatedText(errorKey) || result.message, true);
+            } else {
+                showToast(getTranslatedText('OK')); 
+                fetchAndRenderSchedule();
+            }
+        } catch (error) {
+            showToast(getTranslatedText('server_error'), true);
+        }
+
+    // 2. Попытка удалить СВОЙ (для всех: менеджер + сотрудник)
+    } else if (status.includes('my-day')) {
+        if (confirm(getTranslatedText('deleteDayOffConfirm'))) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ date: date }) // Сервер удалит по userId из токена
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+                showToast(getTranslatedText('dayOffDeleted'));
+                fetchAndRenderSchedule();
+            } catch (error) {
+                showToast(getTranslatedText(error.message), true);
+            }
+        }
+    
+    // 3. Попытка удалить ЧУЖОЙ (только для менеджера)
+    } else if (userRole === 'manager' && (status.includes('manager-occupied') || status.includes('group-conflict'))) {
         if (dayEl.dataset.users) {
             const usersOnDay = JSON.parse(dayEl.dataset.users);
-            const userToDelete = usersOnDay[0]; // Для простоты удаляем первого
+            const userToDelete = usersOnDay[0]; // Удаляем первого в списке
             const confirmMsg = getTranslatedText('deleteForUserConfirm', { username: userToDelete.user.username });
             
             if (confirm(confirmMsg)) {
@@ -2390,7 +2458,8 @@ async function handleDayClick(event) {
                     const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
                         method: 'DELETE',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                        body: JSON.stringify({ date: date, userId: userToDelete.user.id })
+                        // ВАЖНО: передаем ID пользователя, которого хотим удалить
+                        body: JSON.stringify({ date: date, userId: userToDelete.user.id }) 
                     });
                     const result = await response.json();
                     if (!response.ok) throw new Error(result.message);
@@ -2401,52 +2470,13 @@ async function handleDayClick(event) {
                 }
             }
         }
-        return; // Менеджер не может "выбирать" дни, только удалять
-    }
-
-    // --- ЛОГИКА КЛИКА СОТРУДНИКА ---
-    if (status.includes('available')) {
-        // Попытка забронировать
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ date: date })
-            });
-            const result = await response.json();
-            if (!response.ok) {
-                // Используем ключ из ответа сервера для перевода
-                const errorKey = `conflict_${result.reason}`;
-                showToast(getTranslatedText(errorKey) || result.message, true);
-            } else {
-                showToast(getTranslatedText('OK')); // 'OK' - это просто успешный ответ, можно заменить на 'dayOffBooked'
-                fetchAndRenderSchedule();
-            }
-        } catch (error) {
-            showToast(getTranslatedText('server_error'), true);
-        }
-    } else if (status.includes('my-day')) {
-        // Попытка удалить
-        if (confirm(getTranslatedText('deleteDayOffConfirm'))) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ date: date })
-                });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.message);
-                showToast(getTranslatedText('dayOffDeleted'));
-                fetchAndRenderSchedule();
-            } catch (error) {
-                showToast(getTranslatedText(error.message), true);
-            }
-        }
-    } else {
-        // Клик по недоступному дню
+    
+    // 4. Клик по недоступному (для сотрудника)
+    } else if (userRole !== 'manager') {
         if(status.includes('group-conflict')) showToast(getTranslatedText('conflict_group_conflict'), true);
         if(status.includes('rule-conflict')) showToast(getTranslatedText('conflict_consecutive_day'), true);
     }
+    // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 }
 
 // Хелпер для парсинга JWT
