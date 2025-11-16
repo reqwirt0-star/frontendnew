@@ -285,42 +285,104 @@ body.dark-mode .note-modal-header {
 
 /* Статусы дней */
 .schedule-day.available {
-    background: var(--success-color);
-    border-color: var(--success-color);
-    color: #fff;
+    background: #ffffff;
+    border-color: var(--border-color);
+    color: var(--text-primary);
 }
 
 .schedule-day.available .schedule-day-number {
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .schedule-day.available:hover {
-    background: var(--success-color);
-    border-color: var(--success-color);
+    background: var(--light-blue-bg);
+    border-color: var(--primary-blue);
     transform: scale(1.05);
-    opacity: 0.9;
 }
 
 .schedule-day.my-day {
-    background: var(--primary-blue);
-    border-color: var(--primary-blue);
+    /* Цвет по группе будет применен через классы group-1 или group-2 */
     color: #fff;
+}
+
+/* Своё занятие - цвет по группе */
+.schedule-day.my-day.group-1 {
+    background: #3b82f6 !important; /* Синий для группы 1 */
+    border-color: #3b82f6 !important;
+}
+
+.schedule-day.my-day.group-2 {
+    background: #8b5cf6 !important; /* Фиолетовый для группы 2 */
+    border-color: #8b5cf6 !important;
+}
+
+/* Если группа не определена, используем синий по умолчанию */
+.schedule-day.my-day:not(.group-1):not(.group-2) {
+    background: #3b82f6;
+    border-color: #3b82f6;
 }
 
 .schedule-day.group-conflict {
-    background: #ef4444; /* error-color */
-    border-color: #ef4444;
-    color: #fff;
+    background: #e5e7eb; /* светло-серый */
+    border-color: #d1d5db;
+    color: var(--text-secondary);
     cursor: not-allowed;
-    opacity: 0.8;
+    opacity: 0.7;
+    position: relative;
+}
+
+.schedule-day.group-conflict::after {
+    content: '✕';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: #9ca3af;
+    font-weight: bold;
+    pointer-events: none;
 }
 
 .schedule-day.rule-conflict {
-    background: var(--background-main);
-    border-color: var(--border-color);
+    background: #e5e7eb; /* светло-серый */
+    border-color: #d1d5db;
     color: var(--text-secondary);
     cursor: not-allowed;
-    opacity: 0.6;
+    opacity: 0.7;
+    position: relative;
+}
+
+.schedule-day.rule-conflict::after {
+    content: '✕';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: #9ca3af;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+.schedule-day.past-day {
+    background: #e5e7eb; /* светло-серый */
+    border-color: #d1d5db;
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    opacity: 0.7;
+    position: relative;
+}
+
+.schedule-day.past-day::after {
+    content: '✕';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: #9ca3af;
+    font-weight: bold;
+    pointer-events: none;
 }
 
 .schedule-day.manager-occupied {
@@ -420,11 +482,12 @@ body.dark-mode .note-modal-header {
     border: 2px solid var(--border-color);
 }
 
-.legend-item.available::before { border-color: var(--success-color); background: var(--success-color); }
-.legend-item.my-day::before { border-color: var(--primary-blue); background: var(--primary-blue); }
-.legend-item.group-conflict::before { border-color: #ef4444; background: #ef4444; }
+.legend-item.available::before { border-color: var(--border-color); background: #ffffff; }
+.legend-item.my-day::before { border-color: #3b82f6; background: #3b82f6; }
+.legend-item.group-conflict::before { border-color: #d1d5db; background: #e5e7eb; }
 .legend-item.other-group::before { border-color: var(--accent-purple); background: var(--accent-purple); }
-.legend-item.rule-conflict::before { border-color: var(--border-color); background: var(--background-main); }
+.legend-item.rule-conflict::before { border-color: #d1d5db; background: #e5e7eb; }
+.legend-item.past-day::before { border-color: #d1d5db; background: #e5e7eb; }
 .legend-item.manager-occupied::before { border-color: var(--accent-purple); background: var(--accent-purple); }
 .legend-item.group-1::before { border-color: #3b82f6; background: #3b82f6; }
 .legend-item.group-2::before { border-color: #8b5cf6; background: #8b5cf6; }
@@ -579,4 +642,136 @@ body.dark-mode .note-modal-header {
 
 .schedule-day-popup .popup-user-item:last-child {
     margin-bottom: 0;
+}
+
+/* --- НОВЫЕ СТИЛИ: Мини-меню для супер-менеджеров --- */
+.super-manager-day-menu {
+    position: fixed;
+    z-index: 3001;
+    background-color: var(--background-card);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    min-width: 280px;
+    max-width: 320px;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+}
+
+.super-manager-day-menu.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+}
+
+.super-manager-day-menu .menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.super-manager-day-menu .menu-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.super-manager-day-menu .menu-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.super-manager-day-menu .menu-close:hover {
+    background-color: var(--light-blue-bg);
+    color: var(--primary-blue);
+}
+
+.super-manager-day-menu .menu-content {
+    padding: 8px;
+}
+
+.super-manager-day-menu .menu-item {
+    width: 100%;
+    padding: 12px 16px;
+    margin: 4px 0;
+    background: none;
+    border: none;
+    border-radius: 10px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.super-manager-day-menu .menu-item:hover {
+    background-color: var(--light-blue-bg);
+    color: var(--primary-blue);
+}
+
+.super-manager-day-menu .menu-item-primary {
+    background-color: var(--primary-blue);
+    color: #fff;
+}
+
+.super-manager-day-menu .menu-item-primary:hover {
+    background-color: var(--primary-blue-hover);
+    color: #fff;
+}
+
+.super-manager-day-menu .menu-item-danger {
+    color: #ef4444;
+}
+
+.super-manager-day-menu .menu-item-danger:hover {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.super-manager-day-menu .menu-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 8px 0;
+}
+
+.super-manager-day-menu .menu-section-title {
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+    .super-manager-day-menu {
+        min-width: 260px;
+        max-width: 90%;
+        left: 50% !important;
+        transform: translateX(-50%) scale(0.95);
+    }
+    
+    .super-manager-day-menu.show {
+        transform: translateX(-50%) scale(1);
+    }
 }

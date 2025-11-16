@@ -2587,6 +2587,13 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
                 
                 if (myBooking) {
                     status = 'my-day';
+                    // Добавляем класс группы для своего выходного
+                    const myGroupValue = myBooking.user ? myBooking.user.group : myGroup;
+                    if (myGroupValue === 1) {
+                        dayEl.classList.add('group-1');
+                    } else if (myGroupValue === 2) {
+                        dayEl.classList.add('group-2');
+                    }
                 } else {
                     // Определяем группы всех пользователей
                     const userGroups = usersOnDay.map(u => u.user ? u.user.group : null).filter(g => g !== null);
@@ -2652,6 +2659,11 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
                 }
             }
             
+            // Прошедшие дни всегда недоступны (перекрывает все остальные статусы)
+            if (isPastDay) {
+                status = 'past-day';
+            }
+            
             // Формируем содержимое квадратика
             let dayContent = `<span class="schedule-day-number">${day}</span>`;
             
@@ -2666,6 +2678,18 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
             dayEl.innerHTML = dayContent;
             
             dayEl.classList.add(status);
+            
+            // Для недоступных дней скрываем номер дня, показываем только крестик
+            if (status === 'rule-conflict' || status === 'group-conflict' || status === 'past-day') {
+                const numberEl = dayEl.querySelector('.schedule-day-number');
+                if (numberEl) {
+                    numberEl.style.opacity = '0.3';
+                }
+                const usersEl = dayEl.querySelector('.schedule-day-users');
+                if (usersEl) {
+                    usersEl.style.display = 'none';
+                }
+            }
 
             // --- НОВОЕ: Добавляем hover-информацию (tooltip) с полной информацией ---
             if (usersOnDay.length > 0) {
@@ -2675,15 +2699,22 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
                 dayEl.title = getTranslatedText('legendAvailable');
             } else if (status === 'rule-conflict') {
                 dayEl.title = getTranslatedText('legendRuleConflict');
+            } else if (status === 'past-day') {
+                dayEl.title = 'Прошедший день';
+            } else if (status === 'group-conflict') {
+                dayEl.title = getTranslatedText('legendGroupConflict');
             }
             
             // --- ИЗМЕНЕНИЕ: Блокируем клики на прошедших днях ---
             if (isPastDay) {
                 dayEl.classList.add('past-day');
                 // Не добавляем .onclick, делая ячейку неактивной
+            } else if (status === 'rule-conflict' || status === 'group-conflict') {
+                // Недоступные дни также неактивны
+                // Не добавляем .onclick
             } else {
                 // Для мобильной версии: если день занят другими, показываем popup при клике
-                if (isMobileDevice && usersOnDay.length > 0 && status !== 'my-day' && status !== 'available' && status !== 'other-group') {
+                if (isMobileDevice && usersOnDay.length > 0 && status !== 'my-day' && status !== 'available' && status !== 'other-group' && userRole !== 'super_manager') {
                     dayEl.addEventListener('click', (e) => {
                         e.stopPropagation();
                         e.preventDefault();
@@ -2712,11 +2743,12 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
         } else {
              legendEl.innerHTML = `
                 <span class="legend-item available">${getTranslatedText('legendAvailable')}</span>
-                <span class="legend-item my-day">${getTranslatedText('legendMyDay')}</span>
-                <span class="legend-item group-conflict">${getTranslatedText('legendGroupConflict')}</span>
+                <span class="legend-item my-day group-1">${getTranslatedText('legendMyDay')}</span>
                 <span class="legend-item other-group group-1">Группа 1 (другая)</span>
                 <span class="legend-item other-group group-2">Группа 2 (другая)</span>
+                <span class="legend-item group-conflict">${getTranslatedText('legendGroupConflict')}</span>
                 <span class="legend-item rule-conflict">${getTranslatedText('legendRuleConflict')}</span>
+                <span class="legend-item past-day">Прошедший день</span>
             `;
         }
     });
@@ -2727,6 +2759,7 @@ async function handleDayClick(event) {
     const date = dayEl.dataset.date;
     const status = dayEl.className;
     const token = getLocalStorage('chaterlabAuthToken', '');
+    const myUserId = parseJwt(token)?.id;
 
     // --- ИЗМЕНЕНИЕ: Запрет на бронирование в далеком будущем ---
     const dayLuxon = luxon.DateTime.fromISO(date);
@@ -2741,6 +2774,18 @@ async function handleDayClick(event) {
     }
     // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
+    // --- НОВОЕ: Для супер-менеджеров показываем мини-меню при клике на день с событиями ---
+    if (userRole === 'super_manager') {
+        const usersData = dayEl.dataset.users ? JSON.parse(dayEl.dataset.users) : [];
+        const hasEvents = usersData.length > 0;
+        
+        // Если день имеет события или доступен, показываем меню
+        if (hasEvents || status.includes('available')) {
+            event.stopPropagation();
+            showSuperManagerMenu(date, dayEl, usersData, myUserId);
+            return;
+        }
+    }
 
     // --- ИЗМЕНЕНИЕ: Полностью переписана логика ---
 
@@ -2922,5 +2967,200 @@ function closeScheduleDayPopup() {
     const popup = document.getElementById('schedule-day-popup');
     if (popup) {
         popup.classList.remove('show');
+    }
+}
+
+// --- НОВАЯ ФУНКЦИЯ: Показ мини-меню для супер-менеджеров ---
+function showSuperManagerMenu(date, dayEl, usersData, myUserId) {
+    // Создаем или получаем меню элемент
+    let menu = document.getElementById('super-manager-day-menu');
+    if (!menu) {
+        menu = document.createElement('div');
+        menu.id = 'super-manager-day-menu';
+        menu.className = 'super-manager-day-menu';
+        document.body.appendChild(menu);
+    }
+    
+    // Определяем позицию дня для позиционирования меню
+    const rect = dayEl.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    
+    // Проверяем, есть ли у пользователя выходной на этот день
+    const myBooking = usersData.find(u => {
+        const userId = u.user ? u.user.id : u.user_id;
+        return userId === myUserId;
+    });
+    
+    // Формируем список других пользователей
+    const otherUsers = usersData.filter(u => {
+        const userId = u.user ? u.user.id : u.user_id;
+        return userId !== myUserId;
+    });
+    
+    // Форматируем дату
+    const dateObj = luxon.DateTime.fromISO(date);
+    const currentLang = getLocalStorage('chaterlabLang', 'ru');
+    const dateFormatted = dateObj.setLocale(currentLang).toFormat('d MMMM yyyy');
+    
+    let menuContent = `
+        <div class="menu-header">
+            <h3>${dateFormatted}</h3>
+            <button class="menu-close" onclick="closeSuperManagerMenu()">×</button>
+        </div>
+        <div class="menu-content">
+    `;
+    
+    // Опция 1: Поставить/убрать свой выходной
+    if (myBooking) {
+        menuContent += `
+            <button class="menu-item menu-item-danger" onclick="removeMyDayOff('${date}')">
+                <span>Убрать свой выходной</span>
+            </button>
+        `;
+    } else {
+        menuContent += `
+            <button class="menu-item menu-item-primary" onclick="addMyDayOff('${date}')">
+                <span>Поставить свой выходной</span>
+            </button>
+        `;
+    }
+    
+    // Опция 2: Удалить выходной других пользователей
+    if (otherUsers.length > 0) {
+        menuContent += `<div class="menu-divider"></div>`;
+        menuContent += `<div class="menu-section-title">Удалить выходной:</div>`;
+        otherUsers.forEach(user => {
+            const username = user.user ? user.user.username : '???';
+            const role = user.user ? user.user.role : '???';
+            const group = user.user ? user.user.group : null;
+            const userId = user.user ? user.user.id : user.user_id;
+            
+            let roleText = '';
+            if (role === 'super_manager') roleText = ' (Супер-менеджер)';
+            else if (role === 'manager') roleText = ' (Менеджер)';
+            else if (role === 'employee') roleText = ' (Сотрудник)';
+            
+            const groupText = group ? `, Группа ${group}` : '';
+            menuContent += `
+                <button class="menu-item menu-item-danger" onclick="removeUserDayOff('${date}', '${userId}', '${username}')">
+                    <span>${username}${roleText}${groupText}</span>
+                </button>
+            `;
+        });
+    }
+    
+    menuContent += `</div>`;
+    menu.innerHTML = menuContent;
+    
+    // Позиционируем меню
+    const menuWidth = 280;
+    const menuHeight = menu.offsetHeight || 200;
+    let left = rect.left + scrollLeft + (rect.width / 2) - (menuWidth / 2);
+    let top = rect.bottom + scrollTop + 8;
+    
+    // Проверяем, не выходит ли меню за границы экрана
+    if (left < 10) left = 10;
+    if (left + menuWidth > window.innerWidth - 10) {
+        left = window.innerWidth - menuWidth - 10;
+    }
+    if (top + menuHeight > window.innerHeight + scrollTop - 10) {
+        top = rect.top + scrollTop - menuHeight - 8;
+    }
+    
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+    menu.classList.add('show');
+    
+    // Закрытие по клику вне меню
+    setTimeout(() => {
+        const closeHandler = (e) => {
+            if (!menu.contains(e.target) && e.target !== menu) {
+                closeSuperManagerMenu();
+                document.removeEventListener('click', closeHandler);
+            }
+        };
+        document.addEventListener('click', closeHandler);
+    }, 100);
+}
+
+function closeSuperManagerMenu() {
+    const menu = document.getElementById('super-manager-day-menu');
+    if (menu) {
+        menu.classList.remove('show');
+    }
+}
+
+// Функции для действий меню
+async function addMyDayOff(date) {
+    closeSuperManagerMenu();
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}`,
+                'Cache-Control': 'no-cache'
+            },
+            body: JSON.stringify({ date: date })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Ошибка при добавлении выходного');
+        }
+        showToast('Выходной успешно добавлен');
+        fetchAndRenderSchedule();
+    } catch (error) {
+        showToast(error.message || 'Ошибка при добавлении выходного', true);
+    }
+}
+
+async function removeMyDayOff(date) {
+    closeSuperManagerMenu();
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    const myUserId = parseJwt(token)?.id;
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
+            method: 'DELETE',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}`,
+                'Cache-Control': 'no-cache'
+            },
+            body: JSON.stringify({ date: date, userId: myUserId })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Ошибка при удалении выходного');
+        }
+        showToast('Выходной успешно удален');
+        fetchAndRenderSchedule();
+    } catch (error) {
+        showToast(error.message || 'Ошибка при удалении выходного', true);
+    }
+}
+
+async function removeUserDayOff(date, userId, username) {
+    closeSuperManagerMenu();
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
+            method: 'DELETE',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}`,
+                'Cache-Control': 'no-cache'
+            },
+            body: JSON.stringify({ date: date, userId: userId })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Ошибка при удалении выходного');
+        }
+        showToast(`Выходной ${username} успешно удален`);
+        fetchAndRenderSchedule();
+    } catch (error) {
+        showToast(error.message || 'Ошибка при удалении выходного', true);
     }
 }
