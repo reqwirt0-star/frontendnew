@@ -305,6 +305,17 @@ body.dark-mode .note-modal-header {
     color: rgba(255,255,255,0.8);
 }
 
+.schedule-day.other-group {
+    background: var(--accent-purple);
+    border-color: var(--accent-purple);
+    color: #fff;
+    opacity: 0.7;
+    cursor: pointer;
+}
+.schedule-day.other-group .schedule-day-label {
+    color: rgba(255,255,255,0.8);
+}
+
 
 .schedule-loader {
     grid-column: 1 / -1;
@@ -342,6 +353,7 @@ body.dark-mode .note-modal-header {
 .legend-item.available::before { border-color: var(--border-color); background: transparent; }
 .legend-item.my-day::before { border-color: var(--primary-blue); background: var(--primary-blue); }
 .legend-item.group-conflict::before { border-color: #ef4444; background: #ef4444; }
+.legend-item.other-group::before { border-color: var(--accent-purple); background: var(--accent-purple); }
 .legend-item.rule-conflict::before { border-color: var(--border-color); background: var(--background-main); }
 .legend-item.manager-occupied::before { border-color: var(--accent-purple); background: var(--accent-purple); }
 

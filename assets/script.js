@@ -129,10 +129,11 @@ async function fetchAndRenderMobileUsers() {
             if (user.role === 'manager') roleText = 'roleManager';
             else if (user.role === 'super_manager') roleText = 'roleSuperManager';
             roleText = getTranslatedText(roleText);
+            const groupText = user.group ? `, Группа ${user.group}` : '';
             userDiv.innerHTML = `
                 <div class="user-info">
                     <span class="username">${user.username}</span>
-                    <span class="role">${roleText}</span>
+                    <span class="role">${roleText}${groupText}</span>
                 </div>
                 <div class="user-actions">
                     <button class="delete-user-btn" data-username="${user.username}" ${userName === user.username ? 'disabled' : ''}>${getTranslatedText('deleteUserBtn')}</button>
@@ -210,6 +211,7 @@ async function createMobileUser(event) {
 "use strict";
 const API_BASE_URL = 'https://backendchater.fly.dev';
 let userRole = null;
+let userGroup = null;
 let appContent = {};
 let userName = null;
 let userFavorites = [];
@@ -1124,7 +1126,8 @@ function renderUserStatusCard() {
         }
         
         const hasAccess = userRole === 'manager' || userRole === 'super_manager';
-        cardElement.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;"><span style="font-weight: 600; color: var(--text-primary);">${texts.user}:</span><span style="font-weight: 700; color: var(--primary-blue);">${userName}</span></div><div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-weight: 600; color: var(--text-primary);">${texts.status}:</span><span style="font-weight: 700; color: ${statusColor};">${statusText}</span></div><div style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; text-align: center;"><span style="color: ${hasAccess ? 'var(--success-color)' : 'var(--text-secondary)'}; font-weight: 500;">${accessText}</span></div>`;
+        const groupText = userGroup ? `Группа ${userGroup}` : 'Без группы';
+        cardElement.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;"><span style="font-weight: 600; color: var(--text-primary);">${texts.user}:</span><span style="font-weight: 700; color: var(--primary-blue);">${userName}</span></div><div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;"><span style="font-weight: 600; color: var(--text-primary);">${texts.status}:</span><span style="font-weight: 700; color: ${statusColor};">${statusText}</span></div><div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;"><span style="font-weight: 600; color: var(--text-primary);">Группа:</span><span style="font-weight: 700; color: var(--text-secondary);">${groupText}</span></div><div style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; text-align: center;"><span style="color: ${hasAccess ? 'var(--success-color)' : 'var(--text-secondary)'}; font-weight: 500;">${accessText}</span></div>`;
     };
     
     const desktopCard = document.getElementById('user-status-card');
@@ -1821,6 +1824,7 @@ function switchEditorTab(tabName) {
     // Call the correct function for each tab
     if (tabName === 'users') {
         fetchAndRenderUsers();
+        loadGroupsForUserForm();
     } else if (tabName === 'managers') {
         buildManagerEditor();
     } else if (tabName === 'notifications') {
@@ -2134,6 +2138,47 @@ async function saveContent() {
     }
 }
 
+async function loadGroupsForUserForm() {
+    const groupSelect = document.getElementById('new-user-group');
+    const mobileGroupSelect = document.getElementById('mobile-new-user-group');
+    if (!groupSelect && !mobileGroupSelect) return;
+    
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/groups`, { 
+            headers: { 'Authorization': `Bearer ${token}` } 
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
+        
+        const groups = data.groups || [];
+        
+        // Обновляем десктопную форму
+        if (groupSelect) {
+            groupSelect.innerHTML = '<option value="">Без группы</option>';
+            groups.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group;
+                option.textContent = `Группа ${group}`;
+                groupSelect.appendChild(option);
+            });
+        }
+        
+        // Обновляем мобильную форму
+        if (mobileGroupSelect) {
+            mobileGroupSelect.innerHTML = '<option value="">Без группы</option>';
+            groups.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group;
+                option.textContent = `Группа ${group}`;
+                mobileGroupSelect.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading groups:', error);
+    }
+}
+
 async function fetchAndRenderUsers() {
     const listContainer = document.getElementById('user-list');
     if (!listContainer) return;
@@ -2154,10 +2199,11 @@ async function fetchAndRenderUsers() {
             if (user.role === 'manager') roleText = 'roleManager';
             else if (user.role === 'super_manager') roleText = 'roleSuperManager';
             roleText = getTranslatedText(roleText);
+            const groupText = user.group ? `, Группа ${user.group}` : '';
             userDiv.innerHTML = `
                 <div class="user-info">
                     <span class="username">${user.username}</span>
-                    <span class="role">${roleText}</span>
+                    <span class="role">${roleText}${groupText}</span>
                 </div>
                 <div class="user-actions">
                     <button class="delete-user-btn" data-username="${user.username}" ${userName === user.username ? 'disabled' : ''}>${getTranslatedText('deleteUserBtn')}</button>
@@ -2450,6 +2496,8 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
         if (!jwtData) return; // Не можем работать без данных пользователя
         
         const myUserId = jwtData.id;
+        const myGroup = jwtData.group || userGroup; // Получаем группу из токена или из переменной
+        if (myGroup && !userGroup) userGroup = myGroup; // Сохраняем группу в переменную
         
         // --- ИЗМЕНЕНИЕ: Разная логика для mySchedule ---
         let mySchedule = [];
@@ -2500,13 +2548,16 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
                         status = 'my-day'; 
                         dayEl.dataset.users = JSON.stringify([myBooking]); 
                     } else {
+                        // Для менеджеров показываем все занятые дни
                         status = 'manager-occupied'; 
-                        // Показываем username и роль в label
+                        // Показываем username, роль и группу в label
                         label = usersOnDay.map(d => {
                             const username = d.user ? d.user.username : '???';
                             const role = d.user ? d.user.role : '???';
+                            const group = d.user ? d.user.group : null;
                             const roleText = role === 'super_manager' ? ' (Супер-менеджер)' : role === 'manager' ? ' (Менеджер)' : '';
-                            return `${username}${roleText}`;
+                            const groupText = group ? `, Гр.${group}` : '';
+                            return `${username}${roleText}${groupText}`;
                         }).join(', ');
                         dayEl.innerHTML += `<div class="schedule-day-label">${label}</div>`;
                         dayEl.dataset.users = JSON.stringify(usersOnDay);
@@ -2539,12 +2590,18 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
                     // Проверяем, занят ли день кем-то другим
                     const isMyDay = (dayData.user && dayData.user.id === myUserId) || (dayData.user_id === myUserId);
                     if (!isMyDay) {
-                        // Проверяем, не занят ли день super_manager из группы
+                        // Проверяем группу пользователя, который занял день
+                        const occupiedUserGroup = dayData.user ? dayData.user.group : null;
                         const isSuperManagerDay = dayData.user && dayData.user.role === 'super_manager';
-                        if (isSuperManagerDay) {
-                            status = 'group-conflict'; // Блокируется super_manager
+                        
+                        // Если день занят кем-то из той же группы - красный (group-conflict)
+                        // Если день занят кем-то из другой группы - фиолетовый (other-group)
+                        if (isSuperManagerDay && occupiedUserGroup === myGroup) {
+                            status = 'group-conflict'; // Блокируется super_manager из своей группы
+                        } else if (occupiedUserGroup === myGroup) {
+                            status = 'group-conflict'; // Своя группа - красный
                         } else {
-                            status = 'group-conflict';
+                            status = 'other-group'; // Другая группа - фиолетовый
                         }
                     }
                 } else if (weekConflict || consecutiveConflict) {
@@ -2561,11 +2618,13 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
                     const tooltipText = usersOnDay.map(d => {
                         const username = d.user ? d.user.username : (d.user_id ? 'ID: ' + d.user_id : '???');
                         const role = d.user ? d.user.role : '???';
+                        const group = d.user ? d.user.group : null;
                         let roleText = '';
                         if (role === 'super_manager') roleText = ' (Супер-менеджер)';
                         else if (role === 'manager') roleText = ' (Менеджер)';
                         else if (role === 'employee') roleText = ' (Сотрудник)';
-                        return `${username}${roleText}`;
+                        const groupText = group ? `, Группа ${group}` : '';
+                        return `${username}${roleText}${groupText}`;
                     }).join('\n');
                     dayEl.title = tooltipText;
                 } else if (status === 'available') {
@@ -2575,7 +2634,12 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
                 dayEl.title = getTranslatedText('legendAvailable');
             } else if (status === 'group-conflict') {
                 const conflictUser = dayData ? (dayData.user ? dayData.user.username : '???') : '???';
-                dayEl.title = `${getTranslatedText('legendGroupConflict')}: ${conflictUser}`;
+                const conflictGroup = dayData && dayData.user ? (dayData.user.group ? `, Группа ${dayData.user.group}` : '') : '';
+                dayEl.title = `${getTranslatedText('legendGroupConflict')}: ${conflictUser}${conflictGroup}`;
+            } else if (status === 'other-group') {
+                const otherUser = dayData ? (dayData.user ? dayData.user.username : '???') : '???';
+                const otherGroup = dayData && dayData.user ? (dayData.user.group ? `, Группа ${dayData.user.group}` : '') : '';
+                dayEl.title = `Занято другой группой: ${otherUser}${otherGroup}`;
             } else if (status === 'rule-conflict') {
                 dayEl.title = getTranslatedText('legendRuleConflict');
             }
@@ -2607,6 +2671,7 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
                 <span class="legend-item available">${getTranslatedText('legendAvailable')}</span>
                 <span class="legend-item my-day">${getTranslatedText('legendMyDay')}</span>
                 <span class="legend-item group-conflict">${getTranslatedText('legendGroupConflict')}</span>
+                <span class="legend-item other-group">Занято другой группой</span>
                 <span class="legend-item rule-conflict">${getTranslatedText('legendRuleConflict')}</span>
             `;
         }
@@ -2636,7 +2701,8 @@ async function handleDayClick(event) {
     // --- ИЗМЕНЕНИЕ: Полностью переписана логика ---
 
     // 1. Попытка забронировать (для всех: менеджер + сотрудник)
-    if (status.includes('available')) {
+    // Также разрешаем бронирование дней другой группы (other-group)
+    if (status.includes('available') || status.includes('other-group')) {
         try {
             const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
                 method: 'POST',
@@ -2689,7 +2755,7 @@ async function handleDayClick(event) {
         }
     
     // 3. Попытка удалить ЧУЖОЙ (только для менеджера и super_manager)
-    } else if ((userRole === 'manager' || userRole === 'super_manager') && (status.includes('manager-occupied') || status.includes('group-conflict'))) {
+    } else if ((userRole === 'manager' || userRole === 'super_manager') && (status.includes('manager-occupied') || status.includes('group-conflict') || status.includes('other-group'))) {
         if (dayEl.dataset.users) {
             const usersOnDay = JSON.parse(dayEl.dataset.users);
             // --- ИСПРАВЛЕНИЕ: Убедимся, что user.id существует (он вложен) ---
