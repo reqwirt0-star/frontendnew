@@ -762,16 +762,234 @@ body.dark-mode .note-modal-header {
     letter-spacing: 0.5px;
 }
 
+.super-manager-day-menu .menu-item-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: var(--text-secondary);
+}
+
+.super-manager-day-menu .menu-item-disabled:hover {
+    background-color: transparent;
+    color: var(--text-secondary);
+}
+
+.super-manager-day-menu .menu-item-vacation {
+    color: #10b981;
+}
+
+.super-manager-day-menu .menu-item-vacation:hover {
+    background-color: #d1fae5;
+    color: #059669;
+}
+
+.super-manager-day-menu .menu-item-warning {
+    color: #f59e0b;
+}
+
+.super-manager-day-menu .menu-item-warning:hover {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+
+/* Стили для диалогов */
+.vacation-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 4000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    padding: 20px;
+}
+
+.vacation-dialog.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.vacation-dialog .dialog-content {
+    background-color: var(--background-card);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: scale(0.95);
+    transition: transform 0.2s ease;
+}
+
+.vacation-dialog.show .dialog-content {
+    transform: scale(1);
+}
+
+.vacation-dialog .dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.vacation-dialog .dialog-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.vacation-dialog .dialog-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.vacation-dialog .dialog-close:hover {
+    background-color: var(--light-blue-bg);
+    color: var(--primary-blue);
+}
+
+.vacation-dialog .dialog-body {
+    padding: 20px;
+}
+
+.vacation-dialog .dialog-body .form-group {
+    margin-bottom: 16px;
+}
+
+.vacation-dialog .dialog-body .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.vacation-dialog .dialog-body label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.vacation-dialog .dialog-body .form-group label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 8px;
+}
+
+.vacation-dialog .dialog-body .form-group input[type="radio"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.vacation-dialog .dialog-body .form-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-primary);
+    background-color: var(--background-main);
+    transition: all 0.2s ease;
+}
+
+.vacation-dialog .dialog-body .form-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.vacation-dialog .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.vacation-dialog .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.vacation-dialog .btn-secondary {
+    background-color: var(--background-main);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.vacation-dialog .btn-secondary:hover {
+    background-color: var(--light-blue-bg);
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+}
+
+.vacation-dialog .btn-primary {
+    background-color: var(--primary-blue);
+    color: #fff;
+}
+
+.vacation-dialog .btn-primary:hover {
+    background-color: var(--primary-blue-hover);
+}
+
+.vacation-dialog .btn-warning {
+    background-color: #f59e0b;
+    color: #fff;
+}
+
+.vacation-dialog .btn-warning:hover {
+    background-color: #d97706;
+}
+
 /* Адаптация для мобильных */
 @media (max-width: 768px) {
     .super-manager-day-menu {
         min-width: 260px;
         max-width: 90%;
-        left: 50% !important;
-        transform: translateX(-50%) scale(0.95);
     }
     
-    .super-manager-day-menu.show {
-        transform: translateX(-50%) scale(1);
+    .vacation-dialog {
+        padding: 10px;
+    }
+    
+    .vacation-dialog .dialog-content {
+        max-width: 100%;
+        max-height: 95vh;
+    }
+    
+    .vacation-dialog .dialog-header,
+    .vacation-dialog .dialog-body,
+    .vacation-dialog .dialog-footer {
+        padding: 16px;
+    }
+    
+    .vacation-dialog .dialog-footer {
+        flex-direction: column;
+    }
+    
+    .vacation-dialog .btn {
+        width: 100%;
     }
 }
