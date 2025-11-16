@@ -51,7 +51,7 @@ function setupMobileNavigation() {
     const editorInfoBtn = document.getElementById('mobile-editor-info-btn');
     const usersBtn = document.getElementById('mobile-users-btn');
     
-    if (userRole === 'manager') {
+    if (userRole === 'manager' || userRole === 'super_manager') {
         if (editorInfoBtn) {
             editorInfoBtn.style.display = 'flex';
             editorInfoBtn.addEventListener('click', () => {
@@ -125,7 +125,10 @@ async function fetchAndRenderMobileUsers() {
         users.forEach(user => {
             const userDiv = document.createElement('div');
             userDiv.className = 'user-list-item';
-            const roleText = getTranslatedText(user.role === 'manager' ? 'roleManager' : 'roleEmployee');
+            let roleText = 'roleEmployee';
+            if (user.role === 'manager') roleText = 'roleManager';
+            else if (user.role === 'super_manager') roleText = 'roleSuperManager';
+            roleText = getTranslatedText(roleText);
             userDiv.innerHTML = `
                 <div class="user-info">
                     <span class="username">${user.username}</span>
@@ -171,6 +174,12 @@ async function createMobileUser(event) {
         password: (passwordInput?.value || '').trim(),
         role: (roleSelect?.value || 'employee')
     };
+    
+    // Добавляем группу, если есть поле выбора группы
+    const groupSelect = form.querySelector('[data-field="group"]');
+    if (groupSelect && groupSelect.value) {
+        userData.group = parseInt(groupSelect.value);
+    }
 
     if (!userData.username || !userData.password) {
         showToast(getTranslatedText('missing_user_data'), true);
@@ -236,6 +245,7 @@ const uiTexts = {
         newUserPassword: 'Пароль',
         roleEmployee: 'Сотрудник',
         roleManager: 'Менеджер',
+        roleSuperManager: 'Супер-менеджер',
         addUserBtn: 'Создать',
         existingUsersTitle: 'Существующие пользователи',
         deleteUserBtn: 'Удалить',
@@ -369,6 +379,9 @@ const uiTexts = {
         notificationsTitle: 'Notifications',
         criticalAckBtn: 'Acknowledge',
         schedule_future_blocked: 'Booking is only available 2 months in advance.', // НОВЫЙ
+        roleEmployee: 'Employee',
+        roleManager: 'Manager',
+        roleSuperManager: 'Super Manager',
     },
     uk: {
         lang_locale: 'uk',
@@ -392,6 +405,9 @@ const uiTexts = {
         notificationsTitle: 'Сповіщення',
         criticalAckBtn: 'Ознайомлений',
         schedule_future_blocked: 'Бронювання доступне лише на 2 місяці вперед.', // НОВЫЙ
+        roleEmployee: 'Співробітник',
+        roleManager: 'Менеджер',
+        roleSuperManager: 'Супер-менеджер',
     }
 };
 
@@ -1097,17 +1113,18 @@ function renderUserStatusCard() {
         const texts = userStatusTexts[currentLang] || userStatusTexts.ru;
         let statusText, accessText, statusColor;
         
-        if (userRole === 'manager') {
-            statusText = texts.admin;
+        if (userRole === 'manager' || userRole === 'super_manager') {
+            statusText = userRole === 'super_manager' ? getTranslatedText('roleSuperManager') : texts.admin;
             accessText = texts.access;
-            statusColor = 'var(--accent-purple)';
+            statusColor = userRole === 'super_manager' ? 'var(--error-color)' : 'var(--accent-purple)';
         } else {
             statusText = texts.worker;
             accessText = texts.noAccess;
             statusColor = 'var(--text-secondary)';
         }
         
-        cardElement.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;"><span style="font-weight: 600; color: var(--text-primary);">${texts.user}:</span><span style="font-weight: 700; color: var(--primary-blue);">${userName}</span></div><div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-weight: 600; color: var(--text-primary);">${texts.status}:</span><span style="font-weight: 700; color: ${statusColor};">${statusText}</span></div><div style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; text-align: center;"><span style="color: ${userRole === 'manager' ? 'var(--success-color)' : 'var(--text-secondary)'}; font-weight: 500;">${accessText}</span></div>`;
+        const hasAccess = userRole === 'manager' || userRole === 'super_manager';
+        cardElement.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;"><span style="font-weight: 600; color: var(--text-primary);">${texts.user}:</span><span style="font-weight: 700; color: var(--primary-blue);">${userName}</span></div><div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-weight: 600; color: var(--text-primary);">${texts.status}:</span><span style="font-weight: 700; color: ${statusColor};">${statusText}</span></div><div style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; text-align: center;"><span style="color: ${hasAccess ? 'var(--success-color)' : 'var(--text-secondary)'}; font-weight: 500;">${accessText}</span></div>`;
     };
     
     const desktopCard = document.getElementById('user-status-card');
@@ -1496,7 +1513,7 @@ async function loadMobileAnalytics() {
 }
 
 function checkUserRoleAndSetupManagerUI() {
-    if (userRole === 'manager') {
+    if (userRole === 'manager' || userRole === 'super_manager') {
         if (isMobile()) {
             const openEditorBtn = document.getElementById('mobile-open-editor-btn');
             if (openEditorBtn) openEditorBtn.style.display = 'flex';
@@ -2133,7 +2150,10 @@ async function fetchAndRenderUsers() {
         users.forEach(user => {
             const userDiv = document.createElement('div');
             userDiv.className = 'user-list-item';
-            const roleText = getTranslatedText(user.role === 'manager' ? 'roleManager' : 'roleEmployee');
+            let roleText = 'roleEmployee';
+            if (user.role === 'manager') roleText = 'roleManager';
+            else if (user.role === 'super_manager') roleText = 'roleSuperManager';
+            roleText = getTranslatedText(roleText);
             userDiv.innerHTML = `
                 <div class="user-info">
                     <span class="username">${user.username}</span>
@@ -2165,12 +2185,18 @@ async function createUser(event) {
     const usernameInput = document.getElementById('new-username');
     const passwordInput = document.getElementById('new-password');
     const roleSelect = document.getElementById('new-user-role');
+    const groupSelect = document.getElementById('new-user-group');
 
     const userData = {
         username: usernameInput.value.trim(),
         password: passwordInput.value.trim(),
         role: roleSelect.value
     };
+    
+    // Добавляем группу, если выбрана
+    if (groupSelect && groupSelect.value) {
+        userData.group = parseInt(groupSelect.value);
+    }
 
     if (!userData.username || !userData.password) {
         showToast(getTranslatedText('missing_user_data'), true);
@@ -2192,6 +2218,7 @@ async function createUser(event) {
         showToast(getTranslatedText(result.message));
         usernameInput.value = '';
         passwordInput.value = '';
+        if (groupSelect) groupSelect.value = '';
         fetchAndRenderUsers();
     } catch (error) {
         showToast(getTranslatedText(error.message), true);
@@ -2426,12 +2453,16 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
         
         // --- ИЗМЕНЕНИЕ: Разная логика для mySchedule ---
         let mySchedule = [];
-        if (userRole === 'manager') {
-            // Менеджер получает data с { user: {id: ...} }
+        if (userRole === 'manager' || userRole === 'super_manager') {
+            // Менеджер и super_manager получают data с { user: {id: ...} }
             mySchedule = data.filter(d => d.user && d.user.id === myUserId).map(d => d.date_off);
         } else {
-            // Сотрудник получает data с { user_id: ... }
-            mySchedule = data.filter(d => d.user_id === myUserId).map(d => d.date_off);
+            // Сотрудник получает data с { user_id: ... } или { user: {id: ...} }
+            mySchedule = data.filter(d => {
+                if (d.user && d.user.id === myUserId) return true;
+                if (d.user_id === myUserId) return true;
+                return false;
+            }).map(d => d.date_off);
         }
         // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
@@ -2458,19 +2489,25 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
             
             const dayData = data.find(d => d.date_off === dayDate);
 
-            if (userRole === 'manager') {
-                // --- ИЗМЕНЕНИЕ: Упрощена логика для МЕНЕДЖЕРА ---
+            if (userRole === 'manager' || userRole === 'super_manager') {
+                // --- ИЗМЕНЕНИЕ: Упрощена логика для МЕНЕДЖЕРА и SUPER_MANAGER ---
                 dayEl.innerHTML = `<span>${day}</span>`;
                 const usersOnDay = data.filter(d => d.date_off === dayDate);
                 
                 if (usersOnDay.length > 0) {
-                    const myBooking = usersOnDay.find(d => d.user.id === myUserId); // <--- Только d.user.id
+                    const myBooking = usersOnDay.find(d => d.user && d.user.id === myUserId);
                     if (myBooking) {
                         status = 'my-day'; 
                         dayEl.dataset.users = JSON.stringify([myBooking]); 
                     } else {
                         status = 'manager-occupied'; 
-                        label = usersOnDay.map(d => d.user.username).join(', '); // <--- Только d.user.username
+                        // Показываем username и роль в label
+                        label = usersOnDay.map(d => {
+                            const username = d.user ? d.user.username : '???';
+                            const role = d.user ? d.user.role : '???';
+                            const roleText = role === 'super_manager' ? ' (Супер-менеджер)' : role === 'manager' ? ' (Менеджер)' : '';
+                            return `${username}${roleText}`;
+                        }).join(', ');
                         dayEl.innerHTML += `<div class="schedule-day-label">${label}</div>`;
                         dayEl.dataset.users = JSON.stringify(usersOnDay);
                     }
@@ -2498,15 +2535,51 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
 
                 if (mySchedule.includes(dayDate)) {
                     status = 'my-day';
-                } else if (dayData && dayData.user_id !== myUserId) { 
-                    // --- ИСПРАВЛЕНИЕ: День занят кем-то другим (не важно, из группы или нет) ---
-                    status = 'group-conflict';
+                } else if (dayData) {
+                    // Проверяем, занят ли день кем-то другим
+                    const isMyDay = (dayData.user && dayData.user.id === myUserId) || (dayData.user_id === myUserId);
+                    if (!isMyDay) {
+                        // Проверяем, не занят ли день super_manager из группы
+                        const isSuperManagerDay = dayData.user && dayData.user.role === 'super_manager';
+                        if (isSuperManagerDay) {
+                            status = 'group-conflict'; // Блокируется super_manager
+                        } else {
+                            status = 'group-conflict';
+                        }
+                    }
                 } else if (weekConflict || consecutiveConflict) {
                     status = 'rule-conflict';
                 }
             }
             
             dayEl.classList.add(status);
+
+            // --- НОВОЕ: Добавляем hover-информацию (tooltip) ---
+            if (dayData || (userRole === 'manager' || userRole === 'super_manager')) {
+                const usersOnDay = data.filter(d => d.date_off === dayDate);
+                if (usersOnDay.length > 0) {
+                    const tooltipText = usersOnDay.map(d => {
+                        const username = d.user ? d.user.username : (d.user_id ? 'ID: ' + d.user_id : '???');
+                        const role = d.user ? d.user.role : '???';
+                        let roleText = '';
+                        if (role === 'super_manager') roleText = ' (Супер-менеджер)';
+                        else if (role === 'manager') roleText = ' (Менеджер)';
+                        else if (role === 'employee') roleText = ' (Сотрудник)';
+                        return `${username}${roleText}`;
+                    }).join('\n');
+                    dayEl.title = tooltipText;
+                } else if (status === 'available') {
+                    dayEl.title = getTranslatedText('legendAvailable');
+                }
+            } else if (status === 'available') {
+                dayEl.title = getTranslatedText('legendAvailable');
+            } else if (status === 'group-conflict') {
+                const conflictUser = dayData ? (dayData.user ? dayData.user.username : '???') : '???';
+                dayEl.title = `${getTranslatedText('legendGroupConflict')}: ${conflictUser}`;
+            } else if (status === 'rule-conflict') {
+                dayEl.title = getTranslatedText('legendRuleConflict');
+            }
+            // --- КОНЕЦ НОВОГО КОДА ---
 
             // --- ИЗМЕНЕНИЕ: Блокируем клики на прошедших днях ---
             if (isPastDay) {
@@ -2521,8 +2594,8 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
         }
         
         // Рендер легенды
-        if (userRole === 'manager') {
-            // --- ИЗМЕНЕНИЕ: Менеджер теперь видит "Мой выходной" ---
+        if (userRole === 'manager' || userRole === 'super_manager') {
+            // --- ИЗМЕНЕНИЕ: Менеджер и super_manager теперь видят "Мой выходной" ---
             legendEl.innerHTML = `
                 <span class="legend-item available">${getTranslatedText('legendAvailable')}</span>
                 <span class="legend-item my-day">${getTranslatedText('legendMyDay')}</span>
@@ -2615,8 +2688,8 @@ async function handleDayClick(event) {
             }
         }
     
-    // 3. Попытка удалить ЧУЖОЙ (только для менеджера)
-    } else if (userRole === 'manager' && (status.includes('manager-occupied') || status.includes('group-conflict'))) {
+    // 3. Попытка удалить ЧУЖОЙ (только для менеджера и super_manager)
+    } else if ((userRole === 'manager' || userRole === 'super_manager') && (status.includes('manager-occupied') || status.includes('group-conflict'))) {
         if (dayEl.dataset.users) {
             const usersOnDay = JSON.parse(dayEl.dataset.users);
             // --- ИСПРАВЛЕНИЕ: Убедимся, что user.id существует (он вложен) ---
