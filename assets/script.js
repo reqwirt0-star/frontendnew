@@ -721,6 +721,11 @@ function switchLanguage(lang) {
         if (analyticsPanel && analyticsPanel.style.display === 'block') {
             analyticsPanel.dispatchEvent(new Event('languageChange'));
         }
+        
+        // Обновляем календарь при смене языка для корректного отображения групп
+        if (scheduleCurrentDate) {
+            fetchAndRenderSchedule();
+        }
         // Recalculate segmented control glider after translated labels change width
         // --- ИЗМЕНЕНИЕ: Добавлена проверка на оба меню ---
         const managerControls = document.querySelector('div.manager-controls-segmented:not(#employee-controls-segmented)');
@@ -2518,6 +2523,41 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
         const today = luxon.DateTime.local().startOf('day');
         // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
+        // --- НОВАЯ ФУНКЦИЯ: Форматирование информации о пользователе ---
+        const formatUserInfo = (user, useInitials = false) => {
+            const username = user.user ? user.user.username : (user.user_id ? 'ID: ' + user.user_id : '???');
+            const role = user.user ? user.user.role : '???';
+            const group = user.user ? user.user.group : null;
+            
+            // Сокращения ролей
+            let roleShort = '';
+            if (role === 'super_manager') roleShort = 'SM';
+            else if (role === 'manager') roleShort = 'M';
+            else if (role === 'employee') roleShort = 'E';
+            else roleShort = '?';
+            
+            // Имя или инициалы
+            let nameDisplay = username;
+            if (useInitials && username.length > 0) {
+                nameDisplay = username.charAt(0).toUpperCase();
+            }
+            
+            // Группа: показываем число или "—" если нет группы
+            const groupText = group !== null && group !== undefined ? group : '—';
+            return `${nameDisplay} (${roleShort}, ${groupText})`;
+        };
+
+        // --- НОВАЯ ФУНКЦИЯ: Форматирование списка пользователей для отображения ---
+        const formatUsersList = (users, maxVisible = 2, useInitials = false) => {
+            if (users.length === 0) return '';
+            if (users.length <= maxVisible) {
+                return users.map(u => formatUserInfo(u, useInitials)).join(', ');
+            }
+            const visible = users.slice(0, maxVisible);
+            const remaining = users.length - maxVisible;
+            return visible.map(u => formatUserInfo(u, useInitials)).join(', ') + `, +${remaining}`;
+        };
+
         for (let day = 1; day <= daysInMonth; day++) {
             const dayEl = document.createElement('div');
             dayEl.className = 'schedule-day';
@@ -2533,124 +2573,126 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
             // --- КОНЕЦ ИЗМЕНЕНИЯ ---
             
             let status = 'available';
-            let label = '';
+            let usersOnDay = data.filter(d => d.date_off === dayDate);
+            const isMobileDevice = isMobile();
+            const useInitials = isMobileDevice;
             
-            const dayData = data.find(d => d.date_off === dayDate);
-
-            if (userRole === 'manager' || userRole === 'super_manager') {
-                // --- ИЗМЕНЕНИЕ: Упрощена логика для МЕНЕДЖЕРА и SUPER_MANAGER ---
-                dayEl.innerHTML = `<span>${day}</span>`;
-                const usersOnDay = data.filter(d => d.date_off === dayDate);
-                
-                if (usersOnDay.length > 0) {
-                    const myBooking = usersOnDay.find(d => d.user && d.user.id === myUserId);
-                    if (myBooking) {
-                        status = 'my-day'; 
-                        dayEl.dataset.users = JSON.stringify([myBooking]); 
-                    } else {
-                        // Для менеджеров показываем все занятые дни
-                        status = 'manager-occupied'; 
-                        // Показываем username, роль и группу в label
-                        label = usersOnDay.map(d => {
-                            const username = d.user ? d.user.username : '???';
-                            const role = d.user ? d.user.role : '???';
-                            const group = d.user ? d.user.group : null;
-                            const roleText = role === 'super_manager' ? ' (Супер-менеджер)' : role === 'manager' ? ' (Менеджер)' : '';
-                            const groupText = group ? `, Гр.${group}` : '';
-                            return `${username}${roleText}${groupText}`;
-                        }).join(', ');
-                        dayEl.innerHTML += `<div class="schedule-day-label">${label}</div>`;
-                        dayEl.dataset.users = JSON.stringify(usersOnDay);
-                    }
-                }
-                // --- КОНЕЦ ИЗМЕНЕНИЯ ---
-            } else {
-                // --- ЛОГИКА СОТРУДНИКА ---
-                dayEl.innerHTML = `<span>${day}</span>`;
-                
-                // --- ИЗМЕНЕНИЕ: Используем Luxon для определения недели (Пн-Вс) ---
-                const dayLuxonForWeek = luxon.DateTime.fromISO(dayDate);
-                const weekStart = dayLuxonForWeek.startOf('week'); // Понедельник
-                const weekEnd = dayLuxonForWeek.endOf('week'); // Воскресенье
-                
-                const weekConflict = mySchedule.find(d => {
-                    if (d === dayDate) return false;
-                    const dLuxon = luxon.DateTime.fromISO(d);
-                    return dLuxon >= weekStart && dLuxon <= weekEnd;
+            // Определяем статус и цвет в зависимости от роли и группы
+            if (usersOnDay.length > 0) {
+                const myBooking = usersOnDay.find(d => {
+                    if (d.user && d.user.id === myUserId) return true;
+                    if (d.user_id === myUserId) return true;
+                    return false;
                 });
-                // --- КОНЕЦ ИЗМЕНЕНИЯ ---
                 
-                const dayBefore = luxon.DateTime.fromISO(dayDate).minus({ days: 1 }).toISODate();
-                const dayAfter = luxon.DateTime.fromISO(dayDate).plus({ days: 1 }).toISODate();
-                const consecutiveConflict = mySchedule.find(d => d === dayBefore || d === dayAfter);
-
-                if (mySchedule.includes(dayDate)) {
+                if (myBooking) {
                     status = 'my-day';
-                } else if (dayData) {
-                    // Проверяем, занят ли день кем-то другим
-                    const isMyDay = (dayData.user && dayData.user.id === myUserId) || (dayData.user_id === myUserId);
-                    if (!isMyDay) {
-                        // Проверяем группу пользователя, который занял день
-                        const occupiedUserGroup = dayData.user ? dayData.user.group : null;
-                        const isSuperManagerDay = dayData.user && dayData.user.role === 'super_manager';
+                } else {
+                    // Определяем группы всех пользователей
+                    const userGroups = usersOnDay.map(u => u.user ? u.user.group : null).filter(g => g !== null);
+                    const uniqueGroups = [...new Set(userGroups)];
+                    const firstUser = usersOnDay[0];
+                    const firstUserGroup = firstUser.user ? firstUser.user.group : null;
+                    
+                    if (userRole === 'manager' || userRole === 'super_manager') {
+                        // Менеджеры видят все дни
+                        status = 'manager-occupied';
+                        // Цвет по группе первого пользователя (или приоритет группе 1, если смешанные)
+                        // Если есть группа 1 - используем синий, иначе фиолетовый для группы 2
+                        if (uniqueGroups.includes(1)) {
+                            dayEl.classList.add('group-1');
+                            status = 'manager-occupied'; // Синий цвет для группы 1
+                        } else if (uniqueGroups.includes(2)) {
+                            dayEl.classList.add('group-2');
+                            status = 'manager-occupied'; // Фиолетовый цвет для группы 2
+                        }
+                    } else {
+                        // Для сотрудников определяем статус по группе
+                        // Проверяем, есть ли пользователи из нашей группы
+                        const hasMyGroup = userGroups.includes(myGroup);
+                        const isSuperManagerDay = usersOnDay.some(u => u.user && u.user.role === 'super_manager' && u.user.group === myGroup);
                         
-                        // Если день занят кем-то из той же группы - красный (group-conflict)
-                        // Если день занят кем-то из другой группы - фиолетовый (other-group)
-                        if (isSuperManagerDay && occupiedUserGroup === myGroup) {
+                        if (isSuperManagerDay) {
                             status = 'group-conflict'; // Блокируется super_manager из своей группы
-                        } else if (occupiedUserGroup === myGroup) {
+                        } else if (hasMyGroup) {
                             status = 'group-conflict'; // Своя группа - красный
                         } else {
-                            status = 'other-group'; // Другая группа - фиолетовый
+                            status = 'other-group'; // Другая группа - фиолетовый по умолчанию
+                            // Добавляем класс группы для цвета (приоритет группе 1)
+                            if (uniqueGroups.includes(1)) {
+                                dayEl.classList.add('group-1');
+                                // Для группы 1 используем синий цвет вместо фиолетового
+                            } else if (uniqueGroups.includes(2)) {
+                                dayEl.classList.add('group-2');
+                                // Для группы 2 используем фиолетовый цвет
+                            }
                         }
                     }
-                } else if (weekConflict || consecutiveConflict) {
-                    status = 'rule-conflict';
+                }
+            } else {
+                // Проверяем правила для сотрудников
+                if (userRole !== 'manager' && userRole !== 'super_manager') {
+                    const dayLuxonForWeek = luxon.DateTime.fromISO(dayDate);
+                    const weekStart = dayLuxonForWeek.startOf('week');
+                    const weekEnd = dayLuxonForWeek.endOf('week');
+                    
+                    const weekConflict = mySchedule.find(d => {
+                        if (d === dayDate) return false;
+                        const dLuxon = luxon.DateTime.fromISO(d);
+                        return dLuxon >= weekStart && dLuxon <= weekEnd;
+                    });
+                    
+                    const dayBefore = luxon.DateTime.fromISO(dayDate).minus({ days: 1 }).toISODate();
+                    const dayAfter = luxon.DateTime.fromISO(dayDate).plus({ days: 1 }).toISODate();
+                    const consecutiveConflict = mySchedule.find(d => d === dayBefore || d === dayAfter);
+                    
+                    if (weekConflict || consecutiveConflict) {
+                        status = 'rule-conflict';
+                    }
                 }
             }
+            
+            // Формируем содержимое квадратика
+            let dayContent = `<span class="schedule-day-number">${day}</span>`;
+            
+            if (usersOnDay.length > 0) {
+                // Показываем информацию о пользователях внутри квадратика
+                const maxVisible = isMobileDevice ? 2 : 3;
+                const usersText = formatUsersList(usersOnDay, maxVisible, useInitials);
+                dayContent += `<div class="schedule-day-users">${usersText}</div>`;
+                dayEl.dataset.users = JSON.stringify(usersOnDay);
+            }
+            
+            dayEl.innerHTML = dayContent;
             
             dayEl.classList.add(status);
 
-            // --- НОВОЕ: Добавляем hover-информацию (tooltip) ---
-            if (dayData || (userRole === 'manager' || userRole === 'super_manager')) {
-                const usersOnDay = data.filter(d => d.date_off === dayDate);
-                if (usersOnDay.length > 0) {
-                    const tooltipText = usersOnDay.map(d => {
-                        const username = d.user ? d.user.username : (d.user_id ? 'ID: ' + d.user_id : '???');
-                        const role = d.user ? d.user.role : '???';
-                        const group = d.user ? d.user.group : null;
-                        let roleText = '';
-                        if (role === 'super_manager') roleText = ' (Супер-менеджер)';
-                        else if (role === 'manager') roleText = ' (Менеджер)';
-                        else if (role === 'employee') roleText = ' (Сотрудник)';
-                        const groupText = group ? `, Группа ${group}` : '';
-                        return `${username}${roleText}${groupText}`;
-                    }).join('\n');
-                    dayEl.title = tooltipText;
-                } else if (status === 'available') {
-                    dayEl.title = getTranslatedText('legendAvailable');
-                }
+            // --- НОВОЕ: Добавляем hover-информацию (tooltip) с полной информацией ---
+            if (usersOnDay.length > 0) {
+                const tooltipText = usersOnDay.map(d => formatUserInfo(d, false)).join('\n');
+                dayEl.title = tooltipText;
             } else if (status === 'available') {
                 dayEl.title = getTranslatedText('legendAvailable');
-            } else if (status === 'group-conflict') {
-                const conflictUser = dayData ? (dayData.user ? dayData.user.username : '???') : '???';
-                const conflictGroup = dayData && dayData.user ? (dayData.user.group ? `, Группа ${dayData.user.group}` : '') : '';
-                dayEl.title = `${getTranslatedText('legendGroupConflict')}: ${conflictUser}${conflictGroup}`;
-            } else if (status === 'other-group') {
-                const otherUser = dayData ? (dayData.user ? dayData.user.username : '???') : '???';
-                const otherGroup = dayData && dayData.user ? (dayData.user.group ? `, Группа ${dayData.user.group}` : '') : '';
-                dayEl.title = `Занято другой группой: ${otherUser}${otherGroup}`;
             } else if (status === 'rule-conflict') {
                 dayEl.title = getTranslatedText('legendRuleConflict');
             }
-            // --- КОНЕЦ НОВОГО КОДА ---
-
+            
             // --- ИЗМЕНЕНИЕ: Блокируем клики на прошедших днях ---
             if (isPastDay) {
                 dayEl.classList.add('past-day');
                 // Не добавляем .onclick, делая ячейку неактивной
             } else {
-                dayEl.onclick = handleDayClick; // Клики разрешены
+                // Для мобильной версии: если день занят другими, показываем popup при клике
+                if (isMobileDevice && usersOnDay.length > 0 && status !== 'my-day' && status !== 'available' && status !== 'other-group') {
+                    dayEl.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        showMobileDayPopup(dayDate, usersOnDay);
+                    });
+                } else {
+                    // Для всех остальных случаев используем стандартный обработчик
+                    dayEl.onclick = handleDayClick;
+                }
             }
             // --- КОНЕЦ ИЗМЕНЕНИЯ ---
             
@@ -2663,7 +2705,8 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
             legendEl.innerHTML = `
                 <span class="legend-item available">${getTranslatedText('legendAvailable')}</span>
                 <span class="legend-item my-day">${getTranslatedText('legendMyDay')}</span>
-                <span class="legend-item manager-occupied">${getTranslatedText('legendManagerAll')}</span>
+                <span class="legend-item manager-occupied group-1">Группа 1</span>
+                <span class="legend-item manager-occupied group-2">Группа 2</span>
             `;
             // --- КОНЕЦ ИЗМЕНЕНИЯ ---
         } else {
@@ -2671,7 +2714,8 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
                 <span class="legend-item available">${getTranslatedText('legendAvailable')}</span>
                 <span class="legend-item my-day">${getTranslatedText('legendMyDay')}</span>
                 <span class="legend-item group-conflict">${getTranslatedText('legendGroupConflict')}</span>
-                <span class="legend-item other-group">Занято другой группой</span>
+                <span class="legend-item other-group group-1">Группа 1 (другая)</span>
+                <span class="legend-item other-group group-2">Группа 2 (другая)</span>
                 <span class="legend-item rule-conflict">${getTranslatedText('legendRuleConflict')}</span>
             `;
         }
@@ -2817,3 +2861,66 @@ const getWeekNumber = (d) => {
     const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     return [d.getUTCFullYear(), weekNo];
 };
+
+// --- НОВАЯ ФУНКЦИЯ: Показ popup для мобильной версии ---
+function showMobileDayPopup(date, users) {
+    // Создаем или получаем popup элемент
+    let popup = document.getElementById('schedule-day-popup');
+    if (!popup) {
+        popup = document.createElement('div');
+        popup.id = 'schedule-day-popup';
+        popup.className = 'schedule-day-popup';
+        document.body.appendChild(popup);
+    }
+    
+    // Форматируем дату
+    const dateObj = luxon.DateTime.fromISO(date);
+    const currentLang = getLocalStorage('chaterlabLang', 'ru');
+    const dateFormatted = dateObj.setLocale(currentLang).toFormat('d MMMM yyyy');
+    
+    // Формируем список пользователей с полной информацией
+    const usersList = users.map(u => {
+        const username = u.user ? u.user.username : '???';
+        const role = u.user ? u.user.role : '???';
+        const group = u.user ? u.user.group : null;
+        
+        let roleText = '';
+        if (role === 'super_manager') roleText = getTranslatedText('roleSuperManager');
+        else if (role === 'manager') roleText = getTranslatedText('roleManager');
+        else if (role === 'employee') roleText = getTranslatedText('roleEmployee');
+        else roleText = '???';
+        
+        const groupText = group !== null && group !== undefined ? `, Группа ${group}` : '';
+        return `<div class="popup-user-item">${username} (${roleText}${groupText})</div>`;
+    }).join('');
+    
+    popup.innerHTML = `
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3>${dateFormatted}</h3>
+                <button class="popup-close" onclick="closeScheduleDayPopup()">×</button>
+            </div>
+            <div class="popup-users-list">${usersList}</div>
+        </div>
+    `;
+    
+    popup.classList.add('show');
+    
+    // Закрытие по клику вне popup
+    setTimeout(() => {
+        const closeHandler = (e) => {
+            if (!popup.contains(e.target) && e.target !== popup) {
+                closeScheduleDayPopup();
+                document.removeEventListener('click', closeHandler);
+            }
+        };
+        document.addEventListener('click', closeHandler);
+    }, 100);
+}
+
+function closeScheduleDayPopup() {
+    const popup = document.getElementById('schedule-day-popup');
+    if (popup) {
+        popup.classList.remove('show');
+    }
+}
