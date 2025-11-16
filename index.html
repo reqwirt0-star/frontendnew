@@ -200,13 +200,13 @@
                         </div>
                         <div id="mobile-schedule-container" class="schedule-container">
                             <!-- Дни недели -->
-                            <div class="schedule-day-header">Пн</div>
-                            <div class="schedule-day-header">Вт</div>
-                            <div class="schedule-day-header">Ср</div>
-                            <div class="schedule-day-header">Чт</div>
-                            <div class="schedule-day-header">Пт</div>
-                            <div class="schedule-day-header">Сб</div>
-                            <div class="schedule-day-header">Вс</div>
+                            <div class="schedule-day-header" data-key="weekdayMon">Пн</div>
+                            <div class="schedule-day-header" data-key="weekdayTue">Вт</div>
+                            <div class="schedule-day-header" data-key="weekdayWed">Ср</div>
+                            <div class="schedule-day-header" data-key="weekdayThu">Чт</div>
+                            <div class="schedule-day-header" data-key="weekdayFri">Пт</div>
+                            <div class="schedule-day-header" data-key="weekdaySat">Сб</div>
+                            <div class="schedule-day-header" data-key="weekdaySun">Вс</div>
                              <!-- Сюда будут рендериться дни -->
                         </div>
                         <div id="mobile-schedule-legend" class="schedule-legend"></div>
@@ -405,13 +405,13 @@
                         </div>
                         <div id="schedule-container" class="schedule-container">
                             <!-- Дни недели -->
-                            <div class="schedule-day-header">Пн</div>
-                            <div class="schedule-day-header">Вт</div>
-                            <div class="schedule-day-header">Ср</div>
-                            <div class="schedule-day-header">Чт</div>
-                            <div class="schedule-day-header">Пт</div>
-                            <div class="schedule-day-header">Сб</div>
-                            <div class="schedule-day-header">Вс</div>
+                            <div class="schedule-day-header" data-key="weekdayMon">Пн</div>
+                            <div class="schedule-day-header" data-key="weekdayTue">Вт</div>
+                            <div class="schedule-day-header" data-key="weekdayWed">Ср</div>
+                            <div class="schedule-day-header" data-key="weekdayThu">Чт</div>
+                            <div class="schedule-day-header" data-key="weekdayFri">Пт</div>
+                            <div class="schedule-day-header" data-key="weekdaySat">Сб</div>
+                            <div class="schedule-day-header" data-key="weekdaySun">Вс</div>
                             <!-- Сюда будут рендериться дни -->
                         </div>
                         <div id="schedule-legend" class="schedule-legend"></div>
@@ -479,10 +479,10 @@
 
     <!-- Notifications Modal -->
     <div id="notifications-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width:720px">
+        <div class="modal-content">
             <h3 data-key="notificationsTitle">Оповещения</h3>
             <div id="notifications-list"></div>
-            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+            <div class="modal-buttons">
                 <button id="notifications-close-btn" data-key="modalCancel">Закрыть</button>
             </div>
         </div>

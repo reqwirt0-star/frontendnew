@@ -115,7 +115,7 @@ async function fetchAndRenderMobileUsers() {
     const token = getLocalStorage('chaterlabAuthToken', '');
     
     try {
-        const response = await fetch(`${API_BASE_URL}/api/users`, { 
+        const response = await apiFetch(`${API_BASE_URL}/api/users`, { 
             headers: { 'Authorization': `Bearer ${token}` } 
         });
         const users = await response.json();
@@ -189,7 +189,7 @@ async function createMobileUser(event) {
 
     const token = getLocalStorage('chaterlabAuthToken', '');
     try {
-        const response = await fetch(`${API_BASE_URL}/api/users/create`, {
+        const response = await apiFetch(`${API_BASE_URL}/api/users/create`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 
@@ -215,6 +215,45 @@ let userGroup = null;
 let appContent = {};
 let userName = null;
 let userFavorites = [];
+
+// --- ГЛОБАЛЬНАЯ ОБРАБОТКА ОШИБОК АВТОРИЗАЦИИ ---
+// Обертка для fetch, которая автоматически обрабатывает ошибки авторизации
+async function apiFetch(url, options = {}) {
+    try {
+        const response = await fetch(url, options);
+        
+        // Проверяем статусы ошибок авторизации
+        if (response.status === 401 || response.status === 403) {
+            const data = await response.json().catch(() => ({}));
+            const errorMessage = data.message || '';
+            
+            // Если это ошибка авторизации (invalid_token, access_denied, user_not_found и т.д.)
+            if (errorMessage === 'invalid_token' || 
+                errorMessage === 'access_denied' || 
+                errorMessage === 'user_not_found' ||
+                errorMessage === 'token_not_provided' ||
+                response.status === 401 || 
+                response.status === 403) {
+                // Принудительный логаут
+                logout();
+                throw new Error(errorMessage || 'unauthorized');
+            }
+        }
+        
+        return response;
+    } catch (error) {
+        // Если это уже обработанная ошибка авторизации, пробрасываем дальше
+        if (error.message === 'unauthorized' || 
+            error.message === 'invalid_token' || 
+            error.message === 'access_denied' || 
+            error.message === 'user_not_found') {
+            throw error;
+        }
+        
+        // Для других ошибок просто пробрасываем
+        throw error;
+    }
+}
 // НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ ГРАФИКА
 let scheduleData = [];
 let scheduleCurrentDate = null; // <-- ИСПРАВЛЕНО: Убрана инициализация luxon
@@ -357,7 +396,33 @@ const uiTexts = {
         analyticsNotAvailable: 'Аналитика доступна только менеджерам',
         headerSubtitle: 'Быстрые ответы',
         notificationsTitle: 'Оповещения',
-        criticalAckBtn: 'Я ознакомлен'
+        criticalAckBtn: 'Я ознакомлен',
+        notificationsHistory: 'История оповещений',
+        notifyTitleLabel: 'Заголовок',
+        notifyBodyLabel: 'Текст',
+        notifyCriticalLabel: 'Критическое оповещение',
+        publishBtn: 'Опубликовать',
+        tabNotifications: 'Оповещения',
+        deleteNotification: 'Удалить оповещение',
+        deleteNotificationConfirm: 'Вы уверены, что хотите удалить это оповещение?',
+        notification_deactivated: 'Оповещение деактивировано',
+        active: 'Активно',
+        inactive: 'Неактивно',
+        OK: 'OK',
+        weekdayMon: 'Пн',
+        weekdayTue: 'Вт',
+        weekdayWed: 'Ср',
+        weekdayThu: 'Чт',
+        weekdayFri: 'Пт',
+        weekdaySat: 'Сб',
+        weekdaySun: 'Вс',
+        addMyDayOff: 'Поставити свій вихідний',
+        userLabel: 'Користувач:',
+        startDateLabel: 'Дата початку:',
+        endDateLabel: 'Дата закінчення:',
+        blockDayLabel: 'Заблокувати день',
+        dateLabel: 'Дата:',
+        selectGroupLabel: 'Виберіть групу:',
     },
     en: {
         lang_locale: 'en',
@@ -384,6 +449,71 @@ const uiTexts = {
         roleEmployee: 'Employee',
         roleManager: 'Manager',
         roleSuperManager: 'Super Manager',
+        notificationsHistory: 'Notifications History',
+        notifyTitleLabel: 'Title',
+        notifyBodyLabel: 'Text',
+        notifyCriticalLabel: 'Critical notification',
+        publishBtn: 'Publish',
+        tabNotifications: 'Notifications',
+        deleteNotification: 'Delete notification',
+        deleteNotificationConfirm: 'Are you sure you want to delete this notification?',
+        notification_deactivated: 'Notification deactivated',
+        active: 'Active',
+        inactive: 'Inactive',
+        OK: 'OK',
+        legendAvailable: 'Available',
+        legendMyDay: 'My day off',
+        legendGroupConflict: 'Occupied (group)',
+        legendRuleConflict: 'Conflict (rule)',
+        legendManagerAll: 'Occupied (others)',
+        conflict_group_conflict: 'This day is already taken by someone from your group.',
+        conflict_weekly_limit: 'You have already chosen a day off this week.',
+        conflict_consecutive_day: 'Cannot take two consecutive days off.',
+        dayOffDeleted: 'Day off deleted.',
+        deleteDayOffConfirm: 'Are you sure you want to delete this day off?',
+        deleteForUserConfirm: 'Delete day off for user {username}?',
+        pastDay: 'Past day',
+        group1: 'Group 1',
+        group2: 'Group 2',
+        group1Other: 'Group 1 (other)',
+        group2Other: 'Group 2 (other)',
+        assignDayOff: 'Assign day off',
+        selectEmployee: 'Select employee',
+        selectGroup: 'Select group',
+        allGroups: 'All groups',
+        assignVacation: 'Assign vacation',
+        blockDay: 'Block day for group',
+        removeMyDayOff: 'Remove my day off',
+        assignDayOffToEmployee: 'Assign day off to employee',
+        removeDayOffFor: 'Remove day off for',
+        assignVacationPeriod: 'Assign vacation for period',
+        blockDayForGroup: 'Block day for group',
+        selectStartDate: 'Select start date',
+        selectEndDate: 'Select end date',
+        selectBlockType: 'Select block type',
+        errorLoadingEmployees: 'Error loading employees',
+        errorLoadingUsers: 'Error loading users',
+        dayOffAssigned: 'Day off assigned',
+        dayOffAssignedTo: 'Day off assigned to user {username}',
+        errorAssigningDayOff: 'Error assigning day off',
+        errorDeletingDayOff: 'Error deleting day off',
+        dayOffRemoved: 'Day off removed',
+        dayOffRemovedFor: 'Day off removed for {username}',
+        weekLimitMessage: 'You can only assign days off for the current and next week',
+        weekdayMon: 'Mon',
+        weekdayTue: 'Tue',
+        weekdayWed: 'Wed',
+        weekdayThu: 'Thu',
+        weekdayFri: 'Fri',
+        weekdaySat: 'Sat',
+        weekdaySun: 'Sun',
+        addMyDayOff: 'Add my day off',
+        userLabel: 'User:',
+        startDateLabel: 'Start date:',
+        endDateLabel: 'End date:',
+        blockDayLabel: 'Block day',
+        dateLabel: 'Date:',
+        selectGroupLabel: 'Select group:',
     },
     uk: {
         lang_locale: 'uk',
@@ -410,6 +540,71 @@ const uiTexts = {
         roleEmployee: 'Співробітник',
         roleManager: 'Менеджер',
         roleSuperManager: 'Супер-менеджер',
+        notificationsHistory: 'Історія сповіщень',
+        notifyTitleLabel: 'Заголовок',
+        notifyBodyLabel: 'Текст',
+        notifyCriticalLabel: 'Критичне сповіщення',
+        publishBtn: 'Опублікувати',
+        tabNotifications: 'Сповіщення',
+        deleteNotification: 'Видалити сповіщення',
+        deleteNotificationConfirm: 'Ви впевнені, що хочете видалити це сповіщення?',
+        notification_deactivated: 'Сповіщення деактивовано',
+        active: 'Активно',
+        inactive: 'Неактивно',
+        OK: 'OK',
+        legendAvailable: 'Доступно',
+        legendMyDay: 'Мій вихідний',
+        legendGroupConflict: 'Зайнято (група)',
+        legendRuleConflict: 'Конфлікт (правило)',
+        legendManagerAll: 'Зайнято (інші)',
+        conflict_group_conflict: 'Цей день вже зайнятий кимось з вашої групи.',
+        conflict_weekly_limit: 'Ви вже вибрали вихідний на цьому тижні.',
+        conflict_consecutive_day: 'Не можна брати два вихідні дні підряд.',
+        dayOffDeleted: 'Вихідний видалено.',
+        deleteDayOffConfirm: 'Ви впевнені, що хочете видалити цей вихідний?',
+        deleteForUserConfirm: 'Видалити вихідний для користувача {username}?',
+        pastDay: 'Минулий день',
+        group1: 'Група 1',
+        group2: 'Група 2',
+        group1Other: 'Група 1 (інша)',
+        group2Other: 'Група 2 (інша)',
+        assignDayOff: 'Призначити вихідний',
+        selectEmployee: 'Виберіть співробітника',
+        selectGroup: 'Виберіть групу',
+        allGroups: 'Всі групи',
+        assignVacation: 'Призначити відпустку',
+        blockDay: 'Заблокувати день для групи',
+        removeMyDayOff: 'Прибрати свій вихідний',
+        assignDayOffToEmployee: 'Призначити вихідний співробітнику',
+        removeDayOffFor: 'Видалити вихідний для',
+        assignVacationPeriod: 'Призначити відпустку на період',
+        blockDayForGroup: 'Заблокувати день для групи',
+        selectStartDate: 'Виберіть дату початку',
+        selectEndDate: 'Виберіть дату закінчення',
+        selectBlockType: 'Виберіть тип блокування',
+        errorLoadingEmployees: 'Помилка завантаження співробітників',
+        errorLoadingUsers: 'Помилка завантаження користувачів',
+        dayOffAssigned: 'Вихідний призначено',
+        dayOffAssignedTo: 'Вихідний призначено користувачу {username}',
+        errorAssigningDayOff: 'Помилка призначення вихідного',
+        errorDeletingDayOff: 'Помилка видалення вихідного',
+        dayOffRemoved: 'Вихідний видалено',
+        dayOffRemovedFor: 'Вихідний видалено для {username}',
+        weekLimitMessage: 'Ви можете призначати вихідні лише на поточний та наступний тиждень',
+        weekdayMon: 'Пн',
+        weekdayTue: 'Вт',
+        weekdayWed: 'Ср',
+        weekdayThu: 'Чт',
+        weekdayFri: 'Пт',
+        weekdaySat: 'Сб',
+        weekdaySun: 'Нд',
+        addMyDayOff: 'Поставить свой выходной',
+        userLabel: 'Пользователь:',
+        startDateLabel: 'Дата начала:',
+        endDateLabel: 'Дата окончания:',
+        blockDayLabel: 'Блокировать день',
+        dateLabel: 'Дата:',
+        selectGroupLabel: 'Выберите группу:',
     }
 };
 
@@ -509,7 +704,7 @@ function applyTranslations() {
 // Notifications API helpers
 async function fetchNotifications() {
     const token = getLocalStorage('chaterlabAuthToken', '');
-    const res = await fetch(`${API_BASE_URL}/api/notifications`, { headers: { 'Authorization': `Bearer ${token}` } });
+    const res = await apiFetch(`${API_BASE_URL}/api/notifications`, { headers: { 'Authorization': `Bearer ${token}` } });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message);
     return data.notifications || [];
@@ -517,7 +712,7 @@ async function fetchNotifications() {
 
 async function publishNotification(note) {
     const token = getLocalStorage('chaterlabAuthToken', '');
-    const res = await fetch(`${API_BASE_URL}/api/notifications/publish`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(note) });
+    const res = await apiFetch(`${API_BASE_URL}/api/notifications/publish`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(note) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message);
     return true;
@@ -525,7 +720,7 @@ async function publishNotification(note) {
 
 async function markNotificationRead(notificationId) {
     const token = getLocalStorage('chaterlabAuthToken', '');
-    const res = await fetch(`${API_BASE_URL}/api/notifications/read`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ notification_id: notificationId }) });
+    const res = await apiFetch(`${API_BASE_URL}/api/notifications/read`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ notification_id: notificationId }) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message);
 }
@@ -669,7 +864,7 @@ async function showCriticalIfAny() {
 // History fetch and render
 async function fetchNotificationsHistory() {
     const token = getLocalStorage('chaterlabAuthToken', '');
-    const res = await fetch(`${API_BASE_URL}/api/notifications/history`, { headers: { 'Authorization': `Bearer ${token}` } });
+    const res = await apiFetch(`${API_BASE_URL}/api/notifications/history`, { headers: { 'Authorization': `Bearer ${token}` } });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message);
     return data.notifications || [];
@@ -685,10 +880,46 @@ async function renderNotificationsHistory() {
         list.innerHTML = '';
         notes.forEach(n => {
             const div = document.createElement('div');
-            div.className = 'history-item' + (n.is_critical ? ' critical' : '');
+            div.className = 'history-item' + (n.is_critical ? ' critical' : '') + (n.is_active ? '' : ' inactive');
             const date = new Date(n.created_at).toLocaleString();
-            div.innerHTML = `<div class="title">${n.title || ''}</div><div class="meta">${date}${n.is_critical ? ' • critical' : ''}</div>`;
+            const activeStatus = n.is_active ? getTranslatedText('active') : getTranslatedText('inactive');
+            div.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+                    <div style="flex:1;min-width:0">
+                        <div class="title">${n.title || ''}</div>
+                        <div class="meta">${date}${n.is_critical ? ' • critical' : ''} • ${activeStatus}</div>
+                    </div>
+                    ${n.is_active ? `<button class="delete-notification-btn" data-id="${n.id}" title="${getTranslatedText('deleteNotification')}">🗑</button>` : ''}
+                </div>
+            `;
             list.appendChild(div);
+        });
+        
+        // Добавляем обработчики для кнопок удаления
+        list.querySelectorAll('.delete-notification-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const notificationId = btn.dataset.id;
+                if (confirm(getTranslatedText('deleteNotificationConfirm'))) {
+                    try {
+                        const token = getLocalStorage('chaterlabAuthToken', '');
+                        const response = await apiFetch(`${API_BASE_URL}/api/notifications/deactivate`, {
+                            method: 'PATCH',
+                            headers: { 
+                                'Content-Type': 'application/json', 
+                                'Authorization': `Bearer ${token}` 
+                            },
+                            body: JSON.stringify({ notification_id: notificationId })
+                        });
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.message);
+                        
+                        showToast(getTranslatedText('notification_deactivated'));
+                        await renderNotificationsHistory(); // Обновляем список
+                    } catch (error) {
+                        showToast(getTranslatedText(error.message || 'server_error'), true);
+                    }
+                }
+            });
         });
     } catch (_) {}
 }
@@ -755,8 +986,38 @@ async function checkLogin() {
     const savedName = getLocalStorage('chaterlabUserName', null);
     
     if (authToken && savedRole && savedName) {
-        userRole = savedRole;
-        userName = savedName;
+        // --- ИЗМЕНЕНИЕ: Проверяем токен на сервере перед показом приложения ---
+        try {
+            const response = await apiFetch(`${API_BASE_URL}/api/auth/check`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            
+            if (!response.ok) {
+                // Токен невалиден или пользователь удален - принудительный логаут
+                logout();
+                return false;
+            }
+            
+            const data = await response.json();
+            if (!data.success) {
+                logout();
+                return false;
+            }
+            
+            // Токен валиден, обновляем данные пользователя
+            userRole = data.user.role;
+            userName = data.user.username;
+            setLocalStorage('chaterlabUserRole', data.user.role);
+            setLocalStorage('chaterlabUserName', data.user.username);
+            
+        } catch (error) {
+            // Ошибка сети или сервера - принудительный логаут
+            console.error('Auth check error:', error);
+            logout();
+            return false;
+        }
+        
         document.getElementById('login-screen').style.display = 'none';
         document.body.classList.remove('login-active');
         const appContainer = document.getElementById('app-container');
@@ -1165,7 +1426,7 @@ async function trackClick(buttonId) {
     const token = getLocalStorage('chaterlabAuthToken', '');
     if (!token) return;
     try {
-        await fetch(`${API_BASE_URL}/api/track-click`, {
+        await apiFetch(`${API_BASE_URL}/api/track-click`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 
@@ -1201,7 +1462,7 @@ async function fetchFavorites() {
     const token = getLocalStorage('chaterlabAuthToken', '');
     if (!token) return;
     try {
-        const response = await fetch(`${API_BASE_URL}/api/favorites`, { 
+        const response = await apiFetch(`${API_BASE_URL}/api/favorites`, { 
             headers: { 'Authorization': `Bearer ${token}` } 
         });
         if (!response.ok) throw new Error(getTranslatedText('favorites_load_error'));
@@ -1217,7 +1478,7 @@ async function saveFavorites() {
     const token = getLocalStorage('chaterlabAuthToken', '');
     if (!token) return;
     try {
-        await fetch(`${API_BASE_URL}/api/favorites`, {
+        await apiFetch(`${API_BASE_URL}/api/favorites`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 
@@ -1420,7 +1681,7 @@ async function loadMobileAnalytics() {
     
     const fetchData = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/analytics?period=${currentPeriod}`, { 
+            const response = await apiFetch(`${API_BASE_URL}/api/analytics?period=${currentPeriod}`, { 
                 headers: { 'Authorization': `Bearer ${token}` } 
             });
             if (!response.ok) throw new Error(getTranslatedText('analytics_load_error'));
@@ -1684,7 +1945,7 @@ function setupAnalytics() {
         const token = getLocalStorage('chaterlabAuthToken', '');
         
         try {
-            const response = await fetch(`${API_BASE_URL}/api/analytics?period=${currentPeriod}`, {
+            const response = await apiFetch(`${API_BASE_URL}/api/analytics?period=${currentPeriod}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) throw new Error(getTranslatedText('analytics_load_error'));
@@ -2117,7 +2378,7 @@ async function saveContent() {
         const newContent = { layout: newLayout, instructionsContent: newInstructions, managers: newManagers };
         const token = getLocalStorage('chaterlabAuthToken', '');
         
-        const response = await fetch(`${API_BASE_URL}/update-content`, { 
+        const response = await apiFetch(`${API_BASE_URL}/update-content`, { 
             method: 'POST', 
             headers: { 
                 'Content-Type': 'application/json', 
@@ -2150,7 +2411,7 @@ async function loadGroupsForUserForm() {
     
     const token = getLocalStorage('chaterlabAuthToken', '');
     try {
-        const response = await fetch(`${API_BASE_URL}/api/groups`, { 
+        const response = await apiFetch(`${API_BASE_URL}/api/groups`, { 
             headers: { 'Authorization': `Bearer ${token}` } 
         });
         const data = await response.json();
@@ -2190,7 +2451,7 @@ async function fetchAndRenderUsers() {
     listContainer.innerHTML = `<p>${getTranslatedText('loading')}</p>`;
     const token = getLocalStorage('chaterlabAuthToken', '');
     try {
-        const response = await fetch(`${API_BASE_URL}/api/users`, { 
+        const response = await apiFetch(`${API_BASE_URL}/api/users`, { 
             headers: { 'Authorization': `Bearer ${token}` } 
         });
         const users = await response.json();
@@ -2256,7 +2517,7 @@ async function createUser(event) {
 
     const token = getLocalStorage('chaterlabAuthToken', '');
     try {
-        const response = await fetch(`${API_BASE_URL}/api/users/create`, {
+        const response = await apiFetch(`${API_BASE_URL}/api/users/create`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 
@@ -2279,7 +2540,7 @@ async function createUser(event) {
 async function deleteUser(username) {
     const token = getLocalStorage('chaterlabAuthToken', '');
     try {
-        const response = await fetch(`${API_BASE_URL}/api/users/delete`, {
+        const response = await apiFetch(`${API_BASE_URL}/api/users/delete`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 
@@ -2406,7 +2667,7 @@ async function fetchAndRenderSchedule() {
     
     const token = getLocalStorage('chaterlabAuthToken', '');
     try {
-        const response = await fetch(`${API_BASE_URL}/api/days-off/schedule?start=${start}&end=${end}`, {
+        const response = await apiFetch(`${API_BASE_URL}/api/days-off/schedule?start=${start}&end=${end}`, {
             headers: { 
                 'Authorization': `Bearer ${token}`,
                 'Cache-Control': 'no-cache'
@@ -2723,7 +2984,7 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
             } else if (status === 'rule-conflict') {
                 dayEl.title = getTranslatedText('legendRuleConflict');
             } else if (status === 'past-day') {
-                dayEl.title = 'Прошедший день';
+                dayEl.title = getTranslatedText('pastDay');
             } else if (status === 'group-conflict') {
                 dayEl.title = getTranslatedText('legendGroupConflict');
             }
@@ -2759,19 +3020,19 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
             legendEl.innerHTML = `
                 <span class="legend-item available">${getTranslatedText('legendAvailable')}</span>
                 <span class="legend-item my-day">${getTranslatedText('legendMyDay')}</span>
-                <span class="legend-item manager-occupied group-1">Группа 1</span>
-                <span class="legend-item manager-occupied group-2">Группа 2</span>
+                <span class="legend-item manager-occupied group-1">${getTranslatedText('group1')}</span>
+                <span class="legend-item manager-occupied group-2">${getTranslatedText('group2')}</span>
             `;
             // --- КОНЕЦ ИЗМЕНЕНИЯ ---
         } else {
              legendEl.innerHTML = `
                 <span class="legend-item available">${getTranslatedText('legendAvailable')}</span>
                 <span class="legend-item my-day group-1">${getTranslatedText('legendMyDay')}</span>
-                <span class="legend-item other-group group-1">Группа 1 (другая)</span>
-                <span class="legend-item other-group group-2">Группа 2 (другая)</span>
+                <span class="legend-item other-group group-1">${getTranslatedText('group1Other')}</span>
+                <span class="legend-item other-group group-2">${getTranslatedText('group2Other')}</span>
                 <span class="legend-item group-conflict">${getTranslatedText('legendGroupConflict')}</span>
                 <span class="legend-item rule-conflict">${getTranslatedText('legendRuleConflict')}</span>
-                <span class="legend-item past-day">Прошедший день</span>
+                <span class="legend-item past-day">${getTranslatedText('pastDay')}</span>
             `;
         }
     });
@@ -2793,7 +3054,7 @@ async function handleDayClick(event) {
         const nextWeekEnd = currentWeekStart.plus({ weeks: 2 }).endOf('week');
         
         if (dayLuxon < currentWeekStart || dayLuxon > nextWeekEnd) {
-            showToast('Вы можете назначать выходные только на текущую и следующую неделю', true);
+            showToast(getTranslatedText('weekLimitMessage'), true);
             return;
         }
     } else {
@@ -2826,7 +3087,7 @@ async function handleDayClick(event) {
     // Также разрешаем бронирование дней другой группы (other-group)
     if (status.includes('available') || status.includes('other-group')) {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
+            const response = await apiFetch(`${API_BASE_URL}/api/days-off/request`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json', 
@@ -2861,7 +3122,7 @@ async function handleDayClick(event) {
     } else if (status.includes('my-day')) {
         if (confirm(getTranslatedText('deleteDayOffConfirm'))) {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
+                const response = await apiFetch(`${API_BASE_URL}/api/days-off/request`, {
                     method: 'DELETE',
                     headers: { 
                         'Content-Type': 'application/json', 
@@ -2895,7 +3156,7 @@ async function handleDayClick(event) {
             
             if (confirm(confirmMsg)) {
                 try {
-                    const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
+                    const response = await apiFetch(`${API_BASE_URL}/api/days-off/request`, {
                         method: 'DELETE',
                         headers: { 
                             'Content-Type': 'application/json', 
@@ -3046,7 +3307,7 @@ async function showSuperManagerMenu(date, dayEl, usersData, myUserId) {
     let allUsers = [];
     try {
         const token = getLocalStorage('chaterlabAuthToken', '');
-        const response = await fetch(`${API_BASE_URL}/api/users`, {
+        const response = await apiFetch(`${API_BASE_URL}/api/users`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -3068,13 +3329,13 @@ async function showSuperManagerMenu(date, dayEl, usersData, myUserId) {
     if (myBooking) {
         menuContent += `
             <button class="menu-item menu-item-danger" onclick="removeMyDayOff('${date}')">
-                <span>Убрать свой выходной</span>
+                <span>${getTranslatedText('removeMyDayOff')}</span>
             </button>
         `;
     } else {
         menuContent += `
             <button class="menu-item menu-item-primary" onclick="addMyDayOff('${date}')">
-                <span>Поставить свой выходной</span>
+                <span>${getTranslatedText('addMyDayOff')}</span>
             </button>
         `;
     }
@@ -3084,14 +3345,14 @@ async function showSuperManagerMenu(date, dayEl, usersData, myUserId) {
     // Опция 2: Назначить выходной другому пользователю (сначала группа, потом сотрудник)
     menuContent += `
         <button class="menu-item" onclick="showAssignDayOffDialog('${date}')">
-            <span>Назначить выходной сотруднику</span>
+            <span>${getTranslatedText('assignDayOffToEmployee')}</span>
         </button>
     `;
     
     // Опция 3: Удалить выходной других пользователей
     if (otherUsers.length > 0) {
         menuContent += `<div class="menu-divider"></div>`;
-        menuContent += `<div class="menu-section-title">Удалить выходной:</div>`;
+        menuContent += `<div class="menu-section-title">${getTranslatedText('removeDayOffFor')}:</div>`;
         otherUsers.forEach(user => {
             const username = user.user ? user.user.username : '???';
             const role = user.user ? user.user.role : '???';
@@ -3117,14 +3378,14 @@ async function showSuperManagerMenu(date, dayEl, usersData, myUserId) {
     // Опция 4: Назначить отпуск на период
     menuContent += `
         <button class="menu-item menu-item-vacation" onclick="showVacationDialog('${date}')">
-            <span>📅 Назначить отпуск на период</span>
+            <span>📅 ${getTranslatedText('assignVacationPeriod')}</span>
         </button>
     `;
     
     // Опция 5: Блокировать день для группы
     menuContent += `
         <button class="menu-item menu-item-warning" onclick="showBlockDayDialog('${date}')">
-            <span>🔒 Блокировать день для группы</span>
+            <span>🔒 ${getTranslatedText('blockDayForGroup')}</span>
         </button>
     `;
     
@@ -3215,7 +3476,7 @@ async function addMyDayOff(date) {
     closeSuperManagerMenu();
     const token = getLocalStorage('chaterlabAuthToken', '');
     try {
-        const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
+        const response = await apiFetch(`${API_BASE_URL}/api/days-off/request`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 
@@ -3228,7 +3489,7 @@ async function addMyDayOff(date) {
         if (!response.ok) {
             throw new Error(result.message || 'Ошибка при добавлении выходного');
         }
-        showToast('Выходной успешно добавлен');
+        showToast(getTranslatedText('dayOffAssigned'));
         fetchAndRenderSchedule();
     } catch (error) {
         showToast(error.message || 'Ошибка при добавлении выходного', true);
@@ -3240,7 +3501,7 @@ async function removeMyDayOff(date) {
     const token = getLocalStorage('chaterlabAuthToken', '');
     const myUserId = parseJwt(token)?.id;
     try {
-        const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
+        const response = await apiFetch(`${API_BASE_URL}/api/days-off/request`, {
             method: 'DELETE',
             headers: { 
                 'Content-Type': 'application/json', 
@@ -3253,7 +3514,7 @@ async function removeMyDayOff(date) {
         if (!response.ok) {
             throw new Error(result.message || 'Ошибка при удалении выходного');
         }
-        showToast('Выходной успешно удален');
+        showToast(getTranslatedText('dayOffRemoved'));
         fetchAndRenderSchedule();
     } catch (error) {
         showToast(error.message || 'Ошибка при удалении выходного', true);
@@ -3264,7 +3525,7 @@ async function removeUserDayOff(date, userId, username) {
     closeSuperManagerMenu();
     const token = getLocalStorage('chaterlabAuthToken', '');
     try {
-        const response = await fetch(`${API_BASE_URL}/api/days-off/request`, {
+        const response = await apiFetch(`${API_BASE_URL}/api/days-off/request`, {
             method: 'DELETE',
             headers: { 
                 'Content-Type': 'application/json', 
@@ -3303,29 +3564,29 @@ function showAssignDayOffDialog(date) {
     dialog.innerHTML = `
         <div class="dialog-content">
             <div class="dialog-header">
-                <h3>Назначить выходной</h3>
+                <h3>${getTranslatedText('assignDayOff')}</h3>
                 <button class="dialog-close" onclick="closeAssignDayOffDialog()">×</button>
             </div>
             <div class="dialog-body">
-                <p>Дата: <strong>${dateFormatted}</strong></p>
+                <p>${getTranslatedText('dateLabel')} <strong>${dateFormatted}</strong></p>
                 <div class="form-group">
-                    <label>Выберите группу:</label>
+                    <label>${getTranslatedText('selectGroupLabel')}:</label>
                     <select id="assign-group-select" class="form-input" onchange="updateAssignUserList('${date}')">
-                        <option value="">-- Выберите группу --</option>
-                        <option value="1">Группа 1</option>
-                        <option value="2">Группа 2</option>
+                        <option value="">-- ${getTranslatedText('selectGroupLabel')} --</option>
+                        <option value="1">${getTranslatedText('group1')}</option>
+                        <option value="2">${getTranslatedText('group2')}</option>
                     </select>
                 </div>
                 <div class="form-group" id="assign-user-group" style="display: none;">
-                    <label>Выберите сотрудника:</label>
+                    <label>${getTranslatedText('selectEmployee')}:</label>
                     <select id="assign-user-select" class="form-input">
-                        <option value="">-- Выберите сотрудника --</option>
+                        <option value="">-- ${getTranslatedText('selectEmployee')} --</option>
                     </select>
                 </div>
             </div>
             <div class="dialog-footer">
-                <button class="btn btn-secondary" onclick="closeAssignDayOffDialog()">Отмена</button>
-                <button class="btn btn-primary" onclick="assignDayOffFromDialog('${date}')" disabled id="assign-submit-btn">Назначить</button>
+                <button class="btn btn-secondary" onclick="closeAssignDayOffDialog()">${getTranslatedText('cancel')}</button>
+                <button class="btn btn-primary" onclick="assignDayOffFromDialog('${date}')" disabled id="assign-submit-btn">${getTranslatedText('assignDayOff')}</button>
             </div>
         </div>
     `;
@@ -3352,20 +3613,20 @@ async function updateAssignUserList(date) {
     
     if (!selectedGroup) {
         userGroup.style.display = 'none';
-        userSelect.innerHTML = '<option value="">-- Выберите сотрудника --</option>';
+        userSelect.innerHTML = `<option value="">-- ${getTranslatedText('selectEmployee')} --</option>`;
         submitBtn.disabled = true;
         return;
     }
     
     const token = getLocalStorage('chaterlabAuthToken', '');
     try {
-        const response = await fetch(`${API_BASE_URL}/api/users`, {
+        const response = await apiFetch(`${API_BASE_URL}/api/users`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const users = await response.json();
         
         // Получаем данные о выходных на эту дату
-        const scheduleResponse = await fetch(`${API_BASE_URL}/api/days-off/schedule?start=${date}&end=${date}`, {
+        const scheduleResponse = await apiFetch(`${API_BASE_URL}/api/days-off/schedule?start=${date}&end=${date}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const scheduleData = await scheduleResponse.json();
@@ -3378,7 +3639,7 @@ async function updateAssignUserList(date) {
             u.role !== 'super_manager' // Исключаем super_manager из списка
         );
         
-        userSelect.innerHTML = '<option value="">-- Выберите сотрудника --</option>';
+        userSelect.innerHTML = `<option value="">-- ${getTranslatedText('selectEmployee')} --</option>`;
         groupUsers.forEach(user => {
             let roleText = '';
             if (user.role === 'manager') roleText = ' (Менеджер)';
@@ -3395,7 +3656,7 @@ async function updateAssignUserList(date) {
             submitBtn.disabled = !userSelect.value;
         };
     } catch (error) {
-        showToast('Ошибка при загрузке сотрудников', true);
+        showToast(getTranslatedText('errorLoadingEmployees'), true);
     }
 }
 
@@ -3404,7 +3665,7 @@ async function assignDayOffFromDialog(date) {
     const userId = document.getElementById('assign-user-select').value;
     
     if (!userId) {
-        showToast('Выберите сотрудника', true);
+        showToast(getTranslatedText('selectEmployee'), true);
         return;
     }
     
@@ -3412,7 +3673,7 @@ async function assignDayOffFromDialog(date) {
     const token = getLocalStorage('chaterlabAuthToken', '');
     
     try {
-        const response = await fetch(`${API_BASE_URL}/api/days-off/assign`, {
+        const response = await apiFetch(`${API_BASE_URL}/api/days-off/assign`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 
@@ -3425,7 +3686,7 @@ async function assignDayOffFromDialog(date) {
         if (!response.ok) {
             throw new Error(result.message || 'Ошибка при назначении выходного');
         }
-        showToast('Выходной успешно назначен');
+        showToast(getTranslatedText('dayOffAssigned'));
         fetchAndRenderSchedule();
     } catch (error) {
         showToast(error.message || 'Ошибка при назначении выходного', true);
@@ -3437,7 +3698,7 @@ async function assignDayOffToUser(date, userId, username) {
     closeSuperManagerMenu();
     const token = getLocalStorage('chaterlabAuthToken', '');
     try {
-        const response = await fetch(`${API_BASE_URL}/api/days-off/assign`, {
+        const response = await apiFetch(`${API_BASE_URL}/api/days-off/assign`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 
@@ -3472,7 +3733,7 @@ function showVacationDialog(startDate) {
     
     // Загружаем список пользователей
     const token = getLocalStorage('chaterlabAuthToken', '');
-    fetch(`${API_BASE_URL}/api/users`, {
+    apiFetch(`${API_BASE_URL}/api/users`, {
         headers: { 'Authorization': `Bearer ${token}` }
     }).then(response => response.json()).then(users => {
         const dateObj = luxon.DateTime.fromISO(startDate);
@@ -3492,35 +3753,35 @@ function showVacationDialog(startDate) {
         dialog.innerHTML = `
             <div class="dialog-content">
                 <div class="dialog-header">
-                    <h3>Назначить отпуск</h3>
+                    <h3>${getTranslatedText('assignVacation')}</h3>
                     <button class="dialog-close" onclick="closeVacationDialog()">×</button>
                 </div>
                 <div class="dialog-body">
                     <div class="form-group">
-                        <label>Пользователь:</label>
+                        <label>${getTranslatedText('userLabel')}</label>
                         <select id="vacation-user-select" class="form-input">
                             ${usersOptions}
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Дата начала:</label>
+                        <label>${getTranslatedText('startDateLabel')}</label>
                         <input type="date" id="vacation-start-date" class="form-input" value="${startDate}">
                     </div>
                     <div class="form-group">
-                        <label>Дата окончания:</label>
+                        <label>${getTranslatedText('endDateLabel')}</label>
                         <input type="date" id="vacation-end-date" class="form-input" value="${dateObj.plus({ days: 6 }).toISODate()}">
                     </div>
                 </div>
                 <div class="dialog-footer">
-                    <button class="btn btn-secondary" onclick="closeVacationDialog()">Отмена</button>
-                    <button class="btn btn-primary" onclick="assignVacation()">Назначить отпуск</button>
+                    <button class="btn btn-secondary" onclick="closeVacationDialog()">${getTranslatedText('cancel')}</button>
+                    <button class="btn btn-primary" onclick="assignVacation()">${getTranslatedText('assignVacation')}</button>
                 </div>
             </div>
         `;
         
         dialog.classList.add('show');
     }).catch(error => {
-        showToast('Ошибка при загрузке пользователей', true);
+        showToast(getTranslatedText('errorLoadingUsers'), true);
     });
 }
 
@@ -3551,7 +3812,7 @@ async function assignVacation() {
     const token = getLocalStorage('chaterlabAuthToken', '');
     
     try {
-        const response = await fetch(`${API_BASE_URL}/api/days-off/vacation`, {
+        const response = await apiFetch(`${API_BASE_URL}/api/days-off/vacation`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 
@@ -3594,33 +3855,33 @@ function showBlockDayDialog(date) {
     dialog.innerHTML = `
         <div class="dialog-content">
             <div class="dialog-header">
-                <h3>Блокировать день</h3>
+                <h3>${getTranslatedText('blockDayLabel')}</h3>
                 <button class="dialog-close" onclick="closeBlockDayDialog()">×</button>
             </div>
             <div class="dialog-body">
-                <p>Блокировать день <strong>${dateFormatted}</strong> для:</p>
+                <p>${getTranslatedText('blockDayLabel')} <strong>${dateFormatted}</strong> ${getTranslatedText('selectGroupLabel').toLowerCase()}:</p>
                 <div class="form-group">
                     <label>
                         <input type="radio" name="block-type" value="group-1" checked>
-                        Группа 1
+                        ${getTranslatedText('group1')}
                     </label>
                 </div>
                 <div class="form-group">
                     <label>
                         <input type="radio" name="block-type" value="group-2">
-                        Группа 2
+                        ${getTranslatedText('group2')}
                     </label>
                 </div>
                 <div class="form-group">
                     <label>
                         <input type="radio" name="block-type" value="all">
-                        Все группы
+                        ${getTranslatedText('allGroups')}
                     </label>
                 </div>
             </div>
             <div class="dialog-footer">
-                <button class="btn btn-secondary" onclick="closeBlockDayDialog()">Отмена</button>
-                <button class="btn btn-warning" onclick="blockDay('${date}')">Заблокировать</button>
+                <button class="btn btn-secondary" onclick="closeBlockDayDialog()">${getTranslatedText('cancel')}</button>
+                <button class="btn btn-warning" onclick="blockDay('${date}')">${getTranslatedText('blockDay')}</button>
             </div>
         </div>
     `;
@@ -3644,7 +3905,7 @@ async function blockDay(date) {
     
     try {
         // Используем специальный API для блокировки
-        const response = await fetch(`${API_BASE_URL}/api/days-off/block`, {
+        const response = await apiFetch(`${API_BASE_URL}/api/days-off/block`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 
