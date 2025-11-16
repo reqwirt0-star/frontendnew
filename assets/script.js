@@ -831,6 +831,7 @@ function setupNotificationsEditor() {
                 document.querySelectorAll('.notif-lang').forEach(el => { el.checked = true; });
                 document.getElementById('notif-critical').checked = false;
                 await refreshNotificationsUI();
+                await renderNotificationsHistory(); // Обновляем историю оповещений
             } catch (err) {
                 showToast(getTranslatedText(err.message || 'server_error'), true);
             }
@@ -874,23 +875,60 @@ async function renderNotificationsHistory() {
     try {
         const list = document.getElementById('notifications-history-list');
         if (!list) return;
-        list.innerHTML = `<p style="color: var(--text-secondary);">${getTranslatedText('loading')}</p>`;
+        list.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: 20px;">${getTranslatedText('loading')}</p>`;
         const notes = await fetchNotificationsHistory();
-        if (!notes.length) { list.innerHTML = `<p style="color: var(--text-secondary);">${getTranslatedText('noData')}</p>`; return; }
+        if (!notes.length) { 
+            list.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: 40px 20px;">${getTranslatedText('noData')}</p>`; 
+            return; 
+        }
         list.innerHTML = '';
         notes.forEach(n => {
             const div = document.createElement('div');
             div.className = 'history-item' + (n.is_critical ? ' critical' : '') + (n.is_active ? '' : ' inactive');
-            const date = new Date(n.created_at).toLocaleString();
+            const date = new Date(n.created_at);
+            const formattedDate = date.toLocaleDateString('ru-RU', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
             const activeStatus = n.is_active ? getTranslatedText('active') : getTranslatedText('inactive');
+            const statusBadgeClass = n.is_active ? 'active-badge' : 'inactive-badge';
+            
             div.innerHTML = `
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
-                    <div style="flex:1;min-width:0">
-                        <div class="title">${n.title || ''}</div>
-                        <div class="meta">${date}${n.is_critical ? ' • critical' : ''} • ${activeStatus}</div>
-                    </div>
-                    ${n.is_active ? `<button class="delete-notification-btn" data-id="${n.id}" title="${getTranslatedText('deleteNotification')}">🗑</button>` : ''}
+                <div class="title">${n.title || ''}</div>
+                <div class="meta">
+                    <span class="meta-item">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        ${formattedDate}
+                    </span>
+                    ${n.is_critical ? `<span class="meta-item critical-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        Критическое
+                    </span>` : ''}
+                    <span class="meta-item ${statusBadgeClass}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 16v-4"></path>
+                            <path d="M12 8h.01"></path>
+                        </svg>
+                        ${activeStatus}
+                    </span>
                 </div>
+                ${n.is_active ? `<button class="delete-notification-btn" data-id="${n.id}" title="${getTranslatedText('deleteNotification')}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>` : ''}
             `;
             list.appendChild(div);
         });
