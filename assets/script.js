@@ -2601,7 +2601,19 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
                     const firstUser = usersOnDay[0];
                     const firstUserGroup = firstUser.user ? firstUser.user.group : null;
                     
-                    if (userRole === 'manager' || userRole === 'super_manager') {
+                    // Проверяем, является ли день блокировкой (все пользователи одной группы и их 2+)
+                    const isBlocked = uniqueGroups.length === 1 && usersOnDay.length >= 2;
+                    
+                    if (isBlocked) {
+                        // Блокировка - специальный статус
+                        status = 'blocked-day';
+                        dayEl.classList.add('blocked');
+                        if (uniqueGroups[0] === 1) {
+                            dayEl.classList.add('blocked-group-1');
+                        } else if (uniqueGroups[0] === 2) {
+                            dayEl.classList.add('blocked-group-2');
+                        }
+                    } else if (userRole === 'manager' || userRole === 'super_manager') {
                         // Менеджеры видят все дни
                         status = 'manager-occupied';
                         // Цвет по группе первого пользователя (или приоритет группе 1, если смешанные)
@@ -2668,10 +2680,21 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
             let dayContent = `<span class="schedule-day-number">${day}</span>`;
             
             if (usersOnDay.length > 0) {
-                // Показываем информацию о пользователях внутри квадратика
-                const maxVisible = isMobileDevice ? 2 : 3;
-                const usersText = formatUsersList(usersOnDay, maxVisible, useInitials);
-                dayContent += `<div class="schedule-day-users">${usersText}</div>`;
+                // Проверяем, является ли день блокировкой
+                const userGroups = usersOnDay.map(u => u.user ? u.user.group : null).filter(g => g !== null);
+                const uniqueGroups = [...new Set(userGroups)];
+                const isBlocked = uniqueGroups.length === 1 && usersOnDay.length >= 2;
+                
+                if (isBlocked) {
+                    // Для блокировки показываем специальную надпись
+                    const groupNum = uniqueGroups[0];
+                    dayContent += `<div class="schedule-day-blocked">🔒 Блокировка Г${groupNum}</div>`;
+                } else {
+                    // Показываем информацию о пользователях внутри квадратика
+                    const maxVisible = isMobileDevice ? 2 : 3;
+                    const usersText = formatUsersList(usersOnDay, maxVisible, useInitials);
+                    dayContent += `<div class="schedule-day-users">${usersText}</div>`;
+                }
                 dayEl.dataset.users = JSON.stringify(usersOnDay);
             }
             
@@ -2761,16 +2784,27 @@ async function handleDayClick(event) {
     const token = getLocalStorage('chaterlabAuthToken', '');
     const myUserId = parseJwt(token)?.id;
 
-    // --- ИЗМЕНЕНИЕ: Запрет на бронирование в далеком будущем ---
     const dayLuxon = luxon.DateTime.fromISO(date);
-    const now = luxon.DateTime.local().startOf('month');
-    // Правило "2 месяца вперед"
-    const maxMonth = now.plus({ months: 2 });
+    const today = luxon.DateTime.local().startOf('day');
     
-    // Сравниваем начало месяца, в который кликнули, с максимально разрешенным
-    if (dayLuxon.startOf('month') > maxMonth) {
-        showToast(getTranslatedText('schedule_future_blocked'), true);
-        return;
+    // --- ИЗМЕНЕНИЕ: Для сотрудников и менеджеров ограничение - только текущая и следующая неделя ---
+    if (userRole !== 'super_manager') {
+        const currentWeekStart = today.startOf('week');
+        const nextWeekEnd = currentWeekStart.plus({ weeks: 2 }).endOf('week');
+        
+        if (dayLuxon < currentWeekStart || dayLuxon > nextWeekEnd) {
+            showToast('Вы можете назначать выходные только на текущую и следующую неделю', true);
+            return;
+        }
+    } else {
+        // Для super_manager - ограничение 2 месяца вперед
+        const now = luxon.DateTime.local().startOf('month');
+        const maxMonth = now.plus({ months: 2 });
+        
+        if (dayLuxon.startOf('month') > maxMonth) {
+            showToast(getTranslatedText('schedule_future_blocked'), true);
+            return;
+        }
     }
     // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
@@ -2803,8 +2837,14 @@ async function handleDayClick(event) {
             });
             const result = await response.json();
             if (!response.ok) {
-                const errorKey = `conflict_${result.reason}`;
-                showToast(getTranslatedText(errorKey) || result.message, true);
+                let errorMessage = result.message;
+                if (result.reason === 'week_limit') {
+                    errorMessage = 'Вы можете назначать выходные только на текущую и следующую неделю';
+                } else {
+                    const errorKey = `conflict_${result.reason}`;
+                    errorMessage = getTranslatedText(errorKey) || result.message;
+                }
+                showToast(errorMessage, true);
             } else {
                 showToast(getTranslatedText('OK')); 
                 // --- КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительно обновляем UI после успешного бронирования ---
@@ -3041,36 +3081,12 @@ async function showSuperManagerMenu(date, dayEl, usersData, myUserId) {
     
     menuContent += `<div class="menu-divider"></div>`;
     
-    // Опция 2: Назначить выходной другому пользователю
-    menuContent += `<div class="menu-section-title">Назначить выходной:</div>`;
-    if (allUsers.length > 0) {
-        // Показываем только пользователей, у которых еще нет выходного на этот день
-        const usersWithoutDayOff = allUsers.filter(u => {
-            const hasDayOff = usersData.some(ud => {
-                const userId = ud.user ? ud.user.id : ud.user_id;
-                return userId === u.id;
-            });
-            return !hasDayOff;
-        });
-        
-        if (usersWithoutDayOff.length > 0) {
-            usersWithoutDayOff.forEach(user => {
-                let roleText = '';
-                if (user.role === 'super_manager') roleText = ' (Супер-менеджер)';
-                else if (user.role === 'manager') roleText = ' (Менеджер)';
-                else if (user.role === 'employee') roleText = ' (Сотрудник)';
-                
-                const groupText = user.group ? `, Группа ${user.group}` : '';
-                menuContent += `
-                    <button class="menu-item" onclick="assignDayOffToUser('${date}', '${user.id}', '${user.username.replace(/'/g, "\\'")}')">
-                        <span>${user.username}${roleText}${groupText}</span>
-                    </button>
-                `;
-            });
-        } else {
-            menuContent += `<div class="menu-item menu-item-disabled">Все пользователи уже имеют выходной</div>`;
-        }
-    }
+    // Опция 2: Назначить выходной другому пользователю (сначала группа, потом сотрудник)
+    menuContent += `
+        <button class="menu-item" onclick="showAssignDayOffDialog('${date}')">
+            <span>Назначить выходной сотруднику</span>
+        </button>
+    `;
     
     // Опция 3: Удалить выходной других пользователей
     if (otherUsers.length > 0) {
@@ -3115,7 +3131,7 @@ async function showSuperManagerMenu(date, dayEl, usersData, myUserId) {
     menuContent += `</div>`;
     menu.innerHTML = menuContent;
     
-    // Позиционируем меню
+    // Позиционируем меню с улучшенной логикой
     const isMobile = window.innerWidth <= 768;
     const menuWidth = isMobile ? Math.min(320, window.innerWidth - 20) : 320;
     menu.style.width = `${menuWidth}px`;
@@ -3123,6 +3139,8 @@ async function showSuperManagerMenu(date, dayEl, usersData, myUserId) {
     // Ждем рендеринга для правильного расчета высоты
     await new Promise(resolve => setTimeout(resolve, 10));
     const menuHeight = menu.offsetHeight || 200;
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
     
     if (isMobile) {
         // На мобильных центрируем меню
@@ -3130,17 +3148,31 @@ async function showSuperManagerMenu(date, dayEl, usersData, myUserId) {
         menu.style.top = '50%';
         menu.style.transform = 'translate(-50%, -50%) scale(0.95)';
     } else {
-        // На десктопе позиционируем относительно дня
+        // На десктопе позиционируем относительно дня с учетом границ экрана
         let left = rect.left + scrollLeft + (rect.width / 2) - (menuWidth / 2);
         let top = rect.bottom + scrollTop + 8;
         
-        // Проверяем, не выходит ли меню за границы экрана
+        // Проверяем горизонтальные границы
         if (left < 10) left = 10;
-        if (left + menuWidth > window.innerWidth - 10) {
-            left = window.innerWidth - menuWidth - 10;
+        if (left + menuWidth > viewportWidth - 10) {
+            left = viewportWidth - menuWidth - 10;
         }
-        if (top + menuHeight > window.innerHeight + scrollTop - 10) {
+        
+        // Проверяем вертикальные границы - если не помещается снизу, показываем сверху
+        const spaceBelow = viewportHeight + scrollTop - (rect.bottom + scrollTop);
+        const spaceAbove = rect.top + scrollTop;
+        
+        if (spaceBelow < menuHeight + 20 && spaceAbove > menuHeight + 20) {
+            // Показываем сверху
             top = rect.top + scrollTop - menuHeight - 8;
+        } else if (spaceBelow < menuHeight + 20) {
+            // Если не помещается ни сверху, ни снизу - центрируем вертикально
+            top = Math.max(10, (viewportHeight - menuHeight) / 2 + scrollTop);
+        }
+        
+        // Дополнительная проверка, чтобы меню не выходило за верхнюю границу
+        if (top < scrollTop + 10) {
+            top = scrollTop + 10;
         }
         
         menu.style.left = `${left}px`;
@@ -3252,7 +3284,155 @@ async function removeUserDayOff(date, userId, username) {
     }
 }
 
-// Назначить выходной другому пользователю
+// Показать диалог для назначения выходного (сначала группа, потом сотрудник)
+function showAssignDayOffDialog(date) {
+    closeSuperManagerMenu();
+    
+    let dialog = document.getElementById('assign-dayoff-dialog');
+    if (!dialog) {
+        dialog = document.createElement('div');
+        dialog.id = 'assign-dayoff-dialog';
+        dialog.className = 'vacation-dialog';
+        document.body.appendChild(dialog);
+    }
+    
+    const dateObj = luxon.DateTime.fromISO(date);
+    const currentLang = getLocalStorage('chaterlabLang', 'ru');
+    const dateFormatted = dateObj.setLocale(currentLang).toFormat('d MMMM yyyy');
+    
+    dialog.innerHTML = `
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3>Назначить выходной</h3>
+                <button class="dialog-close" onclick="closeAssignDayOffDialog()">×</button>
+            </div>
+            <div class="dialog-body">
+                <p>Дата: <strong>${dateFormatted}</strong></p>
+                <div class="form-group">
+                    <label>Выберите группу:</label>
+                    <select id="assign-group-select" class="form-input" onchange="updateAssignUserList('${date}')">
+                        <option value="">-- Выберите группу --</option>
+                        <option value="1">Группа 1</option>
+                        <option value="2">Группа 2</option>
+                    </select>
+                </div>
+                <div class="form-group" id="assign-user-group" style="display: none;">
+                    <label>Выберите сотрудника:</label>
+                    <select id="assign-user-select" class="form-input">
+                        <option value="">-- Выберите сотрудника --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button class="btn btn-secondary" onclick="closeAssignDayOffDialog()">Отмена</button>
+                <button class="btn btn-primary" onclick="assignDayOffFromDialog('${date}')" disabled id="assign-submit-btn">Назначить</button>
+            </div>
+        </div>
+    `;
+    
+    dialog.classList.add('show');
+    dialog.dataset.date = date;
+}
+
+function closeAssignDayOffDialog() {
+    const dialog = document.getElementById('assign-dayoff-dialog');
+    if (dialog) {
+        dialog.classList.remove('show');
+    }
+}
+
+// Обновить список сотрудников при выборе группы
+async function updateAssignUserList(date) {
+    const groupSelect = document.getElementById('assign-group-select');
+    const userGroup = document.getElementById('assign-user-group');
+    const userSelect = document.getElementById('assign-user-select');
+    const submitBtn = document.getElementById('assign-submit-btn');
+    
+    const selectedGroup = groupSelect.value;
+    
+    if (!selectedGroup) {
+        userGroup.style.display = 'none';
+        userSelect.innerHTML = '<option value="">-- Выберите сотрудника --</option>';
+        submitBtn.disabled = true;
+        return;
+    }
+    
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/users`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const users = await response.json();
+        
+        // Получаем данные о выходных на эту дату
+        const scheduleResponse = await fetch(`${API_BASE_URL}/api/days-off/schedule?start=${date}&end=${date}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const scheduleData = await scheduleResponse.json();
+        const usersWithDayOff = scheduleData.map(d => d.user ? d.user.id : d.user_id);
+        
+        // Фильтруем пользователей по группе и исключаем тех, у кого уже есть выходной
+        const groupUsers = users.filter(u => 
+            u.group == selectedGroup && 
+            !usersWithDayOff.includes(u.id) &&
+            u.role !== 'super_manager' // Исключаем super_manager из списка
+        );
+        
+        userSelect.innerHTML = '<option value="">-- Выберите сотрудника --</option>';
+        groupUsers.forEach(user => {
+            let roleText = '';
+            if (user.role === 'manager') roleText = ' (Менеджер)';
+            else if (user.role === 'employee') roleText = ' (Сотрудник)';
+            
+            userSelect.innerHTML += `<option value="${user.id}">${user.username}${roleText}</option>`;
+        });
+        
+        userGroup.style.display = groupUsers.length > 0 ? 'block' : 'none';
+        submitBtn.disabled = groupUsers.length === 0 || !userSelect.value;
+        
+        // Обновляем кнопку при выборе сотрудника
+        userSelect.onchange = () => {
+            submitBtn.disabled = !userSelect.value;
+        };
+    } catch (error) {
+        showToast('Ошибка при загрузке сотрудников', true);
+    }
+}
+
+// Назначить выходной из диалога
+async function assignDayOffFromDialog(date) {
+    const userId = document.getElementById('assign-user-select').value;
+    
+    if (!userId) {
+        showToast('Выберите сотрудника', true);
+        return;
+    }
+    
+    closeAssignDayOffDialog();
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/days-off/assign`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}`,
+                'Cache-Control': 'no-cache'
+            },
+            body: JSON.stringify({ date: date, userId: userId })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Ошибка при назначении выходного');
+        }
+        showToast('Выходной успешно назначен');
+        fetchAndRenderSchedule();
+    } catch (error) {
+        showToast(error.message || 'Ошибка при назначении выходного', true);
+    }
+}
+
+// Назначить выходной другому пользователю (старая функция для обратной совместимости)
 async function assignDayOffToUser(date, userId, username) {
     closeSuperManagerMenu();
     const token = getLocalStorage('chaterlabAuthToken', '');
@@ -3461,54 +3641,29 @@ async function blockDay(date) {
     closeBlockDayDialog();
     
     const token = getLocalStorage('chaterlabAuthToken', '');
-    const myUserId = parseJwt(token)?.id;
     
     try {
-        // Для блокировки создаем выходной для всех пользователей группы
-        // Сначала получаем список пользователей нужной группы
-        const response = await fetch(`${API_BASE_URL}/api/users`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+        // Используем специальный API для блокировки
+        const response = await fetch(`${API_BASE_URL}/api/days-off/block`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}`,
+                'Cache-Control': 'no-cache'
+            },
+            body: JSON.stringify({ 
+                date: date, 
+                blockType: blockType 
+            })
         });
-        const users = await response.json();
-        
-        let targetUsers = [];
-        if (blockType === 'all') {
-            targetUsers = users;
-        } else if (blockType === 'group-1') {
-            targetUsers = users.filter(u => u.group === 1);
-        } else if (blockType === 'group-2') {
-            targetUsers = users.filter(u => u.group === 2);
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Ошибка при блокировке дня');
         }
-        
-        // Назначаем выходной всем пользователям группы (или создаем специальную блокировку)
-        // Для простоты используем существующий API назначения выходного
-        let successCount = 0;
-        for (const user of targetUsers) {
-            try {
-                const assignResponse = await fetch(`${API_BASE_URL}/api/days-off/assign`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json', 
-                        'Authorization': `Bearer ${token}`,
-                        'Cache-Control': 'no-cache'
-                    },
-                    body: JSON.stringify({ date: date, userId: user.id })
-                });
-                if (assignResponse.ok) {
-                    successCount++;
-                }
-            } catch (error) {
-                console.error(`Error assigning day off to ${user.username}:`, error);
-            }
-        }
-        
-        if (successCount > 0) {
-            showToast(`День заблокирован для ${successCount} пользователей`);
-        } else {
-            showToast('Не удалось заблокировать день', true);
-        }
+        const blockTypeText = blockType === 'all' ? 'всех групп' : blockType === 'group-1' ? 'группы 1' : 'группы 2';
+        showToast(`День успешно заблокирован для ${blockTypeText}`);
         fetchAndRenderSchedule();
     } catch (error) {
-        showToast('Ошибка при блокировке дня', true);
+        showToast(error.message || 'Ошибка при блокировке дня', true);
     }
 }
