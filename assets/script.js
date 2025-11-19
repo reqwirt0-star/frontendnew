@@ -311,7 +311,6 @@ const uiTexts = {
         deleteVariantTitle: 'Удалить вариант',
         instructionTitleRu: 'Инструкция (RU)',
         instructionTitleEn: 'Инструкция (EN)',
-        instructionTitleUk: 'Инструкция (UA)',
         analyticsTitle: 'Аналитика',
         periodDay: 'День',
         periodWeek: 'Неделя',
@@ -416,13 +415,13 @@ const uiTexts = {
         weekdayFri: 'Пт',
         weekdaySat: 'Сб',
         weekdaySun: 'Вс',
-        addMyDayOff: 'Поставити свій вихідний',
-        userLabel: 'Користувач:',
-        startDateLabel: 'Дата початку:',
-        endDateLabel: 'Дата закінчення:',
-        blockDayLabel: 'Заблокувати день',
+        addMyDayOff: 'Добавить свой выходной',
+        userLabel: 'Пользователь:',
+        startDateLabel: 'Дата начала:',
+        endDateLabel: 'Дата окончания:',
+        blockDayLabel: 'Заблокировать день',
         dateLabel: 'Дата:',
-        selectGroupLabel: 'Виберіть групу:',
+        selectGroupLabel: 'Выберите группу:',
     },
     en: {
         lang_locale: 'en',
@@ -438,9 +437,104 @@ const uiTexts = {
         navInstructions: 'Instructions',
         navAnalytics: 'Analytics',
         navEditor: 'Editor',
-        navSchedule: 'Schedule', // <-- ИЗМЕНЕНИЕ (которое было)
+        navSchedule: 'Schedule',
+        mobileAdminTitle: 'Admin Panel',
         editorUnavailable: 'Editor',
         editorUnavailableMsg: 'Full editing is only available on the desktop version.',
+        tabLayout: 'Button Constructor',
+        tabInstructions: 'Instructions',
+        tabManagers: 'Managers',
+        tabUsers: 'Users',
+        addUserTitle: 'Add New User',
+        newUserUsername: 'Username',
+        newUserPassword: 'Password',
+        addUserBtn: 'Create',
+        existingUsersTitle: 'Existing Users',
+        deleteUserBtn: 'Delete',
+        deleteUserConfirm: 'Are you sure you want to delete user {username}?',
+        addManager: '+ Add Manager',
+        managerNamePlaceholder: 'Manager Name (for list)',
+        managerTelegramPlaceholder: 'Telegram Contact (@username)',
+        managerWhatsappPlaceholder: 'WhatsApp Contact (+7123456)',
+        deleteManagerTitle: 'Delete Manager',
+        managerAssignmentTitle: 'Available Managers for this Button',
+        isContactButtonLabel: 'Make "Contact" Button',
+        saveAll: 'Save All',
+        cancel: 'Cancel',
+        addSection: '+ Add New Section',
+        addButton: '+ Add Button to Section',
+        addVariant: '+ Add Variant',
+        sectionTitle: 'Section Title',
+        buttonLabel: 'Button Label',
+        deleteSectionConfirm: 'Delete this section with all buttons?',
+        deleteButtonTitle: 'Delete Section',
+        deleteButtonEntryTitle: 'Delete Button',
+        deleteVariantTitle: 'Delete Variant',
+        instructionTitleRu: 'Instructions (RU)',
+        instructionTitleEn: 'Instructions (EN)',
+        analyticsTitle: 'Analytics',
+        periodDay: 'Day',
+        periodWeek: 'Week',
+        periodMonth: 'Month',
+        employeeListTitle: 'Overall Statistics',
+        overallSummaryHeader: 'Overall Statistics',
+        overallSummarySubheader: 'Summary report on the activity of the entire team.',
+        kpiTotalClicks: 'Total Actions',
+        kpiMostActive: 'Most Active',
+        kpiTopTemplate: 'Top Template',
+        kpiPeakTime: 'Peak Activity (UTC)',
+        top5Employees: 'Top 5 Employees',
+        top5Templates: 'Top 5 Templates',
+        tableEmployee: 'Employee',
+        tableActions: 'Actions',
+        tableTemplate: 'Template',
+        tableUses: 'Uses',
+        userDetailHeader: 'Statistics:',
+        userDetailSubheader: 'Detailed report on the activity of the selected employee.',
+        kpiLastActivity: 'Last Activity',
+        kpiFavTemplate: 'Favorite Template',
+        activityFeedTitle: 'Activity Feed (last 100 actions)',
+        tableTime: 'Time',
+        tableSection: 'Section',
+        noData: 'No data for this period.',
+        loading: 'Loading...',
+        modalTitle: 'Create Contact',
+        modalChannelTitle: '1. Select Communication Channel',
+        modalManagerTitle: '2. Select Manager',
+        modalError: 'Please select a channel and manager.',
+        username_and_password_required: 'Username and password are required.',
+        invalid_credentials: 'Invalid credentials.',
+        server_error: 'Server error.',
+        content_not_found: 'Content not found.',
+        content_read_error: 'Error reading content.',
+        invalid_token: 'Invalid token.',
+        access_denied: 'Access denied.',
+        content_updated_successfully: 'Content updated successfully!',
+        server_error_on_save: 'Server error while saving.',
+        user_not_found: 'User not found.',
+        invalid_data_format: 'Invalid data format.',
+        favorites_updated: 'Favorites updated.',
+        button_id_not_specified: 'Button ID not specified.',
+        click_tracking_error: 'Error tracking click.',
+        analytics_db_error: 'Error getting analytics from database.',
+        analytics_server_error: 'Server error while getting analytics.',
+        analytics_load_error: 'Error loading statistics',
+        no_templates_for_button: 'No templates for this button',
+        copy_success: 'Copied ({current}/{total})',
+        copy_success_generic: 'Text copied successfully!',
+        favorites_load_error: 'Failed to load favorites',
+        favorites_save_error: 'Error saving favorites',
+        missing_user_data: 'Username and password are required.',
+        invalid_role: 'Invalid user role.',
+        user_created_successfully: 'User created successfully!',
+        user_already_exists: 'User with this name already exists.',
+        server_error_creating_user: 'Server error while creating user.',
+        username_not_provided: 'Username not provided for deletion.',
+        cannot_delete_self: 'Cannot delete yourself.',
+        user_deleted_successfully: 'User deleted successfully!',
+        server_error_deleting_user: 'Server error while deleting user.',
+        server_error_fetching_users: 'Server error while fetching user list.',
+        scheduleLoading: 'Loading schedule...',
         analyticsNotAvailable: 'Analytics available for managers only',
         headerSubtitle: 'Quick Replies',
         notificationsTitle: 'Notifications',
@@ -514,97 +608,6 @@ const uiTexts = {
         blockDayLabel: 'Block day',
         dateLabel: 'Date:',
         selectGroupLabel: 'Select group:',
-    },
-    uk: {
-        lang_locale: 'uk',
-        loginHeader: 'ChaterLab', 
-        loginSubheader: 'Панель швидких відповідей', 
-        loginUsername: 'Логін', 
-        loginPassword: 'Пароль', 
-        loginBtn: 'Увійти',
-        searchPlaceholder: '🔎 Пошук по шаблонам...',
-        favoritesTitle: '⭐ Обране',
-        darkMode: 'Темна тема',
-        logout: 'Вийти',
-        navInstructions: 'Інструкція',
-        navAnalytics: 'Аналітика',
-        navEditor: 'Редактор',
-        navSchedule: 'Графік', // <-- ИЗМЕНЕНИЕ (которое было)
-        editorUnavailable: 'Редактор',
-        editorUnavailableMsg: 'Повноцінне редагування доступне лише у версії сайту для ПК.',
-        analyticsNotAvailable: 'Аналітика доступна лише менеджерам',
-        headerSubtitle: 'Швидкі відповіді',
-        notificationsTitle: 'Сповіщення',
-        criticalAckBtn: 'Ознайомлений',
-        schedule_future_blocked: 'Бронювання доступне лише на 2 місяці вперед.', // НОВЫЙ
-        roleEmployee: 'Співробітник',
-        roleManager: 'Менеджер',
-        roleSuperManager: 'Супер-менеджер',
-        notificationsHistory: 'Історія сповіщень',
-        notifyTitleLabel: 'Заголовок',
-        notifyBodyLabel: 'Текст',
-        notifyCriticalLabel: 'Критичне сповіщення',
-        publishBtn: 'Опублікувати',
-        tabNotifications: 'Сповіщення',
-        deleteNotification: 'Видалити сповіщення',
-        deleteNotificationConfirm: 'Ви впевнені, що хочете видалити це сповіщення?',
-        notification_deactivated: 'Сповіщення деактивовано',
-        active: 'Активно',
-        inactive: 'Неактивно',
-        OK: 'OK',
-        legendAvailable: 'Доступно',
-        legendMyDay: 'Мій вихідний',
-        legendGroupConflict: 'Зайнято (група)',
-        legendRuleConflict: 'Конфлікт (правило)',
-        legendManagerAll: 'Зайнято (інші)',
-        conflict_group_conflict: 'Цей день вже зайнятий кимось з вашої групи.',
-        conflict_weekly_limit: 'Ви вже вибрали вихідний на цьому тижні.',
-        conflict_consecutive_day: 'Не можна брати два вихідні дні підряд.',
-        dayOffDeleted: 'Вихідний видалено.',
-        deleteDayOffConfirm: 'Ви впевнені, що хочете видалити цей вихідний?',
-        deleteForUserConfirm: 'Видалити вихідний для користувача {username}?',
-        pastDay: 'Минулий день',
-        group1: 'Група 1',
-        group2: 'Група 2',
-        group1Other: 'Група 1 (інша)',
-        group2Other: 'Група 2 (інша)',
-        assignDayOff: 'Призначити вихідний',
-        selectEmployee: 'Виберіть співробітника',
-        selectGroup: 'Виберіть групу',
-        allGroups: 'Всі групи',
-        assignVacation: 'Призначити відпустку',
-        blockDay: 'Заблокувати день для групи',
-        removeMyDayOff: 'Прибрати свій вихідний',
-        assignDayOffToEmployee: 'Призначити вихідний співробітнику',
-        removeDayOffFor: 'Видалити вихідний для',
-        assignVacationPeriod: 'Призначити відпустку на період',
-        blockDayForGroup: 'Заблокувати день для групи',
-        selectStartDate: 'Виберіть дату початку',
-        selectEndDate: 'Виберіть дату закінчення',
-        selectBlockType: 'Виберіть тип блокування',
-        errorLoadingEmployees: 'Помилка завантаження співробітників',
-        errorLoadingUsers: 'Помилка завантаження користувачів',
-        dayOffAssigned: 'Вихідний призначено',
-        dayOffAssignedTo: 'Вихідний призначено користувачу {username}',
-        errorAssigningDayOff: 'Помилка призначення вихідного',
-        errorDeletingDayOff: 'Помилка видалення вихідного',
-        dayOffRemoved: 'Вихідний видалено',
-        dayOffRemovedFor: 'Вихідний видалено для {username}',
-        weekLimitMessage: 'Ви можете призначати вихідні лише на поточний та наступний тиждень',
-        weekdayMon: 'Пн',
-        weekdayTue: 'Вт',
-        weekdayWed: 'Ср',
-        weekdayThu: 'Чт',
-        weekdayFri: 'Пт',
-        weekdaySat: 'Сб',
-        weekdaySun: 'Нд',
-        addMyDayOff: 'Поставить свой выходной',
-        userLabel: 'Пользователь:',
-        startDateLabel: 'Дата начала:',
-        endDateLabel: 'Дата окончания:',
-        blockDayLabel: 'Блокировать день',
-        dateLabel: 'Дата:',
-        selectGroupLabel: 'Выберите группу:',
     }
 };
 
@@ -626,7 +629,12 @@ function setLocalStorage(key, value) {
 }
 
 function getTranslatedText(key, replacements = {}) {
-    const lang = getLocalStorage('chaterlabLang', 'ru');
+    let lang = getLocalStorage('chaterlabLang', 'ru');
+    // Fallback to 'ru' if 'uk' is saved (Ukrainian language removed)
+    if (lang === 'uk') {
+        lang = 'ru';
+        setLocalStorage('chaterlabLang', 'ru');
+    }
     let text = (uiTexts[lang] && uiTexts[lang][key]) || uiTexts.ru[key] || key;
     for (const placeholder in replacements) {
         text = text.replace(`{${placeholder}}`, replacements[placeholder]);
@@ -664,18 +672,15 @@ const userStatusTexts = {
         access: 'Editing is allowed', 
         noAccess: 'Editing is not available' 
     }, 
-    uk: { 
-        user: 'Користувач', 
-        status: 'Статус', 
-        admin: 'Менеджер', 
-        worker: 'Співробітник', 
-        access: 'Дозволено редагування', 
-        noAccess: 'Редагування не доступно' 
-    } 
 };
 
 function applyTranslations() {
-    const lang = getLocalStorage('chaterlabLang', 'ru');
+    let lang = getLocalStorage('chaterlabLang', 'ru');
+    // Fallback to 'ru' if 'uk' is saved (Ukrainian language removed)
+    if (lang === 'uk') {
+        lang = 'ru';
+        setLocalStorage('chaterlabLang', 'ru');
+    }
     const texts = uiTexts[lang] || uiTexts.ru;
     document.querySelectorAll('[data-key]').forEach(el => {
         const key = el.dataset.key;
@@ -963,6 +968,10 @@ async function renderNotificationsHistory() {
 }
 
 function switchLanguage(lang) {
+    // Prevent switching to Ukrainian (removed language)
+    if (lang === 'uk') {
+        lang = 'ru';
+    }
     setLocalStorage('chaterlabLang', lang);
     applyTranslations(); 
     
@@ -1442,6 +1451,10 @@ function renderUserStatusCard() {
 }
 
 function updateInstructions(lang) {
+    // Fallback to 'ru' if 'uk' is saved (Ukrainian language removed)
+    if (lang === 'uk') {
+        lang = 'ru';
+    }
     const updateInstructionsContent = (instructionsDiv) => {
         if (!instructionsDiv) return;
         if (appContent.instructionsContent && appContent.instructionsContent[lang]) {
@@ -1449,8 +1462,7 @@ function updateInstructions(lang) {
         } else {
             const fallbackMessage = { 
                 'ru': '<h3>Инструкция не найдена</h3><p>Для выбранного языка нет инструкции в базе данных.</p>', 
-                'en': '<h3>Instructions Not Found</h3><p>No instructions are available for the selected language in the database.</p>', 
-                'uk': '<h3>Інструкція не знайдена</h3><p>Для вибраної мови немає інструкції в базі даних.</p>' 
+                'en': '<h3>Instructions Not Found</h3><p>No instructions are available for the selected language in the database.</p>'
             };
             instructionsDiv.innerHTML = fallbackMessage[lang] || fallbackMessage['ru'];
         }
@@ -1731,7 +1743,12 @@ async function loadMobileAnalytics() {
     };
     
     const renderMobileAnalytics = () => {
-        const texts = uiTexts[getLocalStorage('chaterlabLang', 'ru')];
+        let lang = getLocalStorage('chaterlabLang', 'ru');
+        // Fallback to 'ru' if 'uk' is saved (Ukrainian language removed)
+        if (lang === 'uk') {
+            lang = 'ru';
+        }
+        const texts = uiTexts[lang] || uiTexts.ru;
         
         let html = `
             <div class="mobile-analytics-period">
@@ -1998,7 +2015,11 @@ function setupAnalytics() {
 
     function renderAnalytics() {
         if (!fullData) return;
-        const lang = getLocalStorage('chaterlabLang', 'ru');
+        let lang = getLocalStorage('chaterlabLang', 'ru');
+        // Fallback to 'ru' if 'uk' is saved (Ukrainian language removed)
+        if (lang === 'uk') {
+            lang = 'ru';
+        }
         const texts = uiTexts[lang] || uiTexts.ru;
         renderEmployeeList(fullData.employee_summary, texts);
         if (selectedUser) {
@@ -2270,7 +2291,7 @@ function addSection() {
 }
 
 function initInstructionsEditor() {
-    const selectors = ['#instructions-editor-ru', '#instructions-editor-en', '#instructions-editor-uk'];
+    const selectors = ['#instructions-editor-ru', '#instructions-editor-en'];
     selectors.forEach(selector => {
         const textarea = $(selector);
         if (textarea.length && !textarea.hasClass('note-codable')) { // Initialize only if not already initialized
@@ -2302,7 +2323,7 @@ function initInstructionsEditor() {
 }
 
 function destroyInstructionsEditor() {
-    const selectors = ['#instructions-editor-ru', '#instructions-editor-en', '#instructions-editor-uk'];
+    const selectors = ['#instructions-editor-ru', '#instructions-editor-en'];
     selectors.forEach(selector => {
         const textarea = $(selector);
         if (textarea.length && textarea.hasClass('note-codable')) { // Check if initialized
@@ -2398,7 +2419,7 @@ async function saveContent() {
         });
 
         const newInstructions = {};
-        for (const lang of ['ru', 'en', 'uk']) {
+        for (const lang of ['ru', 'en']) {
             newInstructions[lang] = $(`#instructions-editor-${lang}`).summernote('code');
         }
 
@@ -2624,6 +2645,11 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang)); 
     });
     
+    // Mobile language buttons
+    document.querySelectorAll('.mobile-lang-btn').forEach(button => {
+        button.addEventListener('click', (e) => switchLanguage(e.target.dataset.lang));
+    });
+    
     checkLogin();
     
     document.getElementById('login-form').addEventListener('submit', handleLogin);
@@ -2729,7 +2755,12 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
         { container: 'mobile-schedule-container', monthYear: 'mobile-schedule-month-year', legend: 'mobile-schedule-legend', prev: 'mobile-schedule-prev-month', next: 'mobile-schedule-next-month' }
     ];
     
-    const monthName = scheduleCurrentDate.setLocale(getLocalStorage('chaterlabLang', 'ru')).toFormat('LLLL yyyy');
+    let scheduleLang = getLocalStorage('chaterlabLang', 'ru');
+    // Fallback to 'ru' if 'uk' is saved (Ukrainian language removed)
+    if (scheduleLang === 'uk') {
+        scheduleLang = 'ru';
+    }
+    const monthName = scheduleCurrentDate.setLocale(scheduleLang).toFormat('LLLL yyyy');
     
     targets.forEach(target => {
         const container = document.getElementById(target.container);
