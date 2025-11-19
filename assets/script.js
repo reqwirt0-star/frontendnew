@@ -2859,7 +2859,7 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
             const role = user.user ? user.user.role : '???';
             const group = user.user ? user.user.group : null;
             
-            // Сокращения ролей
+            // Сокращения ролей (для tooltip)
             let roleShort = '';
             if (role === 'super_manager') roleShort = 'SM';
             else if (role === 'manager') roleShort = 'M';
@@ -2872,9 +2872,19 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
                 nameDisplay = username.charAt(0).toUpperCase();
             }
             
-            // Группа: показываем число или "—" если нет группы
+            // Группа: показываем число или "—" если нет группы (для tooltip)
             const groupText = group !== null && group !== undefined ? group : '—';
             return `${nameDisplay} (${roleShort}, ${groupText})`;
+        };
+        
+        // Новая функция для получения только имени пользователя (без роли и группы)
+        const getUserName = (user) => {
+            return user.user ? user.user.username : (user.user_id ? 'ID: ' + user.user_id : '???');
+        };
+        
+        // Новая функция для получения группы пользователя
+        const getUserGroup = (user) => {
+            return user.user ? user.user.group : null;
         };
 
         // --- НОВАЯ ФУНКЦИЯ: Форматирование списка пользователей для отображения ---
@@ -3020,10 +3030,18 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
                     const groupNum = uniqueGroups[0];
                     dayContent += `<div class="schedule-day-blocked">🔒 Блокировка Г${groupNum}</div>`;
                 } else {
-                    // Показываем информацию о пользователях внутри квадратика
-                    const maxVisible = isMobileDevice ? 2 : 3;
-                    const usersText = formatUsersList(usersOnDay, maxVisible, useInitials);
-                    dayContent += `<div class="schedule-day-users">${usersText}</div>`;
+                    // Создаем контейнер для бейджей
+                    dayContent += `<div class="schedule-day-badges">`;
+                    
+                    // Создаем бейдж для каждого пользователя
+                    usersOnDay.forEach(user => {
+                        const userName = getUserName(user);
+                        const userGroup = getUserGroup(user);
+                        const groupClass = userGroup === 1 ? 'badge-group-1' : (userGroup === 2 ? 'badge-group-2' : 'badge-group-default');
+                        dayContent += `<span class="schedule-day-badge ${groupClass}">${userName}</span>`;
+                    });
+                    
+                    dayContent += `</div>`;
                 }
                 dayEl.dataset.users = JSON.stringify(usersOnDay);
             }
@@ -3041,6 +3059,10 @@ function renderScheduleUI(isLoading, data, errorMsg = '') {
                 const usersEl = dayEl.querySelector('.schedule-day-users');
                 if (usersEl) {
                     usersEl.style.display = 'none';
+                }
+                const badgesEl = dayEl.querySelector('.schedule-day-badges');
+                if (badgesEl) {
+                    badgesEl.style.display = 'none';
                 }
             }
 

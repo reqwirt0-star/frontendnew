@@ -647,13 +647,12 @@ body.dark-mode .note-modal-header {
     position: relative;
     border: 2px solid var(--border-color);
     border-radius: 12px;
-    /* aspect-ratio: 1 / 1; <-- ИЗМЕНЕНО: Убрано */
-    height: 90px; /* <-- ИЗМЕНЕНО: Добавлена высота */
+    height: 90px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    padding: 6px; /* <-- ИЗМЕНЕНО (было 8px) */
+    justify-content: center;
+    align-items: center;
+    padding: 6px;
     font-weight: 600;
     color: var(--text-primary);
     cursor: pointer;
@@ -662,12 +661,57 @@ body.dark-mode .note-modal-header {
 }
 
 .schedule-day-number {
+    position: absolute;
+    top: 4px;
+    left: 6px;
     font-size: 13px;
     font-weight: 600;
     line-height: 1.2;
-    margin-bottom: 2px;
+    z-index: 1;
 }
 
+/* Контейнер для бейджей - центрирует содержимое */
+.schedule-day-badges {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 100%;
+    flex: 1;
+    padding-top: 18px; /* Отступ сверху для номера дня */
+}
+
+/* Стили для бейджей сотрудников */
+.schedule-day-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 100%;
+    line-height: 1.3;
+    text-align: center;
+}
+
+/* Цвета бейджей по группам */
+.schedule-day-badge.badge-group-1 {
+    background-color: #3b82f6; /* Синий для группы 1 */
+}
+
+.schedule-day-badge.badge-group-2 {
+    background-color: #8b5cf6; /* Фиолетовый для группы 2 */
+}
+
+.schedule-day-badge.badge-group-default {
+    background-color: #64748b; /* Серый по умолчанию */
+}
+
+/* Старые стили для обратной совместимости (если где-то еще используется) */
 .schedule-day-users {
     font-size: 9px;
     font-weight: 500;
@@ -736,26 +780,37 @@ body.dark-mode .note-modal-header {
     transform: scale(1.05);
 }
 
-.schedule-day.my-day {
-    /* Цвет по группе будет применен через классы group-1 или group-2 */
-    color: #fff;
+/* Hover эффекты для дней с пользователями - легкое выделение без изменения фона */
+.schedule-day.my-day:hover,
+.schedule-day.manager-occupied:hover,
+.schedule-day.other-group:hover {
+    border-color: var(--primary-blue);
+    transform: scale(1.02);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
 }
 
-/* Своё занятие - цвет по группе */
+.schedule-day.my-day {
+    /* Убираем фоновую заливку, используем бейджи */
+    background: #ffffff;
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* Своё занятие - убираем фоновую заливку, используем бейджи */
 .schedule-day.my-day.group-1 {
-    background: #3b82f6 !important; /* Синий для группы 1 */
-    border-color: #3b82f6 !important;
+    background: #ffffff;
+    border-color: var(--border-color);
 }
 
 .schedule-day.my-day.group-2 {
-    background: #8b5cf6 !important; /* Фиолетовый для группы 2 */
-    border-color: #8b5cf6 !important;
+    background: #ffffff;
+    border-color: var(--border-color);
 }
 
-/* Если группа не определена, используем синий по умолчанию */
+/* Если группа не определена */
 .schedule-day.my-day:not(.group-1):not(.group-2) {
-    background: #3b82f6;
-    border-color: #3b82f6;
+    background: #ffffff;
+    border-color: var(--border-color);
 }
 
 .schedule-day.group-conflict {
@@ -822,61 +877,23 @@ body.dark-mode .note-modal-header {
 }
 
 .schedule-day.manager-occupied {
-    background: var(--accent-purple);
-    border-color: var(--accent-purple);
-    color: #fff;
-}
-.schedule-day.manager-occupied .schedule-day-label {
-    color: rgba(255,255,255,0.8);
+    /* Убираем фоновую заливку, используем бейджи */
+    background: #ffffff;
+    border-color: var(--border-color);
+    color: var(--text-primary);
 }
 
 .schedule-day.other-group {
-    background: var(--accent-purple);
-    border-color: var(--accent-purple);
-    color: #fff;
-    opacity: 0.7;
+    /* Убираем фоновую заливку, используем бейджи */
+    background: #ffffff;
+    border-color: var(--border-color);
+    color: var(--text-primary);
+    opacity: 1;
     cursor: pointer;
 }
-.schedule-day.other-group .schedule-day-label {
-    color: rgba(255,255,255,0.8);
-}
 
-/* --- НОВЫЕ СТИЛИ: Цвета для групп --- */
-.schedule-day.group-1 {
-    background: #3b82f6 !important; /* Синий для группы 1 */
-    border-color: #3b82f6 !important;
-    color: #fff;
-}
-
-.schedule-day.group-2 {
-    background: #8b5cf6 !important; /* Фиолетовый для группы 2 */
-    border-color: #8b5cf6 !important;
-    color: #fff;
-}
-
-/* Для other-group с группами переопределяем цвет */
-.schedule-day.other-group.group-1 {
-    background: #3b82f6 !important;
-    border-color: #3b82f6 !important;
-    opacity: 0.7;
-}
-
-.schedule-day.other-group.group-2 {
-    background: #8b5cf6 !important;
-    border-color: #8b5cf6 !important;
-    opacity: 0.7;
-}
-
-.schedule-day.group-1 .schedule-day-users,
-.schedule-day.group-2 .schedule-day-users,
-.schedule-day.manager-occupied .schedule-day-users,
-.schedule-day.other-group .schedule-day-users {
-    color: rgba(255,255,255,0.95);
-}
-
-.schedule-day.my-day .schedule-day-users {
-    color: rgba(255,255,255,0.95);
-}
+/* --- НОВЫЕ СТИЛИ: Цвета для групп (убраны, используем бейджи) --- */
+/* Группы теперь отображаются через бейджи, а не через фон ячейки */
 
 .schedule-day.group-conflict.group-1,
 .schedule-day.group-conflict.group-2 {
@@ -990,6 +1007,15 @@ body.dark-mode .note-modal-header {
     /* --- ИЗМЕНЕНИЕ: Уменьшаем высоту на мобильных --- */
     .schedule-day {
         height: 70px;
+    }
+    /* Стили для бейджей на мобильных */
+    .schedule-day-badge {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+    .schedule-day-badges {
+        padding-top: 16px;
+        gap: 3px;
     }
     .legend-item {
         font-size: 11px;
