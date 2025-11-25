@@ -3735,259 +3735,269 @@ function showBlockDayDialog(date) {
 function closeBlockDayDialog() {
     const dialog = document.getElementById('block-day-dialog');
     if (dialog) {
-
-        try {
-            // Используем специальный API для блокировки
-            const response = await apiFetch(`${API_BASE_URL} /api/days - off / block`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token} `,
-                    'Cache-Control': 'no-cache'
-                },
-                body: JSON.stringify({
-                    date: date,
-                    blockType: blockType
-                })
-            });
-            const result = await response.json();
-            if (!response.ok) {
-                throw new Error(result.message || 'Ошибка при блокировке дня');
-            }
-            const blockTypeText = blockType === 'all' ? 'всех групп' : blockType === 'group-1' ? 'группы 1' : 'группы 2';
-            showToast(`День успешно заблокирован для ${blockTypeText} `);
-            fetchAndRenderSchedule();
-        } catch (error) {
-            showToast(error.message || 'Ошибка при блокировке дня', true);
-        }
+        dialog.classList.remove('show');
     }
+}
 
-    function setupMobileNavigation() {
-        if (!isMobile()) return;
+// Заблокировать день для группы
+async function blockDay(date) {
+    const blockType = document.querySelector('input[name="block-type"]:checked').value;
+    closeBlockDayDialog();
 
-        const navItems = document.querySelectorAll('.mobile-bottom-nav .nav-item');
-        const screens = document.querySelectorAll('.mobile-screen');
-        const headerTitle = document.getElementById('mobile-header-title');
-        const backBtn = document.getElementById('mobile-back-btn');
+    const token = getLocalStorage('chaterlabAuthToken', '');
 
-        let currentScreen = 'templates';
+    try {
+        // Используем специальный API для блокировки
+        const response = await apiFetch(`${API_BASE_URL}/api/days-off/block`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Cache-Control': 'no-cache'
+            },
+            body: JSON.stringify({
+                date: date,
+                blockType: blockType
+            })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Ошибка при блокировке дня');
+        }
+        const blockTypeText = blockType === 'all' ? 'всех групп' : blockType === 'group-1' ? 'группы 1' : 'группы 2';
+        showToast(`День успешно заблокирован для ${blockTypeText}`);
+        fetchAndRenderSchedule();
+    } catch (error) {
+        showToast(error.message || 'Ошибка при блокировке дня', true);
+    }
+}
 
-        const switchScreen = (screenName) => {
-            screens.forEach(screen => screen.classList.remove('active'));
-            navItems.forEach(item => item.classList.remove('active'));
+function setupMobileNavigation() {
+    if (!isMobile()) return;
 
-            const targetScreen = document.getElementById(`mobile - ${screenName} -screen`);
-            const targetNavItem = document.querySelector(`.nav - item[data - screen="${screenName}"]`);
+    const navItems = document.querySelectorAll('.mobile-bottom-nav .nav-item');
+    const screens = document.querySelectorAll('.mobile-screen');
+    const headerTitle = document.getElementById('mobile-header-title');
+    const backBtn = document.getElementById('mobile-back-btn');
 
-            if (targetScreen) targetScreen.classList.add('active');
-            if (targetNavItem) targetNavItem.classList.add('active');
+    let currentScreen = 'templates';
 
-            currentScreen = screenName;
+    const switchScreen = (screenName) => {
+        screens.forEach(screen => screen.classList.remove('active'));
+        navItems.forEach(item => item.classList.remove('active'));
 
-            const titles = {
-                templates: 'ChaterLab',
-                instructions: getTranslatedText('navInstructions'),
-                schedule: getTranslatedText('navSchedule'),
-                menu: 'Меню',
-                analytics: getTranslatedText('navAnalytics'),
-                editor: getTranslatedText('navEditor'),
-                'editor-info': getTranslatedText('navEditor'),
-                'users-management': getTranslatedText('tabUsers')
-            };
-            headerTitle.textContent = titles[screenName] || 'ChaterLab';
+        const targetScreen = document.getElementById(`mobile-${screenName}-screen`);
+        const targetNavItem = document.querySelector(`.nav-item[data-screen="${screenName}"]`);
 
-            backBtn.style.display = (screenName === 'analytics' || screenName === 'editor' || screenName === 'editor-info' || screenName === 'users-management' || screenName === 'schedule') ? 'flex' : 'none';
+        if (targetScreen) targetScreen.classList.add('active');
+        if (targetNavItem) targetNavItem.classList.add('active');
+
+        currentScreen = screenName;
+
+        const titles = {
+            templates: 'ChaterLab',
+            instructions: getTranslatedText('navInstructions'),
+            schedule: getTranslatedText('navSchedule'),
+            menu: 'Меню',
+            analytics: getTranslatedText('navAnalytics'),
+            editor: getTranslatedText('navEditor'),
+            'editor-info': getTranslatedText('navEditor'),
+            'users-management': getTranslatedText('tabUsers')
         };
+        headerTitle.textContent = titles[screenName] || 'ChaterLab';
 
-        navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                const screenName = item.dataset.screen;
-                switchScreen(screenName);
+        backBtn.style.display = (screenName === 'analytics' || screenName === 'editor' || screenName === 'editor-info' || screenName === 'users-management' || screenName === 'schedule') ? 'flex' : 'none';
+    };
+
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const screenName = item.dataset.screen;
+            switchScreen(screenName);
+        });
+    });
+
+    backBtn.addEventListener('click', () => {
+        switchScreen('menu');
+    });
+
+    const editorInfoBtn = document.getElementById('mobile-editor-info-btn');
+    const usersBtn = document.getElementById('mobile-users-btn');
+
+    if (userRole === 'manager' || userRole === 'super_manager') {
+        if (editorInfoBtn) {
+            editorInfoBtn.style.display = 'flex';
+            editorInfoBtn.addEventListener('click', () => {
+                switchScreen('editor-info');
             });
+        }
+
+        if (usersBtn) {
+            usersBtn.style.display = 'flex';
+            usersBtn.addEventListener('click', () => {
+                switchScreen('users-management');
+                fetchAndRenderMobileUsers();
+            });
+        }
+    }
+
+    const mobileLangButtons = document.querySelectorAll('.mobile-lang-btn');
+    mobileLangButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchLanguage(btn.dataset.lang);
         });
+    });
 
-        backBtn.addEventListener('click', () => {
-            switchScreen('menu');
-        });
+    document.querySelectorAll('.mobile-user-form').forEach(form => {
+        form.addEventListener('submit', createMobileUser);
+    });
+}
 
-        const editorInfoBtn = document.getElementById('mobile-editor-info-btn');
-        const usersBtn = document.getElementById('mobile-users-btn');
+function setupMobileEditorTabs() {
+    const tabs = document.querySelectorAll('.mobile-editor-tabs button');
+    const panels = document.querySelectorAll('.mobile-editor-panel');
 
-        if (userRole === 'manager' || userRole === 'super_manager') {
-            if (editorInfoBtn) {
-                editorInfoBtn.style.display = 'flex';
-                editorInfoBtn.addEventListener('click', () => {
-                    switchScreen('editor-info');
-                });
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetTab = tab.dataset.tab;
+
+            tabs.forEach(t => t.classList.remove('active'));
+            panels.forEach(p => p.classList.remove('active'));
+
+            tab.classList.add('active');
+            const targetPanel = document.getElementById(`mobile-editor-panel-${targetTab}`);
+            if (targetPanel) targetPanel.classList.add('active');
+
+            if (targetTab === 'users') {
+                fetchAndRenderMobileUsers();
             }
-
-            if (usersBtn) {
-                usersBtn.style.display = 'flex';
-                usersBtn.addEventListener('click', () => {
-                    switchScreen('users-management');
-                    fetchAndRenderMobileUsers();
-                });
-            }
-        }
-
-        const mobileLangButtons = document.querySelectorAll('.mobile-lang-btn');
-        mobileLangButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                switchLanguage(btn.dataset.lang);
-            });
         });
+    });
+}
 
-        document.querySelectorAll('.mobile-user-form').forEach(form => {
-            form.addEventListener('submit', createMobileUser);
-        });
+async function createMobileUser(event) {
+    event.preventDefault();
+    const form = event.currentTarget || event.target;
+    const usernameInput = form.querySelector('[data-field="username"]');
+    const passwordInput = form.querySelector('[data-field="password"]');
+    const roleSelect = form.querySelector('[data-field="role"]');
+
+    const userData = {
+        username: (usernameInput?.value || '').trim(),
+        password: (passwordInput?.value || '').trim(),
+        role: (roleSelect?.value || 'employee')
+    };
+
+    const groupSelect = form.querySelector('[data-field="group"]');
+    if (groupSelect && groupSelect.value) {
+        userData.group = parseInt(groupSelect.value);
     }
 
-    function setupMobileEditorTabs() {
-        const tabs = document.querySelectorAll('.mobile-editor-tabs button');
-        const panels = document.querySelectorAll('.mobile-editor-panel');
+    if (!userData.username || !userData.password) {
+        showToast(getTranslatedText('missing_user_data'), true);
+        return;
+    }
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const targetTab = tab.dataset.tab;
-
-                tabs.forEach(t => t.classList.remove('active'));
-                panels.forEach(p => p.classList.remove('active'));
-
-                tab.classList.add('active');
-                const targetPanel = document.getElementById(`mobile - editor - panel - ${targetTab} `);
-                if (targetPanel) targetPanel.classList.add('active');
-
-                if (targetTab === 'users') {
-                    fetchAndRenderMobileUsers();
-                }
-            });
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    try {
+        const response = await apiFetch(`${API_BASE_URL}/api/users/create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(userData)
         });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        showToast(getTranslatedText(result.message));
+        if (usernameInput) usernameInput.value = '';
+        if (passwordInput) passwordInput.value = '';
+        fetchAndRenderMobileUsers();
+    } catch (error) {
+        showToast(getTranslatedText(error.message), true);
     }
+}
 
-    async function createMobileUser(event) {
-        event.preventDefault();
-        const form = event.currentTarget || event.target;
-        const usernameInput = form.querySelector('[data-field="username"]');
-        const passwordInput = form.querySelector('[data-field="password"]');
-        const roleSelect = form.querySelector('[data-field="role"]');
+async function fetchAndRenderMobileUsers() {
+    const listContainer = document.getElementById('mobile-user-list');
+    if (!listContainer) return;
 
-        const userData = {
-            username: (usernameInput?.value || '').trim(),
-            password: (passwordInput?.value || '').trim(),
-            role: (roleSelect?.value || 'employee')
-        };
+    listContainer.innerHTML = '';
+    const loadingP = document.createElement('p');
+    loadingP.style.textAlign = 'center';
+    loadingP.style.padding = '20px';
+    loadingP.style.color = 'var(--text-secondary)';
+    loadingP.textContent = getTranslatedText('loading');
+    listContainer.appendChild(loadingP);
 
-        const groupSelect = form.querySelector('[data-field="group"]');
-        if (groupSelect && groupSelect.value) {
-            userData.group = parseInt(groupSelect.value);
-        }
+    const token = getLocalStorage('chaterlabAuthToken', '');
 
-        if (!userData.username || !userData.password) {
-            showToast(getTranslatedText('missing_user_data'), true);
-            return;
-        }
-
-        const token = getLocalStorage('chaterlabAuthToken', '');
-        try {
-            const response = await apiFetch(`${API_BASE_URL} /api/users / create`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token} `
-                },
-                body: JSON.stringify(userData)
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.message);
-            showToast(getTranslatedText(result.message));
-            if (usernameInput) usernameInput.value = '';
-            if (passwordInput) passwordInput.value = '';
-            fetchAndRenderMobileUsers();
-        } catch (error) {
-            showToast(getTranslatedText(error.message), true);
-        }
-    }
-
-    async function fetchAndRenderMobileUsers() {
-        const listContainer = document.getElementById('mobile-user-list');
-        if (!listContainer) return;
+    try {
+        const response = await apiFetch(`${API_BASE_URL}/api/users`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const users = await response.json();
+        if (!response.ok) throw new Error(users.message);
 
         listContainer.innerHTML = '';
-        const loadingP = document.createElement('p');
-        loadingP.style.textAlign = 'center';
-        loadingP.style.padding = '20px';
-        loadingP.style.color = 'var(--text-secondary)';
-        loadingP.textContent = getTranslatedText('loading');
-        listContainer.appendChild(loadingP);
+        users.forEach(user => {
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user-list-item';
 
-        const token = getLocalStorage('chaterlabAuthToken', '');
+            let roleText = 'roleEmployee';
+            if (user.role === 'manager') roleText = 'roleManager';
+            else if (user.role === 'super_manager') roleText = 'roleSuperManager';
+            roleText = getTranslatedText(roleText);
 
-        try {
-            const response = await apiFetch(`${API_BASE_URL} /api/users`, {
-                headers: { 'Authorization': `Bearer ${token} ` }
-            });
-            const users = await response.json();
-            if (!response.ok) throw new Error(users.message);
+            const groupText = user.group ? `, Группа ${user.group}` : '';
 
-            listContainer.innerHTML = '';
-            users.forEach(user => {
-                const userDiv = document.createElement('div');
-                userDiv.className = 'user-list-item';
+            const userInfoDiv = document.createElement('div');
+            userInfoDiv.className = 'user-info';
 
-                let roleText = 'roleEmployee';
-                if (user.role === 'manager') roleText = 'roleManager';
-                else if (user.role === 'super_manager') roleText = 'roleSuperManager';
-                roleText = getTranslatedText(roleText);
+            const usernameSpan = document.createElement('span');
+            usernameSpan.className = 'username';
+            usernameSpan.textContent = user.username;
 
-                const groupText = user.group ? `, Группа ${user.group} ` : '';
+            const roleSpan = document.createElement('span');
+            roleSpan.className = 'role';
+            roleSpan.textContent = `${roleText}${groupText}`;
 
-                const userInfoDiv = document.createElement('div');
-                userInfoDiv.className = 'user-info';
+            userInfoDiv.appendChild(usernameSpan);
+            userInfoDiv.appendChild(roleSpan);
 
-                const usernameSpan = document.createElement('span');
-                usernameSpan.className = 'username';
-                usernameSpan.textContent = user.username;
+            const userActionsDiv = document.createElement('div');
+            userActionsDiv.className = 'user-actions';
 
-                const roleSpan = document.createElement('span');
-                roleSpan.className = 'role';
-                roleSpan.textContent = `${roleText}${groupText} `;
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-user-btn';
+            deleteBtn.dataset.username = user.username;
+            deleteBtn.textContent = getTranslatedText('deleteUserBtn');
+            if (userName === user.username) deleteBtn.disabled = true;
 
-                userInfoDiv.appendChild(usernameSpan);
-                userInfoDiv.appendChild(roleSpan);
+            userActionsDiv.appendChild(deleteBtn);
 
-                const userActionsDiv = document.createElement('div');
-                userActionsDiv.className = 'user-actions';
+            userDiv.appendChild(userInfoDiv);
+            userDiv.appendChild(userActionsDiv);
 
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'delete-user-btn';
-                deleteBtn.dataset.username = user.username;
-                deleteBtn.textContent = getTranslatedText('deleteUserBtn');
-                if (userName === user.username) deleteBtn.disabled = true;
+            listContainer.appendChild(userDiv);
+        });
 
-                userActionsDiv.appendChild(deleteBtn);
+        document.querySelectorAll('.delete-user-btn').forEach(btn => {
+            btn.onclick = async (e) => {
+                const userToDelete = e.target.dataset.username;
+                const confirmMsg = getTranslatedText('deleteUserConfirm', { username: userToDelete });
+                if (confirm(confirmMsg)) {
+                    await deleteUser(userToDelete);
+                    fetchAndRenderMobileUsers();
+                }
+            };
+        });
+    } catch (error) {
+        const errorKey = error.message || 'server_error_on_save';
+        showToast(getTranslatedText(errorKey), true);
 
-                userDiv.appendChild(userInfoDiv);
-                userDiv.appendChild(userActionsDiv);
-
-                listContainer.appendChild(userDiv);
-            });
-
-            document.querySelectorAll('.delete-user-btn').forEach(btn => {
-                btn.onclick = async (e) => {
-                    const userToDelete = e.target.dataset.username;
-                    const confirmMsg = getTranslatedText('deleteUserConfirm', { username: userToDelete });
-                    if (confirm(confirmMsg)) {
-                        await deleteUser(userToDelete);
-                        fetchAndRenderMobileUsers();
-                    }
-                };
-            });
-        } catch (error) {
-            const errorKey = error.message || 'server_error_on_save';
-            showToast(getTranslatedText(errorKey), true);
-
-            if (errorKey === 'invalid_token' || errorKey === 'access_denied') {
-                logout();
-            }
+        if (errorKey === 'invalid_token' || errorKey === 'access_denied') {
+            logout();
         }
     }
+}
