@@ -2,625 +2,280 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ChaterLab Quick Replies</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChaterLab - Первое цифровое агентство международных знакомств</title>
+    <meta name="description" content="ChaterLab - удаленная работа для переводчиков, скаутов и моделей. Высокий доход, гибкий график, обучение.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/luxon@2.3.1/build/global/luxon.min.js"></script>
-    
-    <!-- Summernote Lite CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
-    
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- ИЗМЕНЕНО: Подключаем переименованный CSS файл визитки -->
+    <link rel="stylesheet" href="landing.css">
 </head>
-<body class="login-active">
-    <div id="animation-overlay"><div class="animation-content"><h1>ChaterLab</h1></div></div>
-    
-    <div id="login-screen">
-        <div class="login-background"></div>
-        <div class="login-form-container">
-            <h1 data-key="loginHeader">ChaterLab</h1>
-            <p data-key="loginSubheader">Панель быстрых ответов</p>
-            <div id="language-switcher-login">
-                <button data-lang="ru" class="lang-btn">RU</button>
-                <button data-lang="en" class="lang-btn">EN</button>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container header__container">
+            <a href="#" class="logo">ChaterLab</a>
+            <nav class="nav">
+                <ul class="nav__list">
+                    <li class="nav__item"><a href="#benefits" class="nav__link" data-i18n="nav_benefits">Преимущества</a></li>
+                    <li class="nav__item"><a href="#directions" class="nav__link" data-i18n="nav_directions">Направления</a></li>
+                    <li class="nav__item"><a href="#how-to-start" class="nav__link" data-i18n="nav_how_to_start">Как начать</a></li>
+                    <li class="nav__item"><a href="#footer" class="nav__link" data-i18n="nav_contacts">Контакты</a></li>
+                </ul>
+            </nav>
+            <div class="header__actions">
+                <button class="lang-switch" id="langSwitch">EN</button>
+                
+                <!-- НОВАЯ КНОПКА ВХОДА В CRM -->
+                <!-- Ведет на файл app.html -->
+                <a href="app.html" class="btn btn--secondary login-btn" style="padding: 10px 20px; text-decoration: none;">
+                    <span data-i18n="btn_login">Войти</span>
+                </a>
+
+                <button class="btn btn--primary" onclick="openModal()" data-i18n="btn_start_career">Начать карьеру</button>
             </div>
-            <form id="login-form">
-                <input type="text" id="login-username" required data-key="loginUsername" placeholder="Логин">
-                <input type="password" id="login-password" required data-key="loginPassword" placeholder="Пароль">
-                <button type="submit" data-key="loginBtn">Войти</button>
-                <div id="login-error"></div>
+            <button class="burger-menu" id="burgerMenu" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <nav class="mobile-nav">
+            <ul class="mobile-nav__list">
+                <li class="mobile-nav__item"><a href="#benefits" class="mobile-nav__link" onclick="closeMobileMenu()" data-i18n="nav_benefits">Преимущества</a></li>
+                <li class="mobile-nav__item"><a href="#directions" class="mobile-nav__link" onclick="closeMobileMenu()" data-i18n="nav_directions">Направления</a></li>
+                <li class="mobile-nav__item"><a href="#how-to-start" class="mobile-nav__link" onclick="closeMobileMenu()" data-i18n="nav_how_to_start">Как начать</a></li>
+                <li class="mobile-nav__item"><a href="#footer" class="mobile-nav__link" onclick="closeMobileMenu()" data-i18n="nav_contacts">Контакты</a></li>
+                <!-- Ссылка на вход для мобильного меню -->
+                <li class="mobile-nav__item" style="margin-top: 20px;">
+                    <a href="app.html" class="mobile-nav__link" style="color: var(--color-primary);" data-i18n="btn_login">Войти в систему</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero__container">
+            <h1 class="hero__title" data-i18n="hero_title">Первое цифровое агентство международных знакомств</h1>
+            <p class="hero__subtitle" data-i18n="hero_subtitle">ChaterLab революционизирует индустрию, предлагая удаленную работу с высоким доходом для переводчиков, скаутов и моделей по всему миру. Лидер индустрии с 2016 года.</p>
+            <div class="hero__buttons">
+                <a href="#directions" class="btn btn--primary" data-i18n="hero_btn_directions">Выбрать направление</a>
+                <a href="#benefits" class="btn btn--secondary" data-i18n="hero_btn_more">Узнать больше</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section id="benefits" class="section benefits">
+        <div class="container">
+            <h2 class="section-title" data-i18n="benefits_title">Почему выбирают ChaterLab</h2>
+            <div class="benefits__grid">
+                <div class="benefit-card">
+                    <div class="benefit-card__icon">🌍</div>
+                    <h3 class="benefit-card__title" data-i18n="benefit_1_title">100% удаленная работа</h3>
+                    <p class="benefit-card__text" data-i18n="benefit_1_text">Работайте из любой точки мира. Нужен только ноутбук и интернет. Никаких офисов и пробок.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-card__icon">💎</div>
+                    <h3 class="benefit-card__title" data-i18n="benefit_2_title">Премиальные условия</h3>
+                    <p class="benefit-card__text" data-i18n="benefit_2_text">Конкурентная оплата выше рынка, прозрачная система бонусов, оплачиваемое обучение.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-card__icon">🚀</div>
+                    <h3 class="benefit-card__title" data-i18n="benefit_3_title">Передовые технологии</h3>
+                    <p class="benefit-card__text" data-i18n="benefit_3_text">Собственная платформа с AI-инструментами, автоматизация рутины, лучшее ПО.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="section stats">
+        <div class="container">
+            <div class="stats__grid">
+                <div class="stat-item">
+                    <div class="stat-item__value">1000+</div>
+                    <div class="stat-item__label" data-i18n="stat_employees">Сотрудников</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-item__value">9 <span data-i18n="years">лет</span></div>
+                    <div class="stat-item__label" data-i18n="stat_market">На рынке</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-item__value" data-i18n="stat_income_val">26 000₴</div>
+                    <div class="stat-item__label" data-i18n="stat_income_label">Средний доход</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-item__value">45</div>
+                    <div class="stat-item__label" data-i18n="stat_countries">Стран</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Directions Section (Tabs) -->
+    <section id="directions" class="section directions">
+        <div class="container">
+            <h2 class="section-title" data-i18n="directions_title">Направления</h2>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openTab('translators')" data-i18n="tab_translators">Переводчики</button>
+                <button class="tab-btn" onclick="openTab('scouts')" data-i18n="tab_scouts">Скауты</button>
+                <button class="tab-btn" onclick="openTab('models')" data-i18n="tab_models">Модели</button>
+            </div>
+
+            <div class="tab-content active" id="translators">
+                <div class="direction-card">
+                    <div class="direction-card__content">
+                        <h3 class="direction-card__title" data-i18n="dir_translators_title">Переводчик в ChaterLab</h3>
+                        <p class="direction-card__desc" data-i18n="dir_translators_desc">Превратите знание языков в стабильный высокий доход.</p>
+                        <ul class="direction-card__list">
+                            <li data-i18n="dir_translators_li_1">Гибкий график 24/7 (минимум 4 часа).</li>
+                            <li data-i18n="dir_translators_li_2">Доход от 26 000₴ в месяц (Топ зарабатывают 50 000₴+).</li>
+                            <li data-i18n="dir_translators_li_3">Бесплатное обучение и поддержка менторов.</li>
+                            <li data-i18n="dir_translators_li_4">Лучшее ПО (автоперевод, шаблоны, CRM).</li>
+                        </ul>
+                        <button class="btn btn--primary" onclick="openModal()" data-i18n="btn_apply">Подать заявку</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="scouts">
+                <div class="direction-card">
+                    <div class="direction-card__content">
+                        <h3 class="direction-card__title" data-i18n="dir_scouts_title">Скаут в ChaterLab</h3>
+                        <p class="direction-card__desc" data-i18n="dir_scouts_desc">Ищите таланты и получайте бонусы за каждого кандидата.</p>
+                        <ul class="direction-card__list">
+                            <li data-i18n="dir_scouts_li_1">Работа в свободное время.</li>
+                            <li data-i18n="dir_scouts_li_2">Высокие бонусы за успешных кандидатов.</li>
+                            <li data-i18n="dir_scouts_li_3">Доступ к базе ресурсов для поиска.</li>
+                            <li data-i18n="dir_scouts_li_4">Прозрачная система выплат.</li>
+                        </ul>
+                        <button class="btn btn--primary" onclick="openModal()" data-i18n="btn_apply">Подать заявку</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="models">
+                <div class="direction-card">
+                    <div class="direction-card__content">
+                        <h3 class="direction-card__title" data-i18n="dir_models_title">Модель в ChaterLab</h3>
+                        <p class="direction-card__desc" data-i18n="dir_models_desc">Станьте лицом бренда и зарабатывайте на своей харизме.</p>
+                        <ul class="direction-card__list">
+                            <li data-i18n="dir_models_li_1">Полная безопасность и конфиденциальность.</li>
+                            <li data-i18n="dir_models_li_2">Профессиональные фотосессии и продвижение.</li>
+                            <li data-i18n="dir_models_li_3">Высокий процент от дохода.</li>
+                            <li data-i18n="dir_models_li_4">Поддержка персонального менеджера.</li>
+                        </ul>
+                        <button class="btn btn--primary" onclick="openModal()" data-i18n="btn_apply">Подать заявку</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How to Start Section -->
+    <section id="how-to-start" class="section how-to-start">
+        <div class="container">
+            <h2 class="section-title" data-i18n="how_title">Как начать работать</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-item__number">1</div>
+                    <h3 class="timeline-item__title" data-i18n="how_step_1_title">Заполните анкету</h3>
+                    <p class="timeline-item__text" data-i18n="how_step_1_text">Займет не более 5 минут.</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-item__number">2</div>
+                    <h3 class="timeline-item__title" data-i18n="how_step_2_title">Пройдите интервью</h3>
+                    <p class="timeline-item__text" data-i18n="how_step_2_text">Онлайн-собеседование с HR.</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-item__number">3</div>
+                    <h3 class="timeline-item__title" data-i18n="how_step_3_title">Обучение</h3>
+                    <p class="timeline-item__text" data-i18n="how_step_3_text">Бесплатное (от 3 дней до 2 недель).</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-item__number">4</div>
+                    <h3 class="timeline-item__title" data-i18n="how_step_4_title">Начните зарабатывать</h3>
+                    <p class="timeline-item__text" data-i18n="how_step_4_text">Первый доход уже через неделю.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="footer" class="footer">
+        <div class="container footer__container">
+            <div class="footer__cta">
+                <h2 class="footer__title" data-i18n="footer_cta_title">Готовы изменить свою жизнь?</h2>
+                <p class="footer__subtitle" data-i18n="footer_cta_subtitle">Присоединяйтесь к команде лидеров</p>
+                <button class="btn btn--primary" onclick="openModal()" data-i18n="btn_start_career">Начать карьеру в ChaterLab</button>
+            </div>
+            <div class="footer__links-row">
+                <div class="footer__col">
+                    <h4 data-i18n="footer_col_career">Карьера</h4>
+                    <ul>
+                        <li><a href="#" onclick="openTab('translators'); document.getElementById('directions').scrollIntoView(); return false;" data-i18n="tab_translators">Переводчики</a></li>
+                        <li><a href="#" onclick="openTab('scouts'); document.getElementById('directions').scrollIntoView(); return false;" data-i18n="tab_scouts">Скауты</a></li>
+                        <li><a href="#" onclick="openTab('models'); document.getElementById('directions').scrollIntoView(); return false;" data-i18n="tab_models">Модели</a></li>
+                    </ul>
+                </div>
+                <div class="footer__col">
+                    <h4 data-i18n="footer_col_company">Компания</h4>
+                    <ul>
+                        <li><a href="#" data-i18n="link_blog">Блог</a></li>
+                        <li><a href="#" data-i18n="link_press">Пресс-центр</a></li>
+                    </ul>
+                </div>
+                <div class="footer__col">
+                    <h4 data-i18n="footer_col_support">Поддержка</h4>
+                    <ul>
+                        <li><a href="#" data-i18n="link_faq">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer__col">
+                    <h4 data-i18n="footer_col_contacts">Контакты</h4>
+                    <ul>
+                        <li><a href="mailto:hello@chaterlab.com">hello@chaterlab.com</a></li>
+                        <li><a href="#">Telegram</a></li>
+                        <li><a href="#">WhatsApp</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer__bottom">
+                <p>&copy; 2025 ChaterLab. <span data-i18n="footer_rights">Все права защищены.</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h2 class="modal-title" data-i18n="modal_title">Начать карьеру</h2>
+            <p class="modal-desc" data-i18n="modal_desc">Оставьте заявку, и мы свяжемся с вами в ближайшее время.</p>
+            <form class="modal-form" onsubmit="submitForm(event)">
+                <input type="text" placeholder="Ваше имя" required data-i18n-placeholder="placeholder_name">
+                <input type="email" placeholder="Email" required data-i18n-placeholder="placeholder_email">
+                <select required>
+                    <option value="" disabled selected data-i18n="select_direction">Выберите направление</option>
+                    <option value="translator" data-i18n="tab_translators">Переводчик</option>
+                    <option value="scout" data-i18n="tab_scouts">Скаут</option>
+                    <option value="model" data-i18n="tab_models">Модель</option>
+                </select>
+                <button type="submit" class="btn btn--primary" data-i18n="btn_send">Отправить</button>
             </form>
         </div>
     </div>
-    
-    <div id="app-container" data-logged="false">
-        <!-- Desktop Header -->
-        <header class="desktop-only app-header">
-            <div class="app-header-left">
-                <div class="app-header-title">ChaterLab</div>
-                <div class="app-header-subtitle"><span id="typing-text"></span><span class="typing-caret" aria-hidden="true"></span></div>
-            </div>
-            <button id="notifications-btn" class="notifications-btn" title="Оповещения">
-                <span class="bell">🔔</span>
-                <span id="notifications-badge" class="badge" style="display:none;">0</span>
-            </button>
-        </header>
-        
-        <!-- Mobile Header -->
-        <header class="mobile-only mobile-header">
-            <button id="mobile-back-btn" class="mobile-back-btn" style="display: none;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 12H5M12 19l-7-7 7-7"/>
-                </svg>
-            </button>
-            <div class="mobile-header-title-wrap">
-                <div id="mobile-header-title">ChaterLab</div>
-                <div class="mobile-header-subtitle" id="mobile-header-subtitle" style="display:none;">
-                    <span id="typing-text-mobile"></span><span class="typing-caret" aria-hidden="true"></span>
-                </div>
-            </div>
-            <button id="mobile-notifications-btn" class="mobile-bell" title="Оповещения">
-                🔔<span id="mobile-notifications-badge" class="badge" style="display:none;">0</span>
-            </button>
-            <div class="mobile-header-spacer"></div>
-        </header>
-        
-        <main>
-            <!-- Desktop Sidebar -->
-            <div class="sidebar desktop-only">
-                <div class="sidebar-scrollable-content">
-                    <div class="search-wrapper"><input type="search" id="searchInput" data-key="searchPlaceholder"></div>
-                    <div id="favorites-section" class="sidebar-section" style="display: none;">
-                        <h2 data-key="favoritesTitle">⭐ Избранное</h2>
-                        <div id="favorites-content"></div>
-                    </div>
-                    <div id="sidebar-content"></div>
-                </div>
-                <div class="sidebar-footer">
-                    <div id="language-switcher-app">
-                        <button data-lang="ru" class="lang-btn-app">RU</button>
-                        <button data-lang="en" class="lang-btn-app">EN</button>
-                    </div>
-                    <div class="theme-switch-wrapper">
-                        <div class="theme-switch-label" data-key="darkMode">Тёмная тема</div>
-                        <label class="theme-switch" for="theme-checkbox">
-                            <input type="checkbox" id="theme-checkbox" />
-                            <div class="slider round"></div>
-                        </label>
-                    </div>
-                    <button onclick="logout()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                            <path d="M16 17l5-5-5-5"/>
-                            <path d="M21 12H9"/>
-                        </svg>
-                        <span data-key="logout">Выйти</span>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Mobile Content Wrapper -->
-            <div class="mobile-content-wrapper mobile-only">
-                <!-- Templates Screen -->
-                <div id="mobile-templates-screen" class="mobile-screen active">
-                    <div class="search-wrapper mobile-search">
-                        <input type="search" id="searchInputMobile" data-key="searchPlaceholder">
-                    </div>
-                    <div id="mobile-favorites-section" class="mobile-section" style="display: none;">
-                        <h2 data-key="favoritesTitle">⭐ Избранное</h2>
-                        <div id="mobile-favorites-content"></div>
-                    </div>
-                    <div id="mobile-sidebar-content"></div>
-                </div>
-                
-                <!-- Instructions Screen -->
-                <div id="mobile-instructions-screen" class="mobile-screen">
-                    <div class="mobile-instructions" id="mobile-instructions"></div>
-                </div>
-                
-                <!-- Menu Screen -->
-                <div id="mobile-menu-screen" class="mobile-screen">
-                    <div id="mobile-user-status-card"></div>
-                    <div class="mobile-menu-items">
-                        <button id="mobile-editor-info-btn" class="mobile-menu-item" style="display: none;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                            </svg>
-                            <span data-key="navEditor">Редактор</span>
-                        </button>
-                        <button id="mobile-users-btn" class="mobile-menu-item" style="display: none;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                <circle cx="9" cy="7" r="4"/>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                            </svg>
-                            <span data-key="tabUsers">Управление пользователями</span>
-                        </button>
-                        <button id="mobile-theme-toggle" class="mobile-menu-item">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                            </svg>
-                            <span data-key="darkMode">Тёмная тема</span>
-                            <label class="mobile-toggle-switch">
-                                <input type="checkbox" id="mobile-theme-checkbox" />
-                                <div class="mobile-slider"></div>
-                            </label>
-                        </button>
-                        <div class="mobile-menu-item mobile-language-selector">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/>
-                                <path d="M2 12h20"/>
-                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                            </svg>
-                            <div class="mobile-lang-buttons">
-                                <button data-lang="ru" class="mobile-lang-btn">RU</button>
-                                <button data-lang="en" class="mobile-lang-btn">EN</button>
-                            </div>
-                        </div>
-                        <button onclick="logout()" class="mobile-menu-item mobile-logout">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                                <path d="M16 17l5-5-5-5"/>
-                                <path d="M21 12H9"/>
-                            </svg>
-                            <span data-key="logout">Выйти</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Analytics Screen -->
-                <div id="mobile-analytics-screen" class="mobile-screen">
-                    <div class="mobile-analytics-stub" id="mobile-analytics-stub">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M3 3v18h18"/>
-                            <path d="M18 17V9"/>
-                            <path d="M13 17V5"/>
-                            <path d="M8 17v-3"/>
-                        </svg>
-                        <h3>Аналитика</h3>
-                        <p>Доступна только менеджерам</p>
-                    </div>
-                    <div id="mobile-analytics-content" style="display: none;"></div>
-                </div>
-                
-                <!-- Schedule Screen (NEW) -->
-                <div id="mobile-schedule-screen" class="mobile-screen">
-                    <div class="schedule-container-wrapper">
-                        <div class="schedule-header">
-                            <button id="mobile-schedule-prev-month">‹</button>
-                            <h2 id="mobile-schedule-month-year"></h2>
-                            <button id="mobile-schedule-next-month">›</button>
-                        </div>
-                        <div id="mobile-schedule-container" class="schedule-container">
-                            <!-- Дни недели -->
-                            <div class="schedule-day-header" data-key="weekdayMon">Пн</div>
-                            <div class="schedule-day-header" data-key="weekdayTue">Вт</div>
-                            <div class="schedule-day-header" data-key="weekdayWed">Ср</div>
-                            <div class="schedule-day-header" data-key="weekdayThu">Чт</div>
-                            <div class="schedule-day-header" data-key="weekdayFri">Пт</div>
-                            <div class="schedule-day-header" data-key="weekdaySat">Сб</div>
-                            <div class="schedule-day-header" data-key="weekdaySun">Вс</div>
-                             <!-- Сюда будут рендериться дни -->
-                        </div>
-                        <div id="mobile-schedule-legend" class="schedule-legend"></div>
-                    </div>
-                </div>
-                
-                <!-- Editor Info Screen -->
-                <div id="mobile-editor-info-screen" class="mobile-screen">
-                    <div class="editor-unavailable-notice" style="margin-top: 40px;">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 20px; color: var(--primary-blue);">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                        <h4 data-key="navEditor" style="font-size: 24px; margin-bottom: 16px;">Редактор</h4>
-                        <p data-key="editorUnavailableMsg" style="font-size: 16px; line-height: 1.6;">Полноценное редактирование доступно только в версии сайта для ПК.</p>
-                    </div>
-                </div>
-                
-                <!-- Users Management Screen -->
-                <div id="mobile-users-management-screen" class="mobile-screen">
-                    <div class="editor-section">
-                        <h4 data-key="addUserTitle">Добавить нового пользователя</h4>
-                        <form id="mobile-add-user-form" class="mobile-user-form" style="display:flex;flex-direction:column;gap:12px;">
-                            <input type="text" id="mobile-new-username" data-field="username" required data-key="newUserUsername" placeholder="Логин" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
-                            <input type="password" id="mobile-new-password" data-field="password" required data-key="newUserPassword" placeholder="Пароль" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
-                            <select id="mobile-new-user-role" data-field="role" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
-                                <option value="employee" data-key="roleEmployee">Сотрудник</option>
-                                <option value="manager" data-key="roleManager">Менеджер</option>
-                            </select>
-                            <select id="mobile-new-user-group" data-field="group" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
-                                <option value="">Без группы</option>
-                                <option value="1">Группа 1 (Anton, Artem, Kristina)</option>
-                                <option value="2">Группа 2 (Valeria, Evgenia, Jasmine, Jen, May, Cassey, Ashlee)</option>
-                            </select>
-                            <button type="submit" class="add-btn" data-key="addUserBtn" style="padding:14px;background:var(--primary-blue);color:#fff;border:none;border-radius:12px;font-weight:600;font-size:15px;cursor:pointer;">Создать</button>
-                        </form>
-                    </div>
-                    <div class="editor-section" style="margin-top:24px;">
-                        <h4 data-key="existingUsersTitle">Существующие пользователи</h4>
-                        <div id="mobile-user-list"></div>
-                    </div>
-                </div>
-                
-                <!-- Editor Screen -->
-                <div id="mobile-editor-screen" class="mobile-screen">
-                    <div class="mobile-editor-tabs">
-                        <button data-tab="layout" class="active" data-key="tabLayout">Кнопки</button>
-                        <button data-tab="instructions" data-key="tabInstructions">Инструкция</button>
-                        <button data-tab="managers" data-key="tabManagers">Менеджеры</button>
-                        <button data-tab="users" data-key="tabUsers">Пользователи</button>
-                    </div>
-                    <div class="mobile-editor-content">
-                        <div id="mobile-editor-panel-layout" class="mobile-editor-panel active">
-                            <div class="editor-unavailable-notice">
-                                <h4 data-key="editorUnavailable">Редактор кнопок</h4>
-                                <p data-key="editorUnavailableMsg">Полноценное редактирование доступно только в версии сайта для ПК.</p>
-                            </div>
-                        </div>
-                        <div id="mobile-editor-panel-instructions" class="mobile-editor-panel">
-                            <div class="editor-unavailable-notice">
-                                <h4 data-key="instructionTitleRu">Редактор инструкций</h4>
-                                <p data-key="editorUnavailableMsg">Полноценное редактирование доступно только в версии сайта для ПК.</p>
-                            </div>
-                        </div>
-                        <div id="mobile-editor-panel-managers" class="mobile-editor-panel">
-                            <div class="editor-unavailable-notice">
-                                <h4 data-key="tabManagers">Редактор менеджеров</h4>
-                                <p data-key="editorUnavailableMsg">Полноценное редактирование доступно только в версии сайта для ПК.</p>
-                            </div>
-                        </div>
-                        <div id="mobile-editor-panel-users" class="mobile-editor-panel">
-                            <div class="editor-section">
-                                <h4 data-key="addUserTitle">Добавить нового пользователя</h4>
-                                <form id="mobile-add-user-form" class="mobile-user-form" style="display:flex;flex-direction:column;gap:12px;">
-                                    <input type="text" id="mobile-new-username" data-field="username" required data-key="newUserUsername" placeholder="Логин" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
-                                    <input type="password" id="mobile-new-password" data-field="password" required data-key="newUserPassword" placeholder="Пароль" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
-                                    <select id="mobile-new-user-role" data-field="role" style="width:100%;padding:14px;border:2px solid var(--border-color);border-radius:12px;font-size:15px;background:var(--background-card);color:var(--text-primary);font-family:inherit;">
-                                        <option value="employee" data-key="roleEmployee">Сотрудник</option>
-                                        <option value="manager" data-key="roleManager">Менеджер</option>
-                                    </select>
-                                    <button type="submit" class="add-btn" data-key="addUserBtn" style="padding:14px;background:var(--primary-blue);color:#fff;border:none;border-radius:12px;font-weight:600;font-size:15px;">Создать</button>
-                                </form>
-                            </div>
-                            <div class="editor-section" style="margin-top:24px;">
-                                <h4 data-key="existingUsersTitle">Существующие пользователи</h4>
-                                <div id="mobile-user-list"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Desktop Info Block -->
-            <div class="info desktop-only" id="infoBlock">
-                <div class="info-header-controls">
-                    <div id="user-status-card"></div>
-                    
-                    <!-- НОВЫЙ БЛОК ДЛЯ СОТРУДНИКОВ (employee) -->
-                    <div id="employee-controls-segmented" class="manager-controls-segmented" style="display: none;">
-                        <div class="glider"></div>
-                        <button id="show-instructions-btn-employee" data-key="navInstructions" class="active">Инструкция</button>
-                        <button id="show-schedule-btn-employee" data-key="navSchedule">График</button>
-                    </div>
 
-                    <div class="manager-controls-segmented" style="display: none;">
-                        <div class="glider"></div>
-                        <button id="show-instructions-btn" data-key="navInstructions" class="active">Инструкция</button>
-                        <!-- НОВАЯ КНОПКА "График" -->
-                        <button id="show-schedule-btn" data-key="navSchedule">График</button>
-                        <button id="show-analytics-btn" data-key="navAnalytics">Аналитика</button>
-                        <button id="edit-mode-btn" data-key="navEditor">Редактор</button>
-                    </div>
-                </div>
-                <div id="main-content-wrapper">
-                    <div class="instructions" id="instructions"></div>
-                    <div id="content-editor" style="display: none;">
-                        <div class="editor-main-controls">
-                            <div class="editor-tabs">
-                                <button id="tab-btn-layout" class="active" data-key="tabLayout">Конструктор кнопок</button>
-                                <button id="tab-btn-instructions" data-key="tabInstructions">Инструкция</button>
-                                <button id="tab-btn-managers" data-key="tabManagers">Менеджеры</button>
-                                <button id="tab-btn-users" data-key="tabUsers">Пользователи</button>
-                                <button id="tab-btn-notifications" data-key="tabNotifications">Оповещения</button>
-                            </div>
-                            <div class="editor-buttons">
-                                <button id="save-content-btn" data-key="saveAll">Сохранить всё</button>
-                                <button id="cancel-edit-btn" data-key="cancel">Отмена</button>
-                            </div>
-                        </div>
-                        <div id="panel-layout" class="editor-panel active">
-                            <button class="add-btn" id="add-section-btn" data-key="addSection">+ Добавить новый раздел</button>
-                        </div>
-                        <div id="panel-instructions" class="editor-panel">
-                            <div class="editor-section"><h4 data-key="instructionTitleRu">Инструкция (RU)</h4><textarea id="instructions-editor-ru" style="width:100%;min-height:300px"></textarea></div>
-                            <div class="editor-section"><h4 data-key="instructionTitleEn">Инструкция (EN)</h4><textarea id="instructions-editor-en" style="width:100%;min-height:300px"></textarea></div>
-                        </div>
-                        <div id="panel-managers" class="editor-panel">
-                            <button class="add-btn" id="add-manager-btn" data-key="addManager">+ Добавить менеджера</button>
-                        </div>
-                        <div id="panel-users" class="editor-panel">
-                            <div class="editor-section">
-                                <h4 data-key="addUserTitle">Добавить нового пользователя</h4>
-                                <form id="add-user-form">
-                                    <input type="text" id="new-username" required data-key="newUserUsername" placeholder="Логин">
-                                    <input type="password" id="new-password" required data-key="newUserPassword" placeholder="Пароль">
-                                    <select id="new-user-role">
-                                        <option value="employee" data-key="roleEmployee">Сотрудник</option>
-                                        <option value="manager" data-key="roleManager">Менеджер</option>
-                                    </select>
-                                    <select id="new-user-group">
-                                        <option value="">Без группы</option>
-                                        <option value="1">Группа 1 (Anton, Artem, Kristina)</option>
-                                        <option value="2">Группа 2 (Valeria, Evgenia, Jasmine, Jen, May, Cassey, Ashlee)</option>
-                                    </select>
-                                    <button type="submit" class="add-btn" data-key="addUserBtn">Создать</button>
-                                </form>
-                            </div>
-                            <div class="editor-section">
-                                <h4 data-key="existingUsersTitle">Существующие пользователи</h4>
-                                <div id="user-list"></div>
-                            </div>
-                        </div>
-                        <div id="panel-notifications" class="editor-panel">
-                            <!-- Заголовок секции -->
-                            <div class="notifications-header">
-                                <div class="notifications-header-content">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="notifications-icon">
-                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                                    </svg>
-                                    <h3 data-key="tabNotifications">Центр Управления Оповещениями</h3>
-                                </div>
-                                <p class="notifications-subtitle">Создавайте и управляйте оповещениями для команды</p>
-                            </div>
-
-                            <!-- Форма создания оповещения -->
-                            <div class="notifications-create-card">
-                                <div class="notifications-card-header">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                    <h4>Создать новое оповещение</h4>
-                                </div>
-                                <form id="notifications-form" class="notifications-form">
-                                    <div class="notifications-form-group">
-                                        <label for="notif-title" class="notifications-label">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                                            </svg>
-                                            <span data-key="notifyTitleLabel">Заголовок</span>
-                                        </label>
-                                        <input type="text" id="notif-title" class="notifications-input" placeholder="Введите заголовок оповещения">
-                                    </div>
-                                    
-                                    <div class="notifications-form-group">
-                                        <label for="notif-body" class="notifications-label">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                                <path d="M14 2v6h6"></path>
-                                                <path d="M16 13H8"></path>
-                                                <path d="M16 17H8"></path>
-                                                <path d="M10 9H8"></path>
-                                            </svg>
-                                            <span data-key="notifyBodyLabel">Текст оповещения</span>
-                                        </label>
-                                        <textarea id="notif-body" class="notifications-textarea" placeholder="Введите текст оповещения"></textarea>
-                                    </div>
-
-                                    <div class="notifications-form-group">
-                                        <label class="notifications-label">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <circle cx="12" cy="12" r="10"></circle>
-                                                <path d="M2 12h20"></path>
-                                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                                            </svg>
-                                            <span>Языки публикации</span>
-                                        </label>
-                                        <div class="notifications-languages">
-                                            <label class="notifications-lang-checkbox">
-                                                <input type="checkbox" class="notif-lang" value="ru" checked>
-                                                <span class="notifications-lang-label">RU</span>
-                                            </label>
-                                            <label class="notifications-lang-checkbox">
-                                                <input type="checkbox" class="notif-lang" value="en" checked>
-                                                <span class="notifications-lang-label">EN</span>
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <div class="notifications-form-group">
-                                        <label class="notifications-checkbox-wrapper">
-                                            <input type="checkbox" id="notif-critical">
-                                            <div class="notifications-checkbox-custom"></div>
-                                            <div class="notifications-checkbox-content">
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                                                    <line x1="12" y1="9" x2="12" y2="13"></line>
-                                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                                                </svg>
-                                                <span data-key="notifyCriticalLabel">Критическое оповещение</span>
-                                            </div>
-                                        </label>
-                                    </div>
-
-                                    <div class="notifications-form-actions">
-                                        <button id="publish-notification-btn" type="submit" class="notifications-publish-btn">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <line x1="22" y1="2" x2="11" y2="13"></line>
-                                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                                            </svg>
-                                            <span data-key="publishBtn">Опубликовать</span>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- История оповещений -->
-                            <div class="notifications-history-card">
-                                <div class="notifications-card-header">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                        <path d="M14 2v6h6"></path>
-                                        <path d="M16 13H8"></path>
-                                        <path d="M16 17H8"></path>
-                                        <path d="M10 9H8"></path>
-                                    </svg>
-                                    <h4 data-key="notificationsHistory">История оповещений</h4>
-                                </div>
-                                <div id="notifications-history-list" class="notifications-history-list"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- НОВАЯ ПАНЕЛЬ ДЛЯ ГРАФИКА -->
-                <div id="schedule-panel" style="display: none;">
-                    <div classs="schedule-container-wrapper">
-                        <div class="schedule-header">
-                            <button id="schedule-prev-month">‹</button>
-                            <h2 id="schedule-month-year"></h2>
-                            <button id="schedule-next-month">›</button>
-                        </div>
-                        <div id="schedule-container" class="schedule-container">
-                            <!-- Дни недели -->
-                            <div class="schedule-day-header" data-key="weekdayMon">Пн</div>
-                            <div class="schedule-day-header" data-key="weekdayTue">Вт</div>
-                            <div class="schedule-day-header" data-key="weekdayWed">Ср</div>
-                            <div class="schedule-day-header" data-key="weekdayThu">Чт</div>
-                            <div class="schedule-day-header" data-key="weekdayFri">Пт</div>
-                            <div class="schedule-day-header" data-key="weekdaySat">Сб</div>
-                            <div class="schedule-day-header" data-key="weekdaySun">Вс</div>
-                            <!-- Сюда будут рендериться дни -->
-                        </div>
-                        <div id="schedule-legend" class="schedule-legend"></div>
-                    </div>
-                </div>
-                
-                <div id="analytics-panel">
-                    <div class="analytics-container">
-                        <div class="analytics-sidebar">
-                            <div class="analytics-sidebar-header">
-                                <div class="analytics-period-selector">
-                                    <button data-period="day" class="active" data-key="periodDay">День</button>
-                                    <button data-period="week" data-key="periodWeek">Неделя</button>
-                                    <button data-period="month" data-key="periodMonth">Месяц</button>
-                                </div>
-                            </div>
-                            <ul id="employee-list" class="employee-list"></ul>
-                        </div>
-                        <div id="analytics-main" class="analytics-main"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Mobile Bottom Navigation -->
-            <nav class="mobile-bottom-nav mobile-only">
-                <button data-screen="templates" class="nav-item active">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/>
-                    </svg>
-                    <span>Шаблоны</span>
-                </button>
-                <button data-screen="instructions" class="nav-item">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <path d="M14 2v6h6"/>
-                        <path d="M16 13H8"/>
-                        <path d="M16 17H8"/>
-                        <path d="M10 9H8"/>
-                    </svg>
-                    <span data-key="navInstructions">Инструкция</span>
-                </button>
-                <!-- НОВАЯ КНОПКА "График" -->
-                <button data-screen="schedule" class="nav-item">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    <span data-key="navSchedule">График</span>
-                </button>
-                <button data-screen="menu" class="nav-item">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M12 1v6m0 6v6"/>
-                        <circle cx="12" cy="12" r="10"/>
-                    </svg>
-                    <span>Меню</span>
-                </button>
-            </nav>
-        </main>
-    </div>
-    
-    <div id="toast" class="toast-notification"></div>
-
-    <!-- Notifications Modal -->
-    <div id="notifications-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 data-key="notificationsTitle">Оповещения</h3>
-            <div id="notifications-list"></div>
-            <div class="modal-buttons">
-                <button id="notifications-close-btn" data-key="modalCancel">Закрыть</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Critical Notification Modal -->
-    <div id="critical-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width:720px">
-            <h3 id="critical-title">Важное объявление</h3>
-            <div id="critical-body" style="margin:12px 0"></div>
-            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
-                <button id="critical-ack-btn" data-key="criticalAckBtn">Я ознакомлен</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="contact-generator-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 data-key="modalTitle">Создание контакта</h3>
-            <div class="modal-section">
-                <h4 data-key="modalChannelTitle">1. Выберите канал связи</h4>
-                <div class="modal-radio-group">
-                    <input type="radio" id="channel-telegram" name="channel" value="Telegram" checked>
-                    <label for="channel-telegram" tabindex="0">
-                        <span>Telegram</span>
-                    </label>
-                    <input type="radio" id="channel-whatsapp" name="channel" value="WhatsApp">
-                    <label for="channel-whatsapp" tabindex="0">
-                        <span>WhatsApp</span>
-                    </label>
-                </div>
-            </div>
-            <div class="modal-section">
-                <h4 data-key="modalManagerTitle">2. Выберите менеджера</h4>
-                <select id="manager-select" class="modal-select"></select>
-            </div>
-            <div class="modal-buttons">
-                <button id="modal-cancel-btn" data-key="modalCancel">Отмена</button>
-                <button id="modal-confirm-btn" data-key="modalConfirm">Сгенерировать и скопировать</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- SCRIPTS -->
-    <!-- IMPORTANT: Load libraries BEFORE your custom script -->
-    
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <!-- Bootstrap JS (required for Summernote) -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-    <!-- Summernote JS -->
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
-    
-    <!-- Your custom script, loaded LAST -->
-    <script src="assets/script.js"></script>
+    <!-- ИЗМЕНЕНО: Подключаем переименованный JS файл визитки -->
+    <script src="landing.js"></script>
 </body>
 </html>
