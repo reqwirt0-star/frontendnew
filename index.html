@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Подключаем CSS файл визитки -->
+    <!-- ИЗМЕНЕНО: Подключаем переименованный CSS файл визитки -->
     <link rel="stylesheet" href="landing.css">
 </head>
 <body>
@@ -28,7 +28,8 @@
             <div class="header__actions">
                 <button class="lang-switch" id="langSwitch">EN</button>
                 
-                <!-- КНОПКА ВХОДА В CRM -->
+                <!-- НОВАЯ КНОПКА ВХОДА В CRM -->
+                <!-- Ведет на файл app.html -->
                 <a href="app.html" class="btn btn--secondary login-btn" style="padding: 10px 20px; text-decoration: none;">
                     <span data-i18n="btn_login">Войти</span>
                 </a>
@@ -51,7 +52,6 @@
                 <li class="mobile-nav__item"><a href="#directions" class="mobile-nav__link" onclick="closeMobileMenu()" data-i18n="nav_directions">Направления</a></li>
                 <li class="mobile-nav__item"><a href="#how-to-start" class="mobile-nav__link" onclick="closeMobileMenu()" data-i18n="nav_how_to_start">Как начать</a></li>
                 <li class="mobile-nav__item"><a href="#footer" class="mobile-nav__link" onclick="closeMobileMenu()" data-i18n="nav_contacts">Контакты</a></li>
-                
                 <!-- Ссылка на вход для мобильного меню -->
                 <li class="mobile-nav__item" style="margin-top: 20px;">
                     <a href="app.html" class="mobile-nav__link" style="color: var(--color-primary);" data-i18n="btn_login">Войти в систему</a>
@@ -255,26 +255,18 @@
         </div>
     </footer>
 
-    <!-- ОБНОВЛЕННОЕ МОДАЛЬНОЕ ОКНО -->
+    <!-- Modal -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <button class="modal-close" onclick="closeModal()">&times;</button>
             <h2 class="modal-title" data-i18n="modal_title">Начать карьеру</h2>
             <p class="modal-desc" data-i18n="modal_desc">Оставьте заявку, и мы свяжемся с вами в ближайшее время.</p>
-            
+            <p class="modal-desc" style="font-size: 0.9em; color: #666; margin-top: -10px; margin-bottom: 15px;" data-i18n="modal_phone_hint">Укажите номер телефона, по которому HR сможет найти вас в WhatsApp или Telegram</p>
             <form class="modal-form" onsubmit="submitForm(event)">
-                <input type="text" id="app-name" placeholder="Ваше имя" required data-i18n-placeholder="placeholder_name">
-                <input type="email" id="app-email" placeholder="Email" required data-i18n-placeholder="placeholder_email">
-                
-                <!-- Поле телефона с явным пояснением -->
-                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
-                    <p style="font-size: 13px; color: var(--color-text-light); font-weight: 500; margin: 0; line-height: 1.4;" data-i18n="phone_hint">
-                        📱 Укажите номер телефона, по которому HR сможет найти вас в WhatsApp или Telegram:
-                    </p>
-                    <input type="tel" id="app-phone" placeholder="+7 (999) 000-00-00" required style="margin-top: 4px;">
-                </div>
-
-                <select id="app-direction" required>
+                <input type="text" id="application-name" name="name" placeholder="Ваше имя" required data-i18n-placeholder="placeholder_name">
+                <input type="email" id="application-email" name="email" placeholder="Email" required data-i18n-placeholder="placeholder_email">
+                <input type="tel" id="application-phone" name="phone" placeholder="Номер телефона" required data-i18n-placeholder="placeholder_phone">
+                <select id="application-direction" name="direction" required>
                     <option value="" disabled selected data-i18n="select_direction">Выберите направление</option>
                     <option value="translator" data-i18n="tab_translators">Переводчик</option>
                     <option value="scout" data-i18n="tab_scouts">Скаут</option>
@@ -285,7 +277,7 @@
         </div>
     </div>
 
-    <!-- Подключаем переименованный JS файл визитки -->
+    <!-- ИЗМЕНЕНО: Подключаем переименованный JS файл визитки -->
     <script src="landing.js"></script>
 </body>
 </html>

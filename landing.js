@@ -1,6 +1,4 @@
-// landing.js - Логика лендинга и отправки форм
-
-const API_BASE_URL = 'https://backendchater.fly.dev'; // Убедитесь, что адрес верный
+// --- ЭТОТ ФАЙЛ ПЕРЕИМЕНОВАН ИЗ script.js В landing.js, ЧТОБЫ НЕ БЫЛО КОНФЛИКТОВ С CRM ---
 
 const translations = {
     ru: {
@@ -9,7 +7,7 @@ const translations = {
         nav_how_to_start: "Как начать",
         nav_contacts: "Контакты",
         btn_start_career: "Начать карьеру",
-        btn_login: "Войти",
+        btn_login: "Войти", // Добавлен перевод для кнопки входа
         hero_title: "Первое цифровое агентство международных знакомств",
         hero_subtitle: "ChaterLab революционизирует индустрию, предлагая удаленную работу с высоким доходом для переводчиков, скаутов и моделей по всему миру. Лидер индустрии с 2016 года.",
         hero_btn_directions: "Выбрать направление",
@@ -73,11 +71,10 @@ const translations = {
         modal_desc: "Оставьте заявку, и мы свяжемся с вами в ближайшее время.",
         placeholder_name: "Ваше имя",
         placeholder_email: "Email",
+        placeholder_phone: "Номер телефона",
+        modal_phone_hint: "Укажите номер телефона, по которому HR сможет найти вас в WhatsApp или Telegram",
         select_direction: "Выберите направление",
-        btn_send: "Отправить",
-        phone_hint: "📱 Укажите номер телефона, по которому HR сможет найти вас в WhatsApp или Telegram:",
-        app_success: "Спасибо! Ваша заявка успешно отправлена. HR свяжется с вами в ближайшее время.",
-        app_error: "Ошибка при отправке. Попробуйте позже."
+        btn_send: "Отправить"
     },
     en: {
         nav_benefits: "Benefits",
@@ -85,7 +82,7 @@ const translations = {
         nav_how_to_start: "How to Start",
         nav_contacts: "Contacts",
         btn_start_career: "Start Career",
-        btn_login: "Log In",
+        btn_login: "Log In", // Added translation
         hero_title: "The First Digital International Dating Agency",
         hero_subtitle: "ChaterLab revolutionizes the industry by offering high-income remote work for translators, scouts, and models worldwide. Industry leader since 2016.",
         hero_btn_directions: "Choose Direction",
@@ -149,11 +146,10 @@ const translations = {
         modal_desc: "Leave a request and we will contact you shortly.",
         placeholder_name: "Your Name",
         placeholder_email: "Email",
+        placeholder_phone: "Phone Number",
+        modal_phone_hint: "Please provide a phone number where HR can reach you on WhatsApp or Telegram",
         select_direction: "Choose Direction",
-        btn_send: "Send",
-        phone_hint: "📱 Please provide your phone number so HR can find you on WhatsApp or Telegram:",
-        app_success: "Thank you! Your application has been sent successfully. HR will contact you soon.",
-        app_error: "Error sending application. Please try again later."
+        btn_send: "Send"
     }
 };
 
@@ -196,21 +192,20 @@ function openTab(tabName) {
     });
 
     // Show specific tab content
-    const targetContent = document.getElementById(tabName);
-    if (targetContent) {
-        targetContent.classList.add('active');
-    }
+    document.getElementById(tabName).classList.add('active');
 
     // Activate specific button
+    // Note: This is a simple way, assuming buttons have onclick="openTab('...')"
+    // A more robust way would be to add IDs to buttons or pass the event
     const buttons = document.querySelectorAll('.tab-btn');
     buttons.forEach(btn => {
-        if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(`'${tabName}'`)) {
+        if (btn.getAttribute('onclick').includes(tabName)) {
             btn.classList.add('active');
         }
     });
 }
 
-// Modal Logic
+// Modal
 const modalOverlay = document.getElementById('modalOverlay');
 
 function openModal() {
@@ -224,50 +219,57 @@ function closeModal() {
 }
 
 // Close modal when clicking outside
-if (modalOverlay) {
-    modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) {
-            closeModal();
-        }
-    });
-}
+modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) {
+        closeModal();
+    }
+});
 
-// ОБНОВЛЕННАЯ ФУНКЦИЯ ОТПРАВКИ ФОРМЫ
 async function submitForm(event) {
     event.preventDefault();
     
-    const submitBtn = event.target.querySelector('button[type="submit"]');
-    const originalBtnText = submitBtn.textContent;
-    submitBtn.textContent = '...';
+    const form = event.target;
+    const name = form.querySelector('#application-name').value;
+    const email = form.querySelector('#application-email').value;
+    const phone = form.querySelector('#application-phone').value;
+    const direction = form.querySelector('#application-direction').value;
+    
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
-
-    const name = document.getElementById('app-name').value;
-    const email = document.getElementById('app-email').value;
-    const phone = document.getElementById('app-phone').value;
-    const direction = document.getElementById('app-direction').value;
-
+    submitBtn.textContent = currentLang === 'ru' ? 'Отправка...' : 'Sending...';
+    
     try {
-        const response = await fetch(`${API_BASE_URL}/api/applications-public`, {
+        const response = await fetch('https://backendchater.fly.dev/api/applications/submit', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, phone, direction })
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name,
+                email,
+                contact_info: phone,
+                direction
+            })
         });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            alert(translations[currentLang].app_success);
-            event.target.reset();
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            alert(currentLang === 'ru' ? 'Спасибо! Ваша заявка отправлена.' : 'Thank you! Your application has been sent.');
+            form.reset();
             closeModal();
         } else {
-            alert(result.message || translations[currentLang].app_error);
+            throw new Error(data.message || 'Ошибка отправки');
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert(translations[currentLang].app_error);
+        console.error('Error submitting application:', error);
+        alert(currentLang === 'ru' 
+            ? 'Произошла ошибка при отправке заявки. Попробуйте позже.' 
+            : 'An error occurred while submitting your application. Please try again later.');
     } finally {
-        submitBtn.textContent = originalBtnText;
         submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
     }
 }
 
@@ -275,14 +277,11 @@ async function submitForm(event) {
 const burgerMenu = document.getElementById('burgerMenu');
 const mobileMenu = document.getElementById('mobileMenu');
 
-if (burgerMenu && mobileMenu) {
-    burgerMenu.addEventListener('click', () => {
-        mobileMenu.classList.toggle('active');
-    });
-}
+burgerMenu.addEventListener('click', () => {
+    mobileMenu.classList.toggle('active');
+    // Toggle burger icon animation if needed
+});
 
 function closeMobileMenu() {
-    if (mobileMenu) {
-        mobileMenu.classList.remove('active');
-    }
+    mobileMenu.classList.remove('active');
 }

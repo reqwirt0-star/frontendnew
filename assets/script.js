@@ -98,6 +98,8 @@ function setupMobileEditorTabs() {
             
             if (targetTab === 'users') {
                 fetchAndRenderMobileUsers();
+            } else if (targetTab === 'applications') {
+                fetchAndRenderMobileApplications();
             }
         });
     });
@@ -281,6 +283,8 @@ const uiTexts = {
         tabInstructions: 'Инструкция',
         tabManagers: 'Менеджеры',
         tabUsers: 'Пользователи',
+        tabApplications: 'Заявки',
+        backToLanding: '← Визитка',
         addUserTitle: 'Добавить нового пользователя',
         newUserUsername: 'Логин',
         newUserPassword: 'Пароль',
@@ -445,6 +449,8 @@ const uiTexts = {
         tabInstructions: 'Instructions',
         tabManagers: 'Managers',
         tabUsers: 'Users',
+        tabApplications: 'Applications',
+        backToLanding: '← Landing',
         addUserTitle: 'Add New User',
         newUserUsername: 'Username',
         newUserPassword: 'Password',
@@ -965,237 +971,6 @@ async function renderNotificationsHistory() {
             });
         });
     } catch (_) {}
-}
-
-// Функция для получения и отображения заявок
-async function fetchAndRenderApplications() {
-    const listContainer = document.getElementById('applications-list');
-    if (!listContainer) return;
-    
-    listContainer.innerHTML = `<p style="text-align:center; color: var(--text-secondary); padding: 20px;">${getTranslatedText('loading') || 'Загрузка...'}</p>`;
-    
-    const token = getLocalStorage('chaterlabAuthToken', '');
-    if (!token) {
-        listContainer.innerHTML = `<p style="text-align:center; color: var(--error-color); padding: 20px;">Ошибка авторизации</p>`;
-        return;
-    }
-    
-    try {
-        const response = await apiFetch(`${API_BASE_URL}/api/applications`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Ошибка загрузки заявок');
-        }
-        
-        const applications = await response.json();
-        
-        if (!applications || applications.length === 0) {
-            listContainer.innerHTML = `
-                <div style="text-align:center; padding: 40px; color: var(--text-secondary);">
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 20px; opacity: 0.5;">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                    <p>Нет заявок</p>
-                </div>
-            `;
-            return;
-        }
-        
-        listContainer.innerHTML = '';
-        
-        applications.forEach(app => {
-            const appCard = document.createElement('div');
-            appCard.className = 'application-card';
-            appCard.style.cssText = `
-                background: var(--background-card);
-                border: 2px solid var(--border-color);
-                border-radius: 12px;
-                padding: 20px;
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-                position: relative;
-            `;
-            
-            // Определяем статус и цвет
-            const statusConfig = {
-                'new': { label: 'Новая', color: '#3b82f6', bg: '#eff6ff' },
-                'processed': { label: 'Обработана', color: '#10b981', bg: '#ecfdf5' },
-                'rejected': { label: 'Отклонена', color: '#ef4444', bg: '#fef2f2' }
-            };
-            const status = statusConfig[app.status] || statusConfig['new'];
-            
-            // Форматируем дату
-            const date = new Date(app.created_at);
-            const formattedDate = date.toLocaleString('ru-RU', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            // Определяем направление
-            const directionMap = {
-                'translator': 'Переводчик',
-                'scout': 'Скаут',
-                'model': 'Модель'
-            };
-            const directionLabel = directionMap[app.direction] || app.direction;
-            
-            appCard.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
-                    <div style="flex: 1;">
-                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                            <h4 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-primary);">${escapeHtml(app.name)}</h4>
-                            <span style="padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; background: ${status.bg}; color: ${status.color};">
-                                ${status.label}
-                            </span>
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--text-secondary);">
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                                    <polyline points="22,6 12,13 2,6"></polyline>
-                                </svg>
-                                <a href="mailto:${escapeHtml(app.email)}" style="color: var(--primary-blue); text-decoration: none;">${escapeHtml(app.email)}</a>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                                </svg>
-                                <a href="tel:${escapeHtml(app.contact_info)}" style="color: var(--primary-blue); text-decoration: none;">${escapeHtml(app.contact_info)}</a>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                    <circle cx="12" cy="10" r="3"></circle>
-                                </svg>
-                                <span>${directionLabel}</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="12 6 12 12 16 14"></polyline>
-                                </svg>
-                                <span>${formattedDate}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 8px; flex-shrink: 0;">
-                        ${app.status !== 'processed' ? `
-                            <button class="application-action-btn" data-action="processed" data-id="${app.id}" style="padding: 8px 16px; border-radius: 8px; border: none; background: #10b981; color: white; cursor: pointer; font-weight: 500; font-size: 13px;">
-                                ✓ Обработать
-                            </button>
-                        ` : ''}
-                        ${app.status !== 'rejected' ? `
-                            <button class="application-action-btn" data-action="rejected" data-id="${app.id}" style="padding: 8px 16px; border-radius: 8px; border: none; background: #ef4444; color: white; cursor: pointer; font-weight: 500; font-size: 13px;">
-                                ✕ Отклонить
-                            </button>
-                        ` : ''}
-                        <button class="application-delete-btn" data-id="${app.id}" style="padding: 8px; border-radius: 8px; border: 2px solid var(--border-color); background: transparent; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Удалить">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            listContainer.appendChild(appCard);
-        });
-        
-        // Добавляем обработчики для кнопок действий
-        listContainer.querySelectorAll('.application-action-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const action = btn.dataset.action;
-                const appId = btn.dataset.id;
-                await updateApplicationStatus(appId, action);
-            });
-        });
-        
-        // Добавляем обработчики для кнопок удаления
-        listContainer.querySelectorAll('.application-delete-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const appId = btn.dataset.id;
-                if (confirm('Вы уверены, что хотите удалить эту заявку?')) {
-                    await deleteApplication(appId);
-                }
-            });
-        });
-        
-    } catch (error) {
-        console.error('Error fetching applications:', error);
-        listContainer.innerHTML = `
-            <div style="text-align:center; padding: 40px; color: var(--error-color);">
-                <p>Ошибка загрузки заявок: ${error.message}</p>
-                <button onclick="fetchAndRenderApplications()" style="margin-top: 16px; padding: 10px 20px; border-radius: 8px; border: 2px solid var(--border-color); background: var(--background-card); cursor: pointer;">
-                    Попробовать снова
-                </button>
-            </div>
-        `;
-    }
-}
-
-// Функция для обновления статуса заявки
-async function updateApplicationStatus(appId, status) {
-    const token = getLocalStorage('chaterlabAuthToken', '');
-    try {
-        const response = await apiFetch(`${API_BASE_URL}/api/applications/${appId}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ status })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Ошибка обновления статуса');
-        }
-        
-        showToast('Статус заявки обновлен');
-        await fetchAndRenderApplications();
-    } catch (error) {
-        console.error('Error updating application status:', error);
-        showToast(error.message || 'Ошибка обновления статуса', true);
-    }
-}
-
-// Функция для удаления заявки
-async function deleteApplication(appId) {
-    const token = getLocalStorage('chaterlabAuthToken', '');
-    try {
-        const response = await apiFetch(`${API_BASE_URL}/api/applications/${appId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Ошибка удаления заявки');
-        }
-        
-        showToast('Заявка удалена');
-        await fetchAndRenderApplications();
-    } catch (error) {
-        console.error('Error deleting application:', error);
-        showToast(error.message || 'Ошибка удаления заявки', true);
-    }
-}
-
-// Вспомогательная функция для экранирования HTML
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
 }
 
 function switchLanguage(lang) {
@@ -2904,7 +2679,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const tabNotifications = document.getElementById('tab-btn-notifications');
     if (tabNotifications) tabNotifications.addEventListener('click', () => switchEditorTab('notifications'));
-
+    
     const tabApplications = document.getElementById('tab-btn-applications');
     if (tabApplications) tabApplications.addEventListener('click', () => switchEditorTab('applications'));
 
@@ -4251,6 +4026,287 @@ async function blockDay(date) {
         const blockTypeText = blockType === 'all' ? 'всех групп' : blockType === 'group-1' ? 'группы 1' : 'группы 2';
         showToast(`День успешно заблокирован для ${blockTypeText}`);
         fetchAndRenderSchedule();
+    } catch (error) {
+        showToast(error.message || 'Ошибка при блокировке дня', true);
+    }
+}
+
+// --- ФУНКЦИИ ДЛЯ РАБОТЫ С ЗАЯВКАМИ ---
+async function fetchAndRenderApplications() {
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    if (!token) return;
+    
+    try {
+        const statusFilter = document.getElementById('applications-status-filter')?.value || '';
+        const directionFilter = document.getElementById('applications-direction-filter')?.value || '';
+        
+        let url = `${API_BASE_URL}/api/applications`;
+        const params = new URLSearchParams();
+        if (statusFilter) params.append('status', statusFilter);
+        if (directionFilter) params.append('direction', directionFilter);
+        if (params.toString()) url += '?' + params.toString();
+        
+        const response = await apiFetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) throw new Error('Ошибка загрузки заявок');
+        
+        const data = await response.json();
+        renderApplications(data.applications || []);
+    } catch (error) {
+        console.error('Error fetching applications:', error);
+        showToast('Ошибка загрузки заявок', true);
+    }
+}
+
+async function fetchAndRenderMobileApplications() {
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    if (!token) return;
+    
+    try {
+        const statusFilter = document.getElementById('mobile-applications-status-filter')?.value || '';
+        const directionFilter = document.getElementById('mobile-applications-direction-filter')?.value || '';
+        
+        let url = `${API_BASE_URL}/api/applications`;
+        const params = new URLSearchParams();
+        if (statusFilter) params.append('status', statusFilter);
+        if (directionFilter) params.append('direction', directionFilter);
+        if (params.toString()) url += '?' + params.toString();
+        
+        const response = await apiFetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) throw new Error('Ошибка загрузки заявок');
+        
+        const data = await response.json();
+        renderMobileApplications(data.applications || []);
+    } catch (error) {
+        console.error('Error fetching applications:', error);
+        showToast('Ошибка загрузки заявок', true);
+    }
+}
+
+function renderApplications(applications) {
+    const container = document.getElementById('applications-list');
+    if (!container) return;
+    
+    if (applications.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">Заявок не найдено</div>';
+        return;
+    }
+    
+    const directionNames = {
+        translator: 'Переводчик',
+        scout: 'Скаут',
+        model: 'Модель'
+    };
+    
+    const statusNames = {
+        new: 'Новая',
+        processed: 'Обработана',
+        rejected: 'Отклонена'
+    };
+    
+    const statusColors = {
+        new: '#3b82f6',
+        processed: '#10b981',
+        rejected: '#ef4444'
+    };
+    
+    container.innerHTML = applications.map(app => {
+        const date = new Date(app.created_at);
+        const formattedDate = date.toLocaleString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        return `
+            <div class="application-card" style="background: var(--background-card); border: 2px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                    <div>
+                        <h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">${app.name}</h4>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">${formattedDate}</p>
+                    </div>
+                    <span style="padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; background: ${statusColors[app.status] || '#6b7280'}20; color: ${statusColors[app.status] || '#6b7280'};">
+                        ${statusNames[app.status] || app.status}
+                    </span>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <p style="margin: 4px 0; font-size: 14px;"><strong>Направление:</strong> ${directionNames[app.direction] || app.direction}</p>
+                    <p style="margin: 4px 0; font-size: 14px;"><strong>Email:</strong> ${app.email}</p>
+                    <p style="margin: 4px 0; font-size: 14px;"><strong>Контакт:</strong> ${app.contact_info}</p>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    ${app.status !== 'processed' ? `<button onclick="updateApplicationStatus(${app.id}, 'processed')" style="padding: 6px 12px; border-radius: 6px; background: #10b981; color: white; border: none; cursor: pointer; font-size: 13px;">Обработано</button>` : ''}
+                    ${app.status !== 'rejected' ? `<button onclick="updateApplicationStatus(${app.id}, 'rejected')" style="padding: 6px 12px; border-radius: 6px; background: #ef4444; color: white; border: none; cursor: pointer; font-size: 13px;">Отклонить</button>` : ''}
+                    ${app.status !== 'new' ? `<button onclick="updateApplicationStatus(${app.id}, 'new')" style="padding: 6px 12px; border-radius: 6px; background: #3b82f6; color: white; border: none; cursor: pointer; font-size: 13px;">Новая</button>` : ''}
+                    <button onclick="deleteApplication(${app.id})" style="padding: 6px 12px; border-radius: 6px; background: #6b7280; color: white; border: none; cursor: pointer; font-size: 13px;">Удалить</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderMobileApplications(applications) {
+    const container = document.getElementById('mobile-applications-list');
+    if (!container) return;
+    
+    if (applications.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">Заявок не найдено</div>';
+        return;
+    }
+    
+    const directionNames = {
+        translator: 'Переводчик',
+        scout: 'Скаут',
+        model: 'Модель'
+    };
+    
+    const statusNames = {
+        new: 'Новая',
+        processed: 'Обработана',
+        rejected: 'Отклонена'
+    };
+    
+    const statusColors = {
+        new: '#3b82f6',
+        processed: '#10b981',
+        rejected: '#ef4444'
+    };
+    
+    container.innerHTML = applications.map(app => {
+        const date = new Date(app.created_at);
+        const formattedDate = date.toLocaleString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        return `
+            <div class="application-card" style="background: var(--background-card); border: 2px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                    <div>
+                        <h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">${app.name}</h4>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">${formattedDate}</p>
+                    </div>
+                    <span style="padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; background: ${statusColors[app.status] || '#6b7280'}20; color: ${statusColors[app.status] || '#6b7280'};">
+                        ${statusNames[app.status] || app.status}
+                    </span>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <p style="margin: 4px 0; font-size: 14px;"><strong>Направление:</strong> ${directionNames[app.direction] || app.direction}</p>
+                    <p style="margin: 4px 0; font-size: 14px;"><strong>Email:</strong> ${app.email}</p>
+                    <p style="margin: 4px 0; font-size: 14px;"><strong>Контакт:</strong> ${app.contact_info}</p>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    ${app.status !== 'processed' ? `<button onclick="updateApplicationStatus(${app.id}, 'processed')" style="padding: 6px 12px; border-radius: 6px; background: #10b981; color: white; border: none; cursor: pointer; font-size: 13px;">Обработано</button>` : ''}
+                    ${app.status !== 'rejected' ? `<button onclick="updateApplicationStatus(${app.id}, 'rejected')" style="padding: 6px 12px; border-radius: 6px; background: #ef4444; color: white; border: none; cursor: pointer; font-size: 13px;">Отклонить</button>` : ''}
+                    ${app.status !== 'new' ? `<button onclick="updateApplicationStatus(${app.id}, 'new')" style="padding: 6px 12px; border-radius: 6px; background: #3b82f6; color: white; border: none; cursor: pointer; font-size: 13px;">Новая</button>` : ''}
+                    <button onclick="deleteApplication(${app.id})" style="padding: 6px 12px; border-radius: 6px; background: #6b7280; color: white; border: none; cursor: pointer; font-size: 13px;">Удалить</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function updateApplicationStatus(id, status) {
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    if (!token) return;
+    
+    try {
+        const response = await apiFetch(`${API_BASE_URL}/api/applications/${id}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status })
+        });
+        
+        if (!response.ok) throw new Error('Ошибка обновления статуса');
+        
+        showToast('Статус заявки обновлен');
+        fetchAndRenderApplications();
+        fetchAndRenderMobileApplications();
+    } catch (error) {
+        console.error('Error updating application status:', error);
+        showToast('Ошибка обновления статуса', true);
+    }
+}
+
+async function deleteApplication(id) {
+    if (!confirm('Вы уверены, что хотите удалить эту заявку?')) return;
+    
+    const token = getLocalStorage('chaterlabAuthToken', '');
+    if (!token) return;
+    
+    try {
+        const response = await apiFetch(`${API_BASE_URL}/api/applications/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) throw new Error('Ошибка удаления заявки');
+        
+        showToast('Заявка удалена');
+        fetchAndRenderApplications();
+        fetchAndRenderMobileApplications();
+    } catch (error) {
+        console.error('Error deleting application:', error);
+        showToast('Ошибка удаления заявки', true);
+    }
+}
+
+// Инициализация обработчиков для заявок
+document.addEventListener('DOMContentLoaded', () => {
+    const refreshBtn = document.getElementById('refresh-applications-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', fetchAndRenderApplications);
+    }
+    
+    const mobileRefreshBtn = document.getElementById('mobile-refresh-applications-btn');
+    if (mobileRefreshBtn) {
+        mobileRefreshBtn.addEventListener('click', fetchAndRenderMobileApplications);
+    }
+    
+    const statusFilter = document.getElementById('applications-status-filter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', fetchAndRenderApplications);
+    }
+    
+    const directionFilter = document.getElementById('applications-direction-filter');
+    if (directionFilter) {
+        directionFilter.addEventListener('change', fetchAndRenderApplications);
+    }
+    
+    const mobileStatusFilter = document.getElementById('mobile-applications-status-filter');
+    if (mobileStatusFilter) {
+        mobileStatusFilter.addEventListener('change', fetchAndRenderMobileApplications);
+    }
+    
+    const mobileDirectionFilter = document.getElementById('mobile-applications-direction-filter');
+    if (mobileDirectionFilter) {
+        mobileDirectionFilter.addEventListener('change', fetchAndRenderMobileApplications);
+    }
+});
     } catch (error) {
         showToast(error.message || 'Ошибка при блокировке дня', true);
     }
