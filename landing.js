@@ -1,4 +1,6 @@
-// --- ЭТОТ ФАЙЛ ПЕРЕИМЕНОВАН ИЗ script.js В landing.js, ЧТОБЫ НЕ БЫЛО КОНФЛИКТОВ С CRM ---
+// landing.js - Логика лендинга и отправки форм
+
+const API_BASE_URL = 'https://backendchater.fly.dev'; // Убедитесь, что адрес верный
 
 const translations = {
     ru: {
@@ -7,7 +9,7 @@ const translations = {
         nav_how_to_start: "Как начать",
         nav_contacts: "Контакты",
         btn_start_career: "Начать карьеру",
-        btn_login: "Войти", // Добавлен перевод для кнопки входа
+        btn_login: "Войти",
         hero_title: "Первое цифровое агентство международных знакомств",
         hero_subtitle: "ChaterLab революционизирует индустрию, предлагая удаленную работу с высоким доходом для переводчиков, скаутов и моделей по всему миру. Лидер индустрии с 2016 года.",
         hero_btn_directions: "Выбрать направление",
@@ -72,7 +74,10 @@ const translations = {
         placeholder_name: "Ваше имя",
         placeholder_email: "Email",
         select_direction: "Выберите направление",
-        btn_send: "Отправить"
+        btn_send: "Отправить",
+        phone_hint: "📱 Укажите номер телефона, по которому HR сможет найти вас в WhatsApp или Telegram:",
+        app_success: "Спасибо! Ваша заявка успешно отправлена. HR свяжется с вами в ближайшее время.",
+        app_error: "Ошибка при отправке. Попробуйте позже."
     },
     en: {
         nav_benefits: "Benefits",
@@ -80,7 +85,7 @@ const translations = {
         nav_how_to_start: "How to Start",
         nav_contacts: "Contacts",
         btn_start_career: "Start Career",
-        btn_login: "Log In", // Added translation
+        btn_login: "Log In",
         hero_title: "The First Digital International Dating Agency",
         hero_subtitle: "ChaterLab revolutionizes the industry by offering high-income remote work for translators, scouts, and models worldwide. Industry leader since 2016.",
         hero_btn_directions: "Choose Direction",
@@ -145,7 +150,10 @@ const translations = {
         placeholder_name: "Your Name",
         placeholder_email: "Email",
         select_direction: "Choose Direction",
-        btn_send: "Send"
+        btn_send: "Send",
+        phone_hint: "📱 Please provide your phone number so HR can find you on WhatsApp or Telegram:",
+        app_success: "Thank you! Your application has been sent successfully. HR will contact you soon.",
+        app_error: "Error sending application. Please try again later."
     }
 };
 
@@ -188,20 +196,21 @@ function openTab(tabName) {
     });
 
     // Show specific tab content
-    document.getElementById(tabName).classList.add('active');
+    const targetContent = document.getElementById(tabName);
+    if (targetContent) {
+        targetContent.classList.add('active');
+    }
 
     // Activate specific button
-    // Note: This is a simple way, assuming buttons have onclick="openTab('...')"
-    // A more robust way would be to add IDs to buttons or pass the event
     const buttons = document.querySelectorAll('.tab-btn');
     buttons.forEach(btn => {
-        if (btn.getAttribute('onclick').includes(tabName)) {
+        if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(`'${tabName}'`)) {
             btn.classList.add('active');
         }
     });
 }
 
-// Modal
+// Modal Logic
 const modalOverlay = document.getElementById('modalOverlay');
 
 function openModal() {
@@ -215,27 +224,65 @@ function closeModal() {
 }
 
 // Close modal when clicking outside
-modalOverlay.addEventListener('click', (e) => {
-    if (e.target === modalOverlay) {
-        closeModal();
-    }
-});
+if (modalOverlay) {
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            closeModal();
+        }
+    });
+}
 
-function submitForm(event) {
+// ОБНОВЛЕННАЯ ФУНКЦИЯ ОТПРАВКИ ФОРМЫ
+async function submitForm(event) {
     event.preventDefault();
-    alert(currentLang === 'ru' ? 'Спасибо! Ваша заявка отправлена.' : 'Thank you! Your application has been sent.');
-    closeModal();
+    
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.textContent;
+    submitBtn.textContent = '...';
+    submitBtn.disabled = true;
+
+    const name = document.getElementById('app-name').value;
+    const email = document.getElementById('app-email').value;
+    const phone = document.getElementById('app-phone').value;
+    const direction = document.getElementById('app-direction').value;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/applications-public`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, phone, direction })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert(translations[currentLang].app_success);
+            event.target.reset();
+            closeModal();
+        } else {
+            alert(result.message || translations[currentLang].app_error);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert(translations[currentLang].app_error);
+    } finally {
+        submitBtn.textContent = originalBtnText;
+        submitBtn.disabled = false;
+    }
 }
 
 // Mobile Menu
 const burgerMenu = document.getElementById('burgerMenu');
 const mobileMenu = document.getElementById('mobileMenu');
 
-burgerMenu.addEventListener('click', () => {
-    mobileMenu.classList.toggle('active');
-    // Toggle burger icon animation if needed
-});
+if (burgerMenu && mobileMenu) {
+    burgerMenu.addEventListener('click', () => {
+        mobileMenu.classList.toggle('active');
+    });
+}
 
 function closeMobileMenu() {
-    mobileMenu.classList.remove('active');
+    if (mobileMenu) {
+        mobileMenu.classList.remove('active');
+    }
 }
