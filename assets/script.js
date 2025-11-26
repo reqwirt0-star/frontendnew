@@ -101,6 +101,27 @@ function setupMobileEditorTabs() {
             } else if (targetTab === 'applications') {
                 fetchAndRenderMobileApplications();
             }
+            
+            // Инициализируем обработчики для заявок при первом открытии
+            if (targetTab === 'applications') {
+                const mobileRefreshBtn = document.getElementById('mobile-refresh-applications-btn');
+                if (mobileRefreshBtn && !mobileRefreshBtn.dataset.initialized) {
+                    mobileRefreshBtn.dataset.initialized = 'true';
+                    mobileRefreshBtn.addEventListener('click', fetchAndRenderMobileApplications);
+                }
+                
+                const mobileStatusFilter = document.getElementById('mobile-applications-status-filter');
+                if (mobileStatusFilter && !mobileStatusFilter.dataset.initialized) {
+                    mobileStatusFilter.dataset.initialized = 'true';
+                    mobileStatusFilter.addEventListener('change', fetchAndRenderMobileApplications);
+                }
+                
+                const mobileDirectionFilter = document.getElementById('mobile-applications-direction-filter');
+                if (mobileDirectionFilter && !mobileDirectionFilter.dataset.initialized) {
+                    mobileDirectionFilter.dataset.initialized = 'true';
+                    mobileDirectionFilter.addEventListener('change', fetchAndRenderMobileApplications);
+                }
+            }
         });
     });
     
@@ -986,7 +1007,8 @@ function switchLanguage(lang) {
         btn.classList.toggle('active', btn.dataset.lang === lang); 
     });
     
-    if (document.getElementById('app-container').getAttribute('data-logged') === 'true') {
+    const appContainer = document.getElementById('app-container');
+    if (appContainer && appContainer.getAttribute('data-logged') === 'true') {
         const langButtonsApp = document.querySelectorAll('#language-switcher-app button');
         langButtonsApp.forEach(btn => { 
             btn.classList.toggle('active', btn.dataset.lang === lang); 
@@ -1084,6 +1106,7 @@ async function checkLogin() {
         setupDarkMode();
         renderUserStatusCard();
         setupMobileNavigation();
+        setupMobileEditorTabs(); // Инициализация мобильных вкладок редактора
         setupHeaderTypingOnAllTargets();
         setupNotificationsUI();
         showCriticalIfAny();
@@ -1101,10 +1124,26 @@ async function handleLogin(event) {
     const usernameInput = document.getElementById('login-username');
     const passwordInput = document.getElementById('login-password');
     const errorDiv = document.getElementById('login-error');
+    
+    if (!usernameInput || !passwordInput) {
+        console.error('Login form elements not found');
+        return;
+    }
+    
     const username = usernameInput.value.trim();
     const password = passwordInput.value.trim();
     
-    errorDiv.classList.remove('show');
+    if (errorDiv) {
+        errorDiv.classList.remove('show');
+    }
+    
+    if (!username || !password) {
+        if (errorDiv) {
+            errorDiv.textContent = getTranslatedText('username_and_password_required') || 'Введите логин и пароль';
+            errorDiv.classList.add('show');
+        }
+        return;
+    }
     
     try {
         const response = await fetch(`${API_BASE_URL}/login`, { 
@@ -1125,20 +1164,27 @@ async function handleLogin(event) {
         userName = username;
         
         document.body.classList.remove('login-active');
-        document.getElementById('login-screen').style.display = 'none';
+        const loginScreen = document.getElementById('login-screen');
+        if (loginScreen) loginScreen.style.display = 'none';
         
         const overlay = document.getElementById('animation-overlay');
-        overlay.style.display = 'flex';
-        void overlay.offsetHeight;
-        overlay.classList.add('animate');
+        if (overlay) {
+            overlay.style.display = 'flex';
+            void overlay.offsetHeight;
+            overlay.classList.add('animate');
+        }
         
         setTimeout(async () => {
-            overlay.style.display = 'none';
-            overlay.classList.remove('animate');
+            if (overlay) {
+                overlay.style.display = 'none';
+                overlay.classList.remove('animate');
+            }
             const appContainer = document.getElementById('app-container');
-            appContainer.style.display = 'flex';
-            appContainer.setAttribute('data-logged', 'true');
-            appContainer.style.opacity = '1';
+            if (appContainer) {
+                appContainer.style.display = 'flex';
+                appContainer.setAttribute('data-logged', 'true');
+                appContainer.style.opacity = '1';
+            }
             
             await fetchContent();
             await fetchFavorites();
@@ -1146,15 +1192,21 @@ async function handleLogin(event) {
             setupDarkMode();
             renderUserStatusCard();
             setupMobileNavigation();
+            setupMobileEditorTabs(); // Инициализация мобильных вкладок редактора
             setupHeaderTypingOnAllTargets();
             setupNotificationsUI();
             showCriticalIfAny();
             setupNotificationsEditor();
-            setupScheduleCalendar(); // <-- ИЗМЕНЕНИЕ (которое было)
+            setupScheduleCalendar();
         }, 2500);
     } catch (error) {
-        errorDiv.textContent = getTranslatedText(error.message);
-        errorDiv.classList.add('show');
+        console.error('Login error:', error);
+        if (errorDiv) {
+            errorDiv.textContent = getTranslatedText(error.message) || error.message || 'Ошибка входа';
+            errorDiv.classList.add('show');
+        } else {
+            alert(getTranslatedText(error.message) || error.message || 'Ошибка входа');
+        }
     }
 }
 
@@ -2660,7 +2712,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     checkLogin();
     
-    document.getElementById('login-form').addEventListener('submit', handleLogin);
+    // Инициализация формы входа (только если форма существует)
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
     
     const addUserForm = document.getElementById('add-user-form');
     if (addUserForm) addUserForm.addEventListener('submit', createUser);
@@ -2688,6 +2744,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const addSectionBtn = document.getElementById('add-section-btn');
     if (addSectionBtn) addSectionBtn.addEventListener('click', addSection);
+    
+    // Инициализация обработчиков для заявок
+    const refreshBtn = document.getElementById('refresh-applications-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', fetchAndRenderApplications);
+    }
+    
+    const mobileRefreshBtn = document.getElementById('mobile-refresh-applications-btn');
+    if (mobileRefreshBtn) {
+        mobileRefreshBtn.addEventListener('click', fetchAndRenderMobileApplications);
+    }
+    
+    const statusFilter = document.getElementById('applications-status-filter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', fetchAndRenderApplications);
+    }
+    
+    const directionFilter = document.getElementById('applications-direction-filter');
+    if (directionFilter) {
+        directionFilter.addEventListener('change', fetchAndRenderApplications);
+    }
+    
+    const mobileStatusFilter = document.getElementById('mobile-applications-status-filter');
+    if (mobileStatusFilter) {
+        mobileStatusFilter.addEventListener('change', fetchAndRenderMobileApplications);
+    }
+    
+    const mobileDirectionFilter = document.getElementById('mobile-applications-direction-filter');
+    if (mobileDirectionFilter) {
+        mobileDirectionFilter.addEventListener('change', fetchAndRenderMobileApplications);
+    }
 });
 
 
@@ -4272,42 +4359,5 @@ async function deleteApplication(id) {
     } catch (error) {
         console.error('Error deleting application:', error);
         showToast('Ошибка удаления заявки', true);
-    }
-}
-
-// Инициализация обработчиков для заявок
-document.addEventListener('DOMContentLoaded', () => {
-    const refreshBtn = document.getElementById('refresh-applications-btn');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', fetchAndRenderApplications);
-    }
-    
-    const mobileRefreshBtn = document.getElementById('mobile-refresh-applications-btn');
-    if (mobileRefreshBtn) {
-        mobileRefreshBtn.addEventListener('click', fetchAndRenderMobileApplications);
-    }
-    
-    const statusFilter = document.getElementById('applications-status-filter');
-    if (statusFilter) {
-        statusFilter.addEventListener('change', fetchAndRenderApplications);
-    }
-    
-    const directionFilter = document.getElementById('applications-direction-filter');
-    if (directionFilter) {
-        directionFilter.addEventListener('change', fetchAndRenderApplications);
-    }
-    
-    const mobileStatusFilter = document.getElementById('mobile-applications-status-filter');
-    if (mobileStatusFilter) {
-        mobileStatusFilter.addEventListener('change', fetchAndRenderMobileApplications);
-    }
-    
-    const mobileDirectionFilter = document.getElementById('mobile-applications-direction-filter');
-    if (mobileDirectionFilter) {
-        mobileDirectionFilter.addEventListener('change', fetchAndRenderMobileApplications);
-    }
-});
-    } catch (error) {
-        showToast(error.message || 'Ошибка при блокировке дня', true);
     }
 }
