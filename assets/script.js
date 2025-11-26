@@ -282,6 +282,48 @@ let scheduleData = [];
 let scheduleCurrentDate = null; // <-- ИСПРАВЛЕНО: Убрана инициализация luxon
 const isMobile = () => window.matchMedia("(max-width: 768px)").matches;
 
+function updateSyncIndicator() {
+    const indicator = document.getElementById('sync-status-indicator');
+    if (!indicator) return;
+    const isOnline = navigator.onLine;
+    const lang = getLocalStorage('chaterlabLang', 'ru');
+    const onlineText = lang === 'en' ? 'Online' : 'В сети';
+    const offlineText = lang === 'en' ? 'Offline' : 'Нет соединения';
+    indicator.dataset.state = isOnline ? 'online' : 'offline';
+    indicator.textContent = isOnline ? onlineText : offlineText;
+}
+
+function stampLastUpdate() {
+    const label = document.getElementById('last-update-label');
+    if (!label) return;
+    try {
+        const now = luxon.DateTime.local();
+        label.textContent = now.toFormat('dd.LL HH:mm');
+    } catch (error) {
+        label.textContent = new Date().toLocaleString();
+    }
+}
+
+function initSidebarToggles() {
+    const collapseBtn = document.getElementById('sidebar-collapse-btn');
+    const expandBtn = document.getElementById('sidebar-expand-btn');
+
+    if (collapseBtn) {
+        collapseBtn.addEventListener('click', () => {
+            document.body.classList.add('sidebar-collapsed');
+        });
+    }
+
+    if (expandBtn) {
+        expandBtn.addEventListener('click', () => {
+            document.body.classList.remove('sidebar-collapsed');
+        });
+    }
+}
+
+window.addEventListener('online', updateSyncIndicator);
+window.addEventListener('offline', updateSyncIndicator);
+
 const uiTexts = {
     ru: {
         lang_locale: 'ru',
@@ -1022,6 +1064,14 @@ function switchLanguage(lang) {
         
         updateInstructions(lang);
         renderUserStatusCard();
+        const modeHint = document.getElementById('mode-priority-hint');
+        if (modeHint) {
+            if (userRole === 'manager' || userRole === 'super_manager') {
+                modeHint.textContent = `${getTranslatedText('navAnalytics')} • ${getTranslatedText('tabUsers')} • ${getTranslatedText('tabApplications')}`;
+            } else {
+                modeHint.textContent = `${getTranslatedText('navSchedule')} • ${getTranslatedText('navInstructions')}`;
+            }
+        }
         
         const analyticsPanel = document.getElementById('analytics-panel');
         if (analyticsPanel && analyticsPanel.style.display === 'block') {
@@ -1032,27 +1082,8 @@ function switchLanguage(lang) {
         if (scheduleCurrentDate) {
             fetchAndRenderSchedule();
         }
-        // Recalculate segmented control glider after translated labels change width
-        // --- ИЗМЕНЕНИЕ: Добавлена проверка на оба меню ---
-        const managerControls = document.querySelector('div.manager-controls-segmented:not(#employee-controls-segmented)');
-        if (managerControls) {
-            const glider = managerControls.querySelector('.glider');
-            const activeBtn = managerControls.querySelector('button.active');
-            if (glider && activeBtn) {
-                glider.style.width = `${activeBtn.offsetWidth}px`;
-                glider.style.left = `${activeBtn.offsetLeft}px`;
-            }
-        }
-        const employeeControls = document.querySelector('#employee-controls-segmented');
-         if (employeeControls) {
-            const glider = employeeControls.querySelector('.glider');
-            const activeBtn = employeeControls.querySelector('button.active');
-            if (glider && activeBtn) {
-                glider.style.width = `${activeBtn.offsetWidth}px`;
-                glider.style.left = `${activeBtn.offsetLeft}px`;
-            }
-        }
     }
+    updateSyncIndicator();
 }
 
 async function checkLogin() {
@@ -1895,128 +1926,95 @@ async function loadMobileAnalytics() {
 }
 
 function checkUserRoleAndSetupManagerUI() {
-    if (userRole === 'manager' || userRole === 'super_manager') {
-        if (isMobile()) {
-            const openEditorBtn = document.getElementById('mobile-open-editor-btn');
-            if (openEditorBtn) openEditorBtn.style.display = 'flex';
+    const isManager = userRole === 'manager' || userRole === 'super_manager';
+    if (isMobile()) return;
+
+    const modeSwitcher = document.getElementById('desktop-mode-switcher');
+    if (!modeSwitcher) return;
+
+    const modeButtons = Array.from(modeSwitcher.querySelectorAll('.mode-btn'));
+    const analyticsPanel = document.getElementById('analytics-panel');
+    const schedulePanel = document.getElementById('schedule-panel');
+    const mainContentPanel = document.getElementById('main-content-wrapper');
+    const placeholder = document.getElementById('workspace-mode-placeholder');
+    const modeHint = document.getElementById('mode-priority-hint');
+    const analyticsBtn = document.getElementById('mode-btn-analytics');
+    const editorBtn = document.getElementById('mode-btn-editor');
+    const instructionsBtn = document.getElementById('mode-btn-instructions');
+    const triggerAnalyticsLoad = isManager ? setupAnalytics() : null;
+
+    if (modeHint) {
+        if (isManager) {
+            modeHint.textContent = `${getTranslatedText('navAnalytics')} • ${getTranslatedText('tabUsers')} • ${getTranslatedText('tabApplications')}`;
         } else {
-            // --- ИСПРАВЛЕНИЕ: Используем более конкретный селектор ---
-            const managerControls = document.querySelector('div.manager-controls-segmented:not(#employee-controls-segmented)');
-            if (managerControls) managerControls.style.display = 'flex';
-            
-            const triggerAnalyticsLoad = setupAnalytics();
-            
-            // --- ИСПРАВЛЕНИЕ: Используем более конкретный селектор ---
-            const buttons = document.querySelectorAll('div.manager-controls-segmented:not(#employee-controls-segmented) button');
-            const glider = document.querySelector('div.manager-controls-segmented:not(#employee-controls-segmented) .glider');
-            
-            const mainContentPanel = document.getElementById('main-content-wrapper');
-            const analyticsPanel = document.getElementById('analytics-panel');
-
-            function moveGlider(target) {
-                if (!glider || !target) return; // --- Добавлена проверка ---
-                buttons.forEach(btn => btn.classList.remove('active'));
-                target.classList.add('active');
-                glider.style.width = `${target.offsetWidth}px`;
-                glider.style.left = `${target.offsetLeft}px`;
-            }
-            
-            buttons.forEach(button => {
-                button.addEventListener('click', (e) => {
-                    moveGlider(e.currentTarget);
-                    if (button.id === 'show-instructions-btn') switchManagerView('instructions');
-                    if (button.id === 'show-schedule-btn') switchManagerView('schedule'); // <-- ИЗМЕНЕНИЕ (которое было)
-                    if (button.id === 'show-analytics-btn') switchManagerView('analytics');
-                    if (button.id === 'edit-mode-btn') switchManagerView('editor');
-                });
-            });
-            
-            // --- ИСПРАВЛЕНИЕ: Используем более конкретный селектор ---
-            const activeButton = document.querySelector('div.manager-controls-segmented:not(#employee-controls-segmented) button.active');
-            if (activeButton) {
-                setTimeout(() => moveGlider(activeButton), 50);
-            }
-
-            function switchManagerView(view) {
-                const schedulePanel = document.getElementById('schedule-panel'); // <-- ИЗМЕНЕНИЕ (которое было)
-                mainContentPanel.style.display = 'none';
-                if (analyticsPanel) analyticsPanel.style.display = 'none';
-                if (schedulePanel) schedulePanel.style.display = 'none'; // <-- ИЗМЕНЕНИЕ (которое было)
-                
-                if (view === 'instructions' || view === 'editor') {
-                    mainContentPanel.style.display = 'block';
-                    if (view === 'instructions') {
-                        hideContentEditor();
-                    } else {
-                        showContentEditor();
-                    }
-                } else if (view === 'analytics') {
-                    if (analyticsPanel) analyticsPanel.style.display = 'block';
-                    if (triggerAnalyticsLoad) triggerAnalyticsLoad();
-                } else if (view === 'schedule') { // <-- ИЗМЕНЕНИЕ (которое было)
-                    if (schedulePanel) schedulePanel.style.display = 'block';
-                    fetchAndRenderSchedule(); // Обновляем при переключении
-                }
-            }
-            
-            const cancelBtn = document.getElementById('cancel-edit-btn');
-            if (cancelBtn) {
-                cancelBtn.addEventListener('click', () => {
-                    const instructionButton = document.getElementById('show-instructions-btn');
-                    if (instructionButton) instructionButton.click();
-                });
-            }
+            modeHint.textContent = `${getTranslatedText('navSchedule')} • ${getTranslatedText('navInstructions')}`;
         }
-    } else { // --- НОВЫЙ БЛОК ELSE ДЛЯ СОТРУДНИКОВ ---
-        // Это для 'employee'
-        if (!isMobile()) {
-            const employeeControls = document.getElementById('employee-controls-segmented');
-            if (employeeControls) employeeControls.style.display = 'flex';
+    }
 
-            const buttons = document.querySelectorAll('#employee-controls-segmented button');
-            const glider = document.querySelector('#employee-controls-segmented .glider');
-            
-            const mainContentPanel = document.getElementById('main-content-wrapper');
-            const schedulePanel = document.getElementById('schedule-panel');
+    if (analyticsBtn) {
+        analyticsBtn.style.display = isManager ? '' : 'none';
+    }
 
-            function moveEmployeeGlider(target) {
-                if (!glider || !target) return;
-                buttons.forEach(btn => btn.classList.remove('active'));
-                target.classList.add('active');
-                glider.style.width = `${target.offsetWidth}px`;
-                glider.style.left = `${target.offsetLeft}px`;
-            }
-
-            buttons.forEach(button => {
-                button.addEventListener('click', (e) => {
-                    moveEmployeeGlider(e.currentTarget);
-                    if (button.id === 'show-instructions-btn-employee') switchEmployeeView('instructions');
-                    if (button.id === 'show-schedule-btn-employee') switchEmployeeView('schedule');
-                });
-            });
-
-            const activeButton = document.querySelector('#employee-controls-segmented button.active');
-            if (activeButton) {
-                setTimeout(() => moveEmployeeGlider(activeButton), 50);
-            }
-
-            function switchEmployeeView(view) {
-                // Сначала все прячем
-                mainContentPanel.style.display = 'none';
-                if (schedulePanel) schedulePanel.style.display = 'none';
-                
-                if (view === 'instructions') {
-                    mainContentPanel.style.display = 'block';
-                    // У сотрудника нет редактора, просто показываем инструкции
-                    document.getElementById('content-editor').style.display = 'none'; 
-                    document.getElementById('instructions').style.display = 'block';
-                } else if (view === 'schedule') {
-                    if (schedulePanel) schedulePanel.style.display = 'block';
-                    fetchAndRenderSchedule(); // Обновляем при переключении
-                }
-            }
+    if (editorBtn) {
+        editorBtn.disabled = !isManager;
+        if (!isManager) {
+            editorBtn.classList.add('disabled');
+            editorBtn.setAttribute('title', getTranslatedText('editorUnavailableMsg'));
+        } else {
+            editorBtn.classList.remove('disabled');
+            editorBtn.removeAttribute('title');
         }
-    } // --- КОНЕЦ БЛОКА ELSE ---
+    }
+
+    function activateMode(mode) {
+        if (mainContentPanel) mainContentPanel.style.display = 'none';
+        if (analyticsPanel) analyticsPanel.style.display = 'none';
+        if (schedulePanel) schedulePanel.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'none';
+
+        if (mode === 'instructions') {
+            if (mainContentPanel) mainContentPanel.style.display = 'block';
+            hideContentEditor();
+        } else if (mode === 'editor') {
+            if (isManager) {
+                if (mainContentPanel) mainContentPanel.style.display = 'block';
+                showContentEditor();
+            } else if (placeholder) {
+                placeholder.style.display = 'block';
+                const titleEl = placeholder.querySelector('h3');
+                const descEl = placeholder.querySelector('p');
+                if (titleEl) titleEl.textContent = getTranslatedText('navEditor');
+                if (descEl) descEl.textContent = getTranslatedText('editorUnavailableMsg');
+            }
+        } else if (mode === 'analytics') {
+            if (analyticsPanel) analyticsPanel.style.display = 'block';
+            if (triggerAnalyticsLoad) triggerAnalyticsLoad();
+        } else if (mode === 'schedule') {
+            if (schedulePanel) schedulePanel.style.display = 'block';
+            fetchAndRenderSchedule();
+        }
+    }
+
+    modeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            if (button.disabled || button.classList.contains('disabled')) return;
+            modeButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            activateMode(button.dataset.mode);
+        });
+    });
+
+    const defaultMode = isManager ? 'instructions' : 'schedule';
+    const firstButton = modeButtons.find(btn => btn.dataset.mode === defaultMode && !btn.disabled) || instructionsBtn;
+    if (firstButton) {
+        firstButton.classList.add('active');
+        activateMode(firstButton.dataset.mode);
+    }
+
+    const cancelBtn = document.getElementById('cancel-edit-btn');
+    if (cancelBtn && instructionsBtn) {
+        cancelBtn.addEventListener('click', () => instructionsBtn.click());
+    }
 }
 
 function setupAnalytics() {
@@ -2513,9 +2511,10 @@ async function saveContent() {
         renderSidebar();
         updateInstructions(getLocalStorage('chaterlabLang', 'ru'));
         hideContentEditor();
+        stampLastUpdate();
         
         // Return to instructions view after saving
-        const instructionButton = document.getElementById('show-instructions-btn');
+        const instructionButton = document.getElementById('mode-btn-instructions');
         if(instructionButton) instructionButton.click();
 
     } catch (error) {
@@ -2690,6 +2689,8 @@ function setupAccordion() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    initSidebarToggles();
+    updateSyncIndicator();
     // --- ИСПРАВЛЕНИЕ: Инициализация вынесена сюда ---
     // Эта строка теперь безопасна, так как DOM (и luxon из <head>) гарантированно загружены
     scheduleCurrentDate = luxon.DateTime.local().startOf('month'); // <-- ИЗМЕНЕНИЕ: Начинаем с НАЧАЛА текущего месяца
