@@ -2047,7 +2047,12 @@ async function loadDirectorDashboard() {
         // Render Director Dashboard Cards
         container.innerHTML = `
             <div style="margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px;">
-                <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600; color: var(--text-primary);">📊 Дашборд директора (${data.period})</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-primary);">📊 Дашборд директора (${data.period})</h3>
+                    <button id="open-traffic-hub-btn" style="padding: 8px 16px; background: var(--primary-blue); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 6px;">
+                        📈 Открыть Analytics Hub
+                    </button>
+                </div>
                 <div class="kpi-grid">
                     <!-- Misha Card -->
                     <div class="kpi-card" style="border-left: 4px solid #3b82f6;">
@@ -2085,9 +2090,332 @@ async function loadDirectorDashboard() {
             </div>
         `;
 
+        // Attach event listener for Analytics Hub button
+        const hubBtn = document.getElementById('open-traffic-hub-btn');
+        if (hubBtn) {
+            hubBtn.addEventListener('click', openTrafficHub);
+        }
+
     } catch (e) {
         container.innerHTML = `<div style="color: var(--error-color); padding: 10px; text-align: center;">Ошибка аналитики: ${e.message}</div>`;
         console.error('Director Dashboard Error:', e);
+    }
+}
+
+// ==================================================================
+// TRAFFIC ANALYTICS HUB (Charts & Comparison)
+// ==================================================================
+let trafficHubCharts = { leadsChart: null, spendChart: null };
+
+async function openTrafficHub() {
+    // Remove existing modal if any
+    const existingModal = document.getElementById('traffic-hub-modal');
+    if (existingModal) existingModal.remove();
+
+    // Default date range: last 30 days
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30);
+
+    const formatInputDate = (d) => d.toISOString().split('T')[0];
+
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.id = 'traffic-hub-modal';
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.8); z-index: 10000;
+        display: flex; justify-content: center; align-items: center;
+        padding: 20px; box-sizing: border-box;
+    `;
+
+    modal.innerHTML = `
+        <div style="background: var(--background-main); border-radius: 16px; width: 100%; max-width: 1200px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+            <!-- Header -->
+            <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--background-main); z-index: 10;">
+                <div>
+                    <h2 style="margin: 0; font-size: 22px; font-weight: 700; color: var(--text-primary);">📈 Traffic Analytics Hub</h2>
+                    <p style="margin: 4px 0 0; font-size: 14px; color: var(--text-secondary);">Детальная аналитика по источникам трафика</p>
+                </div>
+                <button id="close-traffic-hub" style="background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-secondary); padding: 4px;">&times;</button>
+            </div>
+
+            <!-- Date Range Filter -->
+            <div style="padding: 16px 24px; background: var(--background-card); border-bottom: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+                <label style="font-size: 14px; font-weight: 500; color: var(--text-primary);">Период:</label>
+                <input type="date" id="traffic-hub-start" value="${formatInputDate(startDate)}" style="padding: 8px 12px; border: 2px solid var(--border-color); border-radius: 8px; background: var(--background-main); color: var(--text-primary); font-family: inherit;">
+                <span style="color: var(--text-secondary);">—</span>
+                <input type="date" id="traffic-hub-end" value="${formatInputDate(endDate)}" style="padding: 8px 12px; border: 2px solid var(--border-color); border-radius: 8px; background: var(--background-main); color: var(--text-primary); font-family: inherit;">
+                <button id="traffic-hub-apply" style="padding: 8px 20px; background: var(--primary-blue); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">Применить</button>
+                <div style="margin-left: auto; display: flex; gap: 8px;">
+                    <button class="traffic-hub-preset" data-days="7" style="padding: 6px 12px; background: var(--background-main); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--text-primary);">7 дней</button>
+                    <button class="traffic-hub-preset" data-days="30" style="padding: 6px 12px; background: var(--background-main); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--text-primary);">30 дней</button>
+                    <button class="traffic-hub-preset" data-days="90" style="padding: 6px 12px; background: var(--background-main); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--text-primary);">90 дней</button>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div id="traffic-hub-summary" style="padding: 20px 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div style="text-align: center; padding: 20px; color: var(--text-secondary);">Загрузка данных...</div>
+            </div>
+
+            <!-- Charts Container -->
+            <div style="padding: 0 24px 24px;">
+                <!-- Leads Chart -->
+                <div style="background: var(--background-card); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 16px; font-size: 16px; font-weight: 600; color: var(--text-primary);">📊 Лиды по дням</h4>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="traffic-leads-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Spend Chart -->
+                <div style="background: var(--background-card); border-radius: 12px; padding: 20px;">
+                    <h4 style="margin: 0 0 16px; font-size: 16px; font-weight: 600; color: var(--text-primary);">💵 Расходы по дням</h4>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="traffic-spend-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Close modal
+    document.getElementById('close-traffic-hub').addEventListener('click', () => {
+        destroyTrafficCharts();
+        modal.remove();
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            destroyTrafficCharts();
+            modal.remove();
+        }
+    });
+
+    // Apply button
+    document.getElementById('traffic-hub-apply').addEventListener('click', () => {
+        const start = document.getElementById('traffic-hub-start').value;
+        const end = document.getElementById('traffic-hub-end').value;
+        fetchAndRenderTrafficData(start, end);
+    });
+
+    // Preset buttons
+    document.querySelectorAll('.traffic-hub-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const days = parseInt(btn.dataset.days);
+            const end = new Date();
+            const start = new Date();
+            start.setDate(start.getDate() - days);
+            document.getElementById('traffic-hub-start').value = formatInputDate(start);
+            document.getElementById('traffic-hub-end').value = formatInputDate(end);
+            fetchAndRenderTrafficData(formatInputDate(start), formatInputDate(end));
+        });
+    });
+
+    // Initial fetch
+    fetchAndRenderTrafficData(formatInputDate(startDate), formatInputDate(endDate));
+}
+
+function destroyTrafficCharts() {
+    if (trafficHubCharts.leadsChart) {
+        trafficHubCharts.leadsChart.destroy();
+        trafficHubCharts.leadsChart = null;
+    }
+    if (trafficHubCharts.spendChart) {
+        trafficHubCharts.spendChart.destroy();
+        trafficHubCharts.spendChart = null;
+    }
+}
+
+async function fetchAndRenderTrafficData(start, end) {
+    const summaryContainer = document.getElementById('traffic-hub-summary');
+    summaryContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary); grid-column: 1/-1;">⏳ Загрузка данных...</div>';
+
+    const token = getLocalStorage('chaterlabAuthToken', '');
+
+    try {
+        const response = await apiFetch(`${API_BASE_URL}/api/traffic-analytics?start=${start}&end=${end}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) throw new Error('Ошибка загрузки данных');
+
+        const data = await response.json();
+        renderTrafficSummary(data.summary);
+        renderTrafficCharts(data.chartData);
+
+    } catch (e) {
+        summaryContainer.innerHTML = `<div style="color: var(--error-color); padding: 20px; text-align: center; grid-column: 1/-1;">Ошибка: ${e.message}</div>`;
+        console.error('Traffic Hub Error:', e);
+    }
+}
+
+function renderTrafficSummary(summary) {
+    const container = document.getElementById('traffic-hub-summary');
+    const totalLeads = summary.misha.leads + summary.alina.leads;
+    const totalSpend = summary.misha.spend + summary.alina.spend;
+    const avgCPL = totalLeads > 0 ? (totalSpend / totalLeads).toFixed(2) : '0.00';
+
+    container.innerHTML = `
+        <!-- Misha Summary -->
+        <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #3b82f6;">
+            <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">👨‍💻 Миша</p>
+            <div style="font-size: 28px; font-weight: 700; color: var(--text-primary);">${summary.misha.leads}</div>
+            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">лидов • $${summary.misha.spend} • CPL $${summary.misha.cpl}</div>
+        </div>
+
+        <!-- Alina Summary -->
+        <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #8b5cf6;">
+            <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">👩‍💻 Алина</p>
+            <div style="font-size: 28px; font-weight: 700; color: var(--text-primary);">${summary.alina.leads}</div>
+            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">лидов • $${summary.alina.spend} • CPL $${summary.alina.cpl}</div>
+        </div>
+
+        <!-- Total Leads -->
+        <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #10b981;">
+            <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">📊 Всего лидов</p>
+            <div style="font-size: 28px; font-weight: 700; color: #10b981;">${totalLeads}</div>
+            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">за выбранный период</div>
+        </div>
+
+        <!-- Total Spend -->
+        <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">💰 Общий расход</p>
+            <div style="font-size: 28px; font-weight: 700; color: #f59e0b;">$${totalSpend.toFixed(2)}</div>
+            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Средний CPL: $${avgCPL}</div>
+        </div>
+    `;
+}
+
+function renderTrafficCharts(chartData) {
+    // Destroy existing charts
+    destroyTrafficCharts();
+
+    const labels = chartData.map(d => {
+        const date = new Date(d.date);
+        return date.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' });
+    });
+
+    const mishaLeads = chartData.map(d => d.mishaLeads);
+    const alinaLeads = chartData.map(d => d.alinaLeads);
+    const mishaSpend = chartData.map(d => d.mishaSpend);
+    const alinaSpend = chartData.map(d => d.alinaSpend);
+
+    // Chart.js default styling
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            intersect: false,
+            mode: 'index'
+        },
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    usePointStyle: true,
+                    padding: 20,
+                    font: { family: 'Inter', size: 12 }
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                padding: 12,
+                titleFont: { family: 'Inter', size: 13 },
+                bodyFont: { family: 'Inter', size: 12 },
+                cornerRadius: 8
+            }
+        },
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: { font: { family: 'Inter', size: 11 } }
+            },
+            y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(128,128,128,0.1)' },
+                ticks: { font: { family: 'Inter', size: 11 } }
+            }
+        }
+    };
+
+    // Leads Chart
+    const leadsCtx = document.getElementById('traffic-leads-chart');
+    if (leadsCtx) {
+        trafficHubCharts.leadsChart = new Chart(leadsCtx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Миша (лиды)',
+                        data: mishaLeads,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Алина (лиды)',
+                        data: alinaLeads,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            options: chartOptions
+        });
+    }
+
+    // Spend Chart (Bar)
+    const spendCtx = document.getElementById('traffic-spend-chart');
+    if (spendCtx) {
+        trafficHubCharts.spendChart = new Chart(spendCtx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Миша ($)',
+                        data: mishaSpend,
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Алина ($)',
+                        data: alinaSpend,
+                        backgroundColor: 'rgba(139, 92, 246, 0.7)',
+                        borderColor: '#8b5cf6',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    ...chartOptions.scales,
+                    y: {
+                        ...chartOptions.scales.y,
+                        ticks: {
+                            ...chartOptions.scales.y.ticks,
+                            callback: (value) => '$' + value
+                        }
+                    }
+                }
+            }
+        });
     }
 }
 
