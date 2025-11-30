@@ -2098,49 +2098,48 @@ async function loadDirectorDashboard() {
                         </div>
                     </div>
 
-                    <!-- 3-Step Funnel Card -->
+                    <!-- Входящий поток (Raw Traffic) - Отдельная карточка -->
                     ${data.funnel ? `
-                    <div class="kpi-card" style="grid-column: span 3; border-top: 4px solid #8b5cf6;">
-                        <p class="kpi-card-title">🌪 ВОРОНКА (HR FUNNEL)</p>
+                    <div class="kpi-card" style="border-left: 4px solid #6366f1;">
+                        <p class="kpi-card-title">📥 ВХОДЯЩИЙ ПОТОК</p>
+                        <div style="font-size: 28px; font-weight: 800; color: #6366f1;">${data.funnel.raw_leads}</div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">сырых лидов из рекламы</div>
+                        <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border-color); font-size: 12px;">
+                            Качество трафика: <b style="color: #6366f1;">${data.funnel.traffic_quality}</b>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- HR Funnel (Training → Intern) -->
+                    ${data.funnel ? `
+                    <div class="kpi-card" style="grid-column: span 2; border-top: 4px solid #8b5cf6;">
+                        <p class="kpi-card-title">🎓 HR ВОРОНКА (Обучение → Стажёр)</p>
                         
                         <div style="display: flex; align-items: center; justify-content: space-around; margin-top: 15px; text-align: center;">
                             
-                            <!-- STEP 1: LEADS -->
+                            <!-- STEP 1: TRAINING -->
                             <div>
-                                <div style="font-size: 24px; font-weight: 800; color: var(--text-primary);">${data.funnel.leads}</div>
-                                <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase;">Лиды</div>
+                                <div style="font-size: 32px; font-weight: 800; color: #3b82f6;">${data.funnel.training}</div>
+                                <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase;">На обучении</div>
                             </div>
 
-                            <!-- ARROW 1 -->
-                            <div style="position: relative; width: 60px; height: 2px; background: #e2e8f0;">
-                                <div style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">
-                                    ${data.funnel.cvr_L_T}
+                            <!-- ARROW with HR Conversion -->
+                            <div style="position: relative; width: 80px; height: 2px; background: linear-gradient(90deg, #3b82f6, #10b981);">
+                                <div style="position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: 800; color: #10b981; background: #10b98115; padding: 4px 10px; border-radius: 6px;">
+                                    ${data.funnel.hr_conversion}
                                 </div>
                             </div>
 
-                            <!-- STEP 2: TRAINING -->
+                            <!-- STEP 2: INTERNS -->
                             <div>
-                                <div style="font-size: 24px; font-weight: 800; color: #3b82f6;">${data.funnel.training}</div>
-                                <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase;">Обучение</div>
-                            </div>
-
-                            <!-- ARROW 2 -->
-                            <div style="position: relative; width: 60px; height: 2px; background: #e2e8f0;">
-                                <div style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">
-                                    ${data.funnel.cvr_T_I}
-                                </div>
-                            </div>
-
-                            <!-- STEP 3: INTERNS -->
-                            <div>
-                                <div style="font-size: 24px; font-weight: 800; color: #10b981;">${data.funnel.interns}</div>
-                                <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase;">Стажеры</div>
+                                <div style="font-size: 32px; font-weight: 800; color: #10b981;">${data.funnel.interns}</div>
+                                <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase;">Стажёры</div>
                             </div>
 
                         </div>
                         
-                        <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed var(--border-color); text-align: center; font-size: 13px; color: var(--text-secondary);">
-                            Общая конверсия (Лид → Стажер): <b style="color: var(--text-primary);">${data.funnel.cvr_L_I}</b>
+                        <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed var(--border-color); text-align: center; font-size: 12px; color: var(--text-secondary);">
+                            Это основная метрика эффективности HR
                         </div>
                     </div>
                     ` : ''}
@@ -2366,46 +2365,40 @@ function renderTrafficSummary(data) {
             <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">vs предыдущий период</div>
         </div>
 
-        <!-- 3-Step Funnel Card -->
+        <!-- Входящий поток (Raw Traffic) -->
         ${funnel ? `
-        <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-top: 4px solid #8b5cf6; grid-column: span 2;">
-            <p style="margin: 0 0 12px; font-size: 13px; color: var(--text-secondary);">🌪 ВОРОНКА (HR FUNNEL)</p>
+        <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #6366f1;">
+            <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">📥 Входящий поток</p>
+            <div style="font-size: 28px; font-weight: 800; color: #6366f1;">${funnel.raw_leads}</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">сырых лидов</div>
+            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-color); font-size: 11px;">
+                Качество: <b style="color: #6366f1;">${funnel.traffic_quality}</b>
+            </div>
+        </div>
+        ` : ''}
+
+        <!-- HR Funnel (Training → Intern) -->
+        ${funnel ? `
+        <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-top: 4px solid #8b5cf6;">
+            <p style="margin: 0 0 12px; font-size: 13px; color: var(--text-secondary);">🎓 HR Воронка</p>
             
-            <!-- Funnel Steps Row with Arrow Conversion Labels -->
-            <div style="display: flex; align-items: center; justify-content: space-around; margin-bottom: 12px;">
-                <div style="text-align: center;">
-                    <div style="font-size: 28px; font-weight: 800; color: var(--text-primary);">${funnel.leads}</div>
-                    <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase;">Лиды</div>
-                </div>
-                
-                <!-- Arrow with conversion rate -->
-                <div style="position: relative; width: 50px; height: 2px; background: #e2e8f0;">
-                    <div style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 2px 5px; border-radius: 4px; white-space: nowrap;">
-                        ${funnel.cvr_L_T}
-                    </div>
-                </div>
-                
+            <div style="display: flex; align-items: center; justify-content: space-around;">
                 <div style="text-align: center;">
                     <div style="font-size: 28px; font-weight: 800; color: #3b82f6;">${funnel.training}</div>
-                    <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase;">Обучение</div>
+                    <div style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase;">Обучение</div>
                 </div>
                 
-                <!-- Arrow with conversion rate -->
-                <div style="position: relative; width: 50px; height: 2px; background: #e2e8f0;">
-                    <div style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 2px 5px; border-radius: 4px; white-space: nowrap;">
-                        ${funnel.cvr_T_I}
+                <!-- Arrow with HR Conversion -->
+                <div style="position: relative; width: 60px; height: 2px; background: linear-gradient(90deg, #3b82f6, #10b981);">
+                    <div style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 800; color: #10b981; background: #10b98115; padding: 3px 8px; border-radius: 4px;">
+                        ${funnel.hr_conversion}
                     </div>
                 </div>
                 
                 <div style="text-align: center;">
                     <div style="font-size: 28px; font-weight: 800; color: #10b981;">${funnel.interns}</div>
-                    <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase;">Стажеры</div>
+                    <div style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase;">Стажёры</div>
                 </div>
-            </div>
-            
-            <!-- Overall Conversion -->
-            <div style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border-color); text-align: center; font-size: 13px; color: var(--text-secondary);">
-                Общая конверсия (Лид → Стажер): <b style="color: var(--text-primary);">${funnel.cvr_L_I}</b>
             </div>
         </div>
         ` : ''}
