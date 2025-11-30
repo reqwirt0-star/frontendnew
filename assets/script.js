@@ -2044,6 +2044,17 @@ async function loadDirectorDashboard() {
         
         const data = await response.json();
         
+        // Helper: Generate trend badge HTML
+        const getTrendBadge = (trend, invertColors = false) => {
+            if (!trend || trend.direction === 'neutral') return '';
+            const isUp = trend.direction === 'up';
+            // For CPL, down is good (invertColors = true)
+            const isGood = invertColors ? !isUp : isUp;
+            const color = isGood ? '#10b981' : '#ef4444';
+            const arrow = isUp ? '↑' : '↓';
+            return `<span style="font-size: 12px; font-weight: 600; color: ${color}; margin-left: 6px; padding: 2px 6px; background: ${color}20; border-radius: 4px;">${arrow} ${trend.value}%</span>`;
+        };
+
         // Render Director Dashboard Cards
         container.innerHTML = `
             <div style="margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px;">
@@ -2074,18 +2085,35 @@ async function loadDirectorDashboard() {
                         <div style="font-size: 14px; color: #8b5cf6; margin-top:5px;">CPL: <b>$${data.alina.cpl}</b></div>
                     </div>
 
-                    <!-- Total Card -->
+                    <!-- Total Card with Trends -->
                     <div class="kpi-card" style="border-left: 4px solid #10b981; background: var(--background-card);">
                         <p class="kpi-card-title">💰 ИТОГО (Месяц)</p>
-                        <div style="font-size: 28px; font-weight: 800; color: var(--primary-blue); margin: 5px 0;">$${data.total.spend}</div>
-                        <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:13px; color:var(--text-primary);">
-                            <span>Лидов: <b>${data.total.leads}</b></span>
-                            <span>CPL: <b>$${data.total.cpl}</b></span>
+                        <div style="font-size: 28px; font-weight: 800; color: var(--primary-blue); margin: 5px 0;">
+                            $${data.total.spend}
+                            ${data.trends ? getTrendBadge(data.trends.spend, false) : ''}
                         </div>
-                        <div style="border-top:1px solid var(--border-color); margin-top:8px; padding-top:8px; font-size:13px; color:var(--text-primary);">
-                            Стажёры: <b>${data.total.interns}</b> (Конверсия: ${data.total.conversion})
+                        <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:13px; color:var(--text-primary);">
+                            <span>Лидов: <b>${data.total.leads}</b>${data.trends ? getTrendBadge(data.trends.leads, false) : ''}</span>
+                            <span>CPL: <b>$${data.total.cpl}</b>${data.trends ? getTrendBadge(data.trends.cpl, true) : ''}</span>
                         </div>
                     </div>
+
+                    <!-- HR Funnel Card -->
+                    ${data.hrStats ? `
+                    <div class="kpi-card" style="border-left: 4px solid #f59e0b; background: var(--background-card);">
+                        <p class="kpi-card-title">🎓 HR Воронка (Обучение → Стажёр)</p>
+                        <div style="font-size: 32px; font-weight: 800; color: #f59e0b; margin: 5px 0;">
+                            ${data.hrStats.conversionRate}
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:13px; color:var(--text-primary);">
+                            <span>На обучении: <b>${data.hrStats.startedTraining}</b></span>
+                            <span>Стали стажёрами: <b>${data.hrStats.reachedInternship}</b></span>
+                        </div>
+                        <div style="margin-top: 8px; height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden;">
+                            <div style="height: 100%; width: ${data.hrStats.startedTraining > 0 ? (data.hrStats.reachedInternship / data.hrStats.startedTraining * 100) : 0}%; background: linear-gradient(90deg, #f59e0b, #10b981); border-radius: 3px;"></div>
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -2244,7 +2272,7 @@ async function fetchAndRenderTrafficData(start, end) {
         if (!response.ok) throw new Error('Ошибка загрузки данных');
 
         const data = await response.json();
-        renderTrafficSummary(data.summary);
+        renderTrafficSummary(data);
         renderTrafficCharts(data.chartData);
 
     } catch (e) {
@@ -2253,11 +2281,25 @@ async function fetchAndRenderTrafficData(start, end) {
     }
 }
 
-function renderTrafficSummary(summary) {
+function renderTrafficSummary(data) {
     const container = document.getElementById('traffic-hub-summary');
+    const summary = data.summary;
+    const trends = data.trends;
+    const hrStats = data.hrStats;
+    
     const totalLeads = summary.misha.leads + summary.alina.leads;
     const totalSpend = summary.misha.spend + summary.alina.spend;
     const avgCPL = totalLeads > 0 ? (totalSpend / totalLeads).toFixed(2) : '0.00';
+
+    // Helper: Generate trend badge HTML
+    const getTrendBadge = (trend, invertColors = false) => {
+        if (!trend || trend.direction === 'neutral') return '';
+        const isUp = trend.direction === 'up';
+        const isGood = invertColors ? !isUp : isUp;
+        const color = isGood ? '#10b981' : '#ef4444';
+        const arrow = isUp ? '↑' : '↓';
+        return `<span style="font-size: 11px; font-weight: 600; color: ${color}; margin-left: 4px; padding: 2px 5px; background: ${color}20; border-radius: 4px;">${arrow}${trend.value}%</span>`;
+    };
 
     container.innerHTML = `
         <!-- Misha Summary -->
@@ -2274,19 +2316,51 @@ function renderTrafficSummary(summary) {
             <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">лидов • $${summary.alina.spend} • CPL $${summary.alina.cpl}</div>
         </div>
 
-        <!-- Total Leads -->
+        <!-- Total Leads with Trend -->
         <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #10b981;">
             <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">📊 Всего лидов</p>
-            <div style="font-size: 28px; font-weight: 700; color: #10b981;">${totalLeads}</div>
-            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">за выбранный период</div>
+            <div style="font-size: 28px; font-weight: 700; color: #10b981;">
+                ${totalLeads}${trends ? getTrendBadge(trends.leads, false) : ''}
+            </div>
+            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+                CPL: $${avgCPL}${trends ? getTrendBadge(trends.cpl, true) : ''}
+            </div>
         </div>
 
-        <!-- Total Spend -->
+        <!-- Total Spend with Trend -->
         <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #f59e0b;">
             <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">💰 Общий расход</p>
-            <div style="font-size: 28px; font-weight: 700; color: #f59e0b;">$${totalSpend.toFixed(2)}</div>
-            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Средний CPL: $${avgCPL}</div>
+            <div style="font-size: 28px; font-weight: 700; color: #f59e0b;">
+                $${totalSpend.toFixed(2)}${trends ? getTrendBadge(trends.spend, false) : ''}
+            </div>
+            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">vs предыдущий период</div>
         </div>
+
+        <!-- HR Funnel Card -->
+        ${hrStats ? `
+        <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #6366f1; grid-column: span 2;">
+            <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">🎓 HR Воронка за период</p>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <div>
+                    <div style="font-size: 32px; font-weight: 800; color: #6366f1;">${hrStats.conversionRate}</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">конверсия</div>
+                </div>
+                <div style="flex: 1; display: flex; align-items: center; gap: 10px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 20px; font-weight: 700; color: var(--text-primary);">${hrStats.startedTraining}</div>
+                        <div style="font-size: 11px; color: var(--text-secondary);">на обучении</div>
+                    </div>
+                    <div style="flex: 1; height: 8px; background: var(--border-color); border-radius: 4px; position: relative;">
+                        <div style="position: absolute; left: 0; top: 0; height: 100%; width: ${hrStats.startedTraining > 0 ? (hrStats.reachedInternship / hrStats.startedTraining * 100) : 0}%; background: linear-gradient(90deg, #6366f1, #10b981); border-radius: 4px;"></div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 20px; font-weight: 700; color: #10b981;">${hrStats.reachedInternship}</div>
+                        <div style="font-size: 11px; color: var(--text-secondary);">стажёры</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        ` : ''}
     `;
 }
 
