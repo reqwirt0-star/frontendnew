@@ -2098,19 +2098,34 @@ async function loadDirectorDashboard() {
                         </div>
                     </div>
 
-                    <!-- HR Funnel Card -->
-                    ${data.hrStats ? `
+                    <!-- 3-Step Funnel Card -->
+                    ${data.funnel ? `
                     <div class="kpi-card" style="border-left: 4px solid #f59e0b; background: var(--background-card);">
-                        <p class="kpi-card-title">🎓 HR Воронка (Обучение → Стажёр)</p>
-                        <div style="font-size: 32px; font-weight: 800; color: #f59e0b; margin: 5px 0;">
-                            ${data.hrStats.conversionRate}
+                        <p class="kpi-card-title">🎯 Воронка: Лид → Обучение → Стажёр</p>
+                        
+                        <!-- Funnel Steps Row -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin: 12px 0; gap: 8px;">
+                            <div style="text-align: center; flex: 1;">
+                                <div style="font-size: 22px; font-weight: 700; color: #3b82f6;">${data.funnel.step1_leads}</div>
+                                <div style="font-size: 11px; color: var(--text-secondary);">Лидов</div>
+                            </div>
+                            <div style="color: var(--text-secondary);">→</div>
+                            <div style="text-align: center; flex: 1;">
+                                <div style="font-size: 22px; font-weight: 700; color: #f59e0b;">${data.funnel.step2_training}</div>
+                                <div style="font-size: 11px; color: var(--text-secondary);">Обучение</div>
+                            </div>
+                            <div style="color: var(--text-secondary);">→</div>
+                            <div style="text-align: center; flex: 1;">
+                                <div style="font-size: 22px; font-weight: 700; color: #10b981;">${data.funnel.step3_interns}</div>
+                                <div style="font-size: 11px; color: var(--text-secondary);">Стажёры</div>
+                            </div>
                         </div>
-                        <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:13px; color:var(--text-primary);">
-                            <span>На обучении: <b>${data.hrStats.startedTraining}</b></span>
-                            <span>Стали стажёрами: <b>${data.hrStats.reachedInternship}</b></span>
-                        </div>
-                        <div style="margin-top: 8px; height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden;">
-                            <div style="height: 100%; width: ${data.hrStats.startedTraining > 0 ? (data.hrStats.reachedInternship / data.hrStats.startedTraining * 100) : 0}%; background: linear-gradient(90deg, #f59e0b, #10b981); border-radius: 3px;"></div>
+                        
+                        <!-- Conversion Rates Row -->
+                        <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border-color); font-size: 12px;">
+                            <span style="color: var(--text-secondary);">L→T: <b style="color: #f59e0b;">${data.funnel.conv_L_T}</b></span>
+                            <span style="color: var(--text-secondary);">T→I: <b style="color: #10b981;">${data.funnel.conv_T_I}</b></span>
+                            <span style="color: var(--text-primary); background: #10b98120; padding: 2px 6px; border-radius: 4px;">L→I: <b style="color: #10b981;">${data.funnel.conv_L_I}</b></span>
                         </div>
                     </div>
                     ` : ''}
@@ -2285,13 +2300,13 @@ function renderTrafficSummary(data) {
     const container = document.getElementById('traffic-hub-summary');
     const summary = data.summary;
     const trends = data.trends;
-    const hrStats = data.hrStats;
+    const funnel = data.funnel;
     
     const totalLeads = summary.misha.leads + summary.alina.leads;
     const totalSpend = summary.misha.spend + summary.alina.spend;
     const avgCPL = totalLeads > 0 ? (totalSpend / totalLeads).toFixed(2) : '0.00';
 
-    // Helper: Generate trend badge HTML
+    // Helper: Generate trend badge HTML (returns empty if null/neutral)
     const getTrendBadge = (trend, invertColors = false) => {
         if (!trend || trend.direction === 'neutral') return '';
         const isUp = trend.direction === 'up';
@@ -2336,27 +2351,42 @@ function renderTrafficSummary(data) {
             <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">vs предыдущий период</div>
         </div>
 
-        <!-- HR Funnel Card -->
-        ${hrStats ? `
+        <!-- 3-Step Funnel Card -->
+        ${funnel ? `
         <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #6366f1; grid-column: span 2;">
-            <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">🎓 HR Воронка за период</p>
-            <div style="display: flex; align-items: center; gap: 20px;">
-                <div>
-                    <div style="font-size: 32px; font-weight: 800; color: #6366f1;">${hrStats.conversionRate}</div>
-                    <div style="font-size: 12px; color: var(--text-secondary);">конверсия</div>
+            <p style="margin: 0 0 12px; font-size: 13px; color: var(--text-secondary);">🎯 Воронка: Лид → Обучение → Стажёр</p>
+            
+            <!-- Funnel Steps Row -->
+            <div style="display: flex; align-items: center; justify-content: space-around; margin-bottom: 12px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 28px; font-weight: 700; color: #3b82f6;">${funnel.step1_leads}</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">Лидов</div>
                 </div>
-                <div style="flex: 1; display: flex; align-items: center; gap: 10px;">
-                    <div style="text-align: center;">
-                        <div style="font-size: 20px; font-weight: 700; color: var(--text-primary);">${hrStats.startedTraining}</div>
-                        <div style="font-size: 11px; color: var(--text-secondary);">на обучении</div>
-                    </div>
-                    <div style="flex: 1; height: 8px; background: var(--border-color); border-radius: 4px; position: relative;">
-                        <div style="position: absolute; left: 0; top: 0; height: 100%; width: ${hrStats.startedTraining > 0 ? (hrStats.reachedInternship / hrStats.startedTraining * 100) : 0}%; background: linear-gradient(90deg, #6366f1, #10b981); border-radius: 4px;"></div>
-                    </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 20px; font-weight: 700; color: #10b981;">${hrStats.reachedInternship}</div>
-                        <div style="font-size: 11px; color: var(--text-secondary);">стажёры</div>
-                    </div>
+                <div style="font-size: 20px; color: var(--text-secondary);">→</div>
+                <div style="text-align: center;">
+                    <div style="font-size: 28px; font-weight: 700; color: #f59e0b;">${funnel.step2_training}</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">Обучение</div>
+                </div>
+                <div style="font-size: 20px; color: var(--text-secondary);">→</div>
+                <div style="text-align: center;">
+                    <div style="font-size: 28px; font-weight: 700; color: #10b981;">${funnel.step3_interns}</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">Стажёры</div>
+                </div>
+            </div>
+            
+            <!-- Conversion Rates Row -->
+            <div style="display: flex; justify-content: space-around; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                <div style="text-align: center;">
+                    <div style="font-size: 18px; font-weight: 700; color: #f59e0b;">${funnel.conv_L_T}</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">Лид → Обучение</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 18px; font-weight: 700; color: #10b981;">${funnel.conv_T_I}</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">Обуч → Стажёр</div>
+                </div>
+                <div style="text-align: center; background: #10b98115; padding: 8px 12px; border-radius: 8px;">
+                    <div style="font-size: 22px; font-weight: 800; color: #10b981;">${funnel.conv_L_I}</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">Лид → Стажёр</div>
                 </div>
             </div>
         </div>
