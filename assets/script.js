@@ -1941,7 +1941,8 @@ function checkUserRoleAndSetupManagerUI() {
     const analyticsBtn = document.getElementById('mode-btn-analytics');
     const editorBtn = document.getElementById('mode-btn-editor');
     const instructionsBtn = document.getElementById('mode-btn-instructions');
-    const triggerAnalyticsLoad = isManager ? setupAnalytics() : null;
+    // Simplified: Only load Director Dashboard (traffic analytics) for managers
+    const triggerAnalyticsLoad = isManager ? () => loadDirectorDashboard() : null;
 
     if (modeHint) {
         if (isManager) {
@@ -2018,14 +2019,19 @@ function checkUserRoleAndSetupManagerUI() {
 }
 
 // ==================================================================
-// DIRECTOR DASHBOARD (GOOGLE SHEETS ANALYTICS)
+// TRAFFIC ANALYTICS DASHBOARD (Compact & Modern)
 // ==================================================================
 async function loadDirectorDashboard() {
     const container = document.getElementById('director-stats-container');
     if (!container) return;
 
     // Show loader
-    container.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-secondary);">⏳ Загрузка данных из Google Sheets...</div>';
+    container.innerHTML = `
+        <div class="traffic-loader">
+            <div class="loader-spinner"></div>
+            <span>Загрузка аналитики трафика...</span>
+        </div>
+    `;
 
     const token = getLocalStorage('chaterlabAuthToken', '');
     
@@ -2036,7 +2042,7 @@ async function loadDirectorDashboard() {
         
         if (!response.ok) {
             if (response.status === 403) {
-                container.innerHTML = '';
+                container.innerHTML = '<div class="traffic-access-denied">Нет доступа к аналитике</div>';
                 return;
             }
             throw new Error('Не удалось загрузить статистику');
@@ -2044,81 +2050,148 @@ async function loadDirectorDashboard() {
         
         const data = await response.json();
         
-        // Helper: Generate trend badge HTML
+        // Helper: Generate trend badge
         const getTrendBadge = (trend, invertColors = false) => {
             if (!trend || trend.direction === 'neutral') return '';
             const isUp = trend.direction === 'up';
-            // For CPL, down is good (invertColors = true)
             const isGood = invertColors ? !isUp : isUp;
             const color = isGood ? '#10b981' : '#ef4444';
             const arrow = isUp ? '↑' : '↓';
-            return `<span style="font-size: 12px; font-weight: 600; color: ${color}; margin-left: 6px; padding: 2px 6px; background: ${color}20; border-radius: 4px;">${arrow} ${trend.value}%</span>`;
+            return `<span class="trend-badge ${isGood ? 'trend-up' : 'trend-down'}">${arrow}${trend.value}%</span>`;
         };
 
-        // Render Director Dashboard Cards
+        // Compact Modern Dashboard Layout
         container.innerHTML = `
-            <div style="margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-primary);">📊 Дашборд директора (${data.period})</h3>
-                    <button id="open-traffic-hub-btn" style="padding: 8px 16px; background: var(--primary-blue); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 6px;">
-                        📈 Открыть Analytics Hub
+            <div class="traffic-dashboard">
+                <!-- Header -->
+                <div class="traffic-header">
+                    <div class="traffic-header-left">
+                        <h2>📈 Аналитика трафика</h2>
+                        <span class="traffic-period">${data.period}</span>
+                    </div>
+                    <button id="open-traffic-hub-btn" class="traffic-hub-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
+                        </svg>
+                        Детальная аналитика
                     </button>
                 </div>
-                <div class="kpi-grid">
+
+                <!-- Main Grid: Buyers + Total -->
+                <div class="traffic-cards-grid">
                     <!-- Misha Card -->
-                    <div class="kpi-card" style="border-left: 4px solid #3b82f6;">
-                        <p class="kpi-card-title">👨‍💻 Миша (Old)</p>
-                        <div style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 5px 0;">
-                            ${data.misha.leads} <span style="font-size:14px; font-weight:400; color:var(--text-secondary);">лидов</span>
+                    <div class="traffic-buyer-card buyer-misha">
+                        <div class="buyer-header">
+                            <span class="buyer-avatar">👨‍💻</span>
+                            <div class="buyer-info">
+                                <span class="buyer-name">Миша</span>
+                                <span class="buyer-source">Old Account</span>
+                            </div>
                         </div>
-                        <div style="font-size: 14px; color: var(--text-secondary);">Потрачено: <b>$${data.misha.spend}</b></div>
-                        <div style="font-size: 14px; color: #3b82f6; margin-top:5px;">CPL: <b>$${data.misha.cpl}</b></div>
+                        <div class="buyer-metrics">
+                            <div class="metric-main">
+                                <span class="metric-value">${data.misha.leads}</span>
+                                <span class="metric-label">лидов</span>
+                            </div>
+                            <div class="metric-row">
+                                <div class="metric-item">
+                                    <span class="metric-small-label">Расход</span>
+                                    <span class="metric-small-value">$${data.misha.spend}</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-small-label">CPL</span>
+                                    <span class="metric-small-value accent">$${data.misha.cpl}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Alina Card -->
-                    <div class="kpi-card" style="border-left: 4px solid #8b5cf6;">
-                        <p class="kpi-card-title">👩‍💻 Алина (FB)</p>
-                        <div style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 5px 0;">
-                            ${data.alina.leads} <span style="font-size:14px; font-weight:400; color:var(--text-secondary);">лидов</span>
+                    <div class="traffic-buyer-card buyer-alina">
+                        <div class="buyer-header">
+                            <span class="buyer-avatar">👩‍💻</span>
+                            <div class="buyer-info">
+                                <span class="buyer-name">Алина</span>
+                                <span class="buyer-source">Facebook</span>
+                            </div>
                         </div>
-                        <div style="font-size: 14px; color: var(--text-secondary);">Потрачено: <b>$${data.alina.spend}</b></div>
-                        <div style="font-size: 14px; color: #8b5cf6; margin-top:5px;">CPL: <b>$${data.alina.cpl}</b></div>
+                        <div class="buyer-metrics">
+                            <div class="metric-main">
+                                <span class="metric-value">${data.alina.leads}</span>
+                                <span class="metric-label">лидов</span>
+                            </div>
+                            <div class="metric-row">
+                                <div class="metric-item">
+                                    <span class="metric-small-label">Расход</span>
+                                    <span class="metric-small-value">$${data.alina.spend}</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-small-label">CPL</span>
+                                    <span class="metric-small-value accent">$${data.alina.cpl}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Total Card with Trends -->
-                    <div class="kpi-card" style="border-left: 4px solid #10b981; background: var(--background-card);">
-                        <p class="kpi-card-title">💰 ИТОГО (Месяц)</p>
-                        <div style="font-size: 28px; font-weight: 800; color: var(--primary-blue); margin: 5px 0;">
-                            $${data.total.spend}
+                    <!-- Total Card -->
+                    <div class="traffic-total-card">
+                        <div class="total-header">
+                            <span class="total-icon">💰</span>
+                            <span class="total-title">Итого за месяц</span>
+                        </div>
+                        <div class="total-spend">
+                            <span class="total-value">$${data.total.spend}</span>
                             ${data.trends ? getTrendBadge(data.trends.spend, false) : ''}
                         </div>
-                        <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:13px; color:var(--text-primary);">
-                            <span>Лидов: <b>${data.total.leads}</b>${data.trends ? getTrendBadge(data.trends.leads, false) : ''}</span>
-                            <span>CPL: <b>$${data.total.cpl}</b>${data.trends ? getTrendBadge(data.trends.cpl, true) : ''}</span>
+                        <div class="total-metrics">
+                            <div class="total-metric">
+                                <span class="total-metric-value">${data.total.leads}</span>
+                                <span class="total-metric-label">лидов${data.trends ? getTrendBadge(data.trends.leads, false) : ''}</span>
+                            </div>
+                            <div class="total-divider"></div>
+                            <div class="total-metric">
+                                <span class="total-metric-value">$${data.total.cpl}</span>
+                                <span class="total-metric-label">CPL${data.trends ? getTrendBadge(data.trends.cpl, true) : ''}</span>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- HR Эффективность - Простой текстовый список -->
-                    ${data.funnel ? `
-                    <div class="kpi-card" style="grid-column: span 3; border-left: 4px solid #8b5cf6;">
-                        <p class="kpi-card-title">📊 Эффективность HR (Сводка)</p>
-                        
-                        <div style="margin-top: 12px; font-size: 14px; line-height: 2;">
-                            <div>🔹 <b>Новых на обучении:</b> <span style="color: #3b82f6; font-weight: 700;">${data.funnel.training}</span> <span style="color: var(--text-secondary);">(строк в таблице)</span></div>
-                            <div>🔹 <b>Стали стажёрами:</b> <span style="color: #10b981; font-weight: 700;">${data.funnel.interns}</span> <span style="color: var(--text-secondary);">(получили статус)</span></div>
-                        </div>
-                        
-                        <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color); font-size: 14px; line-height: 2;">
-                            <div>📈 <b>Конверсия (Обучение → Стажёр):</b> <span style="color: #10b981; font-weight: 700; font-size: 16px;">${data.funnel.hr_conversion}</span></div>
-                            <div>📉 <b>Качество трафика (Лид → Обучение):</b> <span style="color: #6366f1; font-weight: 700;">${data.funnel.traffic_quality}</span></div>
-                        </div>
-                        
-                        <div style="margin-top: 12px; padding: 8px 12px; background: var(--background-secondary); border-radius: 6px; font-size: 12px; color: var(--text-secondary);">
-                            📥 Входящий поток: <b>${data.funnel.raw_leads}</b> сырых лидов из рекламы
-                        </div>
-                    </div>
-                    ` : ''}
                 </div>
+
+                <!-- HR Funnel (if data exists) -->
+                ${data.funnel ? `
+                <div class="traffic-funnel-card">
+                    <div class="funnel-header">
+                        <span class="funnel-icon">📊</span>
+                        <span class="funnel-title">HR Воронка</span>
+                    </div>
+                    <div class="funnel-grid">
+                        <div class="funnel-stage">
+                            <span class="funnel-stage-value">${data.funnel.raw_leads}</span>
+                            <span class="funnel-stage-label">Сырых лидов</span>
+                        </div>
+                        <div class="funnel-arrow">→</div>
+                        <div class="funnel-stage">
+                            <span class="funnel-stage-value">${data.funnel.training}</span>
+                            <span class="funnel-stage-label">На обучении</span>
+                        </div>
+                        <div class="funnel-arrow">→</div>
+                        <div class="funnel-stage stage-success">
+                            <span class="funnel-stage-value">${data.funnel.interns}</span>
+                            <span class="funnel-stage-label">Стажёры</span>
+                        </div>
+                    </div>
+                    <div class="funnel-conversions">
+                        <div class="conversion-item">
+                            <span class="conversion-label">Качество трафика</span>
+                            <span class="conversion-value">${data.funnel.traffic_quality}</span>
+                        </div>
+                        <div class="conversion-item">
+                            <span class="conversion-label">HR конверсия</span>
+                            <span class="conversion-value success">${data.funnel.hr_conversion}</span>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
             </div>
         `;
 
@@ -2129,7 +2202,7 @@ async function loadDirectorDashboard() {
         }
 
     } catch (e) {
-        container.innerHTML = `<div style="color: var(--error-color); padding: 10px; text-align: center;">Ошибка аналитики: ${e.message}</div>`;
+        container.innerHTML = `<div class="traffic-error">❌ Ошибка загрузки: ${e.message}</div>`;
         console.error('Director Dashboard Error:', e);
     }
 }
