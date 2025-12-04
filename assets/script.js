@@ -2363,6 +2363,7 @@ function renderTrafficSummary(data) {
     const summary = data.summary;
     const trends = data.trends;
     const funnel = data.funnel;
+    const completeness = data.dataCompleteness;
     
     const totalLeads = summary.misha.leads + summary.alina.leads;
     const totalSpend = summary.misha.spend + summary.alina.spend;
@@ -2377,25 +2378,41 @@ function renderTrafficSummary(data) {
         const arrow = isUp ? '↑' : '↓';
         return `<span style="font-size: 11px; font-weight: 600; color: ${color}; margin-left: 4px; padding: 2px 5px; background: ${color}20; border-radius: 4px;">${arrow}${trend.value}%</span>`;
     };
+    
+    // Helper: Generate warning icon with tooltip for incomplete data
+    const getDataWarning = (buyerCompleteness, buyerName) => {
+        if (!buyerCompleteness || buyerCompleteness.complete) return '';
+        const missing = buyerCompleteness.missingDates || [];
+        const missingText = missing.length > 0 
+            ? `Нет данных за: ${missing.join(', ')}${missing.length >= 5 ? '...' : ''}`
+            : '';
+        const tooltip = `Данные за этот период могут быть неполными (${buyerCompleteness.filledDays}/${buyerCompleteness.expectedDays} дней). CPL будет точным только после внесения всех расходов таргетологом. ${missingText}`;
+        return `<span class="data-warning-icon" title="${tooltip}">⚠️</span>`;
+    };
+    
+    const mishaWarning = completeness ? getDataWarning(completeness.misha, 'Миша') : '';
+    const alinaWarning = completeness ? getDataWarning(completeness.alina, 'Алина') : '';
+    const hasAnyWarning = mishaWarning || alinaWarning;
 
     container.innerHTML = `
         <!-- Misha Summary -->
         <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #3b82f6;">
             <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">👨‍💻 Миша</p>
             <div style="font-size: 28px; font-weight: 700; color: var(--text-primary);">${summary.misha.leads}</div>
-            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">лидов • $${summary.misha.spend} • CPL $${summary.misha.cpl}</div>
+            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">лидов • $${summary.misha.spend} • CPL $${summary.misha.cpl}${mishaWarning}</div>
         </div>
 
         <!-- Alina Summary -->
         <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #8b5cf6;">
             <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">👩‍💻 Алина</p>
             <div style="font-size: 28px; font-weight: 700; color: var(--text-primary);">${summary.alina.leads}</div>
-            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">лидов • $${summary.alina.spend} • CPL $${summary.alina.cpl}</div>
+            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">лидов • $${summary.alina.spend} • CPL $${summary.alina.cpl}${alinaWarning}</div>
         </div>
 
         <!-- Total Leads with Trend -->
         <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #10b981;">
             <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">📊 Всего лидов</p>
+            <div style="font-size: 28px; font-weight: 700; color: var(--text-primary);">
             <div style="font-size: 28px; font-weight: 700; color: #10b981;">
                 ${totalLeads}${trends ? getTrendBadge(trends.leads, false) : ''}
             </div>
