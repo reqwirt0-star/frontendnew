@@ -1,0 +1,892 @@
+/* ===== АДАПТИВНЫЕ СТИЛИ ДЛЯ CHATERLAB ===== */
+/* Профессиональная адаптивность для всех размеров экранов */
+
+/* ===== CSS-ПЕРЕМЕННЫЕ ДЛЯ МАСШТАБИРОВАНИЯ ===== */
+:root {
+    /* Базовые размеры для desktop */
+    --sidebar-width: 340px;
+    --sidebar-min-width: 300px;
+    --content-padding: 40px;
+    --header-height: 70px;
+    --base-font-size: 16px;
+    --card-padding: 24px;
+    --card-border-radius: 16px;
+    --spacing-unit: 8px;
+}
+
+/* ===== ИСПРАВЛЕНИЕ ОСНОВНОГО LAYOUT ===== */
+/* Убираем жёсткие ограничения, добавляем гибкость */
+
+body {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    min-height: 100vh;
+}
+
+#app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    height: auto !important;
+}
+
+main {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: visible !important;
+}
+
+/* Info блок - основная область контента */
+.info {
+    flex: 1;
+    min-width: 0;
+    padding: var(--content-padding);
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-color: var(--background-main);
+    max-height: calc(100vh - var(--header-height));
+}
+
+/* Sidebar - адаптивная ширина */
+.sidebar.desktop-only {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-min-width);
+    max-width: var(--sidebar-width);
+    flex-shrink: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: calc(100vh - var(--header-height));
+}
+
+/* ===== БОЛЬШИЕ МОНИТОРЫ (1920px+) ===== */
+@media screen and (min-width: 1920px) {
+    :root {
+        --sidebar-width: 380px;
+        --content-padding: 48px;
+        --card-padding: 28px;
+    }
+}
+
+/* ===== СРЕДНИЕ МОНИТОРЫ (1440px - 1919px) ===== */
+@media screen and (min-width: 1440px) and (max-width: 1919px) {
+    :root {
+        --sidebar-width: 340px;
+        --content-padding: 40px;
+        --card-padding: 24px;
+    }
+}
+
+/* ===== НОУТБУКИ И МАЛЕНЬКИЕ МОНИТОРЫ (1024px - 1439px) ===== */
+@media screen and (max-width: 1439px) {
+    :root {
+        --sidebar-width: 280px;
+        --sidebar-min-width: 240px;
+        --content-padding: 28px;
+        --header-height: 60px;
+        --card-padding: 20px;
+        --card-border-radius: 12px;
+    }
+    
+    /* Header компактнее */
+    .app-header {
+        padding: 10px 16px !important;
+    }
+    
+    .app-header .app-header-title {
+        font-size: 24px !important;
+    }
+    
+    .app-header .app-header-subtitle {
+        font-size: 14px !important;
+    }
+    
+    /* Sidebar компактнее */
+    .sidebar.desktop-only {
+        padding: 16px !important;
+    }
+    
+    .sidebar-top-bar {
+        padding-bottom: 12px !important;
+    }
+    
+    .sidebar-title {
+        font-size: 12px !important;
+    }
+    
+    /* Уменьшаем кнопки в sidebar */
+    .sidebar-button {
+        padding: 10px 14px !important;
+        font-size: 13px !important;
+        min-height: 40px !important;
+    }
+    
+    /* Search input компактнее */
+    .search-wrapper input {
+        padding: 10px 36px 10px 14px !important;
+        font-size: 13px !important;
+    }
+    
+    /* Контент компактнее */
+    .instructions h3 {
+        font-size: 22px !important;
+    }
+    
+    .instructions {
+        line-height: 1.6 !important;
+    }
+    
+    /* Editor sections */
+    .editor-section {
+        padding: var(--card-padding) !important;
+        border-radius: var(--card-border-radius) !important;
+    }
+    
+    .editor-tabs button {
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+    }
+    
+    /* Cards и панели */
+    .notifications-create-card,
+    .notifications-history-card {
+        padding: var(--card-padding) !important;
+    }
+    
+    .notifications-header h3 {
+        font-size: 22px !important;
+    }
+}
+
+/* ===== МАЛЕНЬКИЕ НОУТБУКИ (900px - 1023px) ===== */
+@media screen and (max-width: 1023px) and (min-width: 769px) {
+    :root {
+        --sidebar-width: 240px;
+        --sidebar-min-width: 200px;
+        --content-padding: 20px;
+        --header-height: 56px;
+        --card-padding: 16px;
+        --card-border-radius: 10px;
+    }
+    
+    /* Header ещё компактнее */
+    .app-header {
+        padding: 8px 12px !important;
+        gap: 8px !important;
+    }
+    
+    .app-header .app-header-title {
+        font-size: 20px !important;
+    }
+    
+    .app-header .app-header-subtitle {
+        font-size: 12px !important;
+    }
+    
+    /* Sidebar минимальный */
+    .sidebar.desktop-only {
+        padding: 12px !important;
+    }
+    
+    .sidebar-button {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+        min-height: 36px !important;
+        border-radius: 10px !important;
+    }
+    
+    /* Уменьшаем иконки */
+    .sidebar-button svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+    
+    /* Footer sidebar */
+    .sidebar-footer button {
+        padding: 10px 12px !important;
+        font-size: 13px !important;
+    }
+    
+    .theme-switch-label {
+        font-size: 12px !important;
+    }
+    
+    /* Info блок */
+    .instructions {
+        font-size: 14px !important;
+    }
+    
+    .instructions h3 {
+        font-size: 20px !important;
+    }
+    
+    .instructions ul,
+    .instructions ol {
+        padding-left: 16px !important;
+    }
+    
+    /* Editor tabs компактнее */
+    .editor-tabs {
+        flex-wrap: wrap;
+        gap: 4px !important;
+    }
+    
+    .editor-tabs button {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+    }
+    
+    /* Forms компактнее */
+    #add-user-form input,
+    #add-user-form select,
+    #add-user-form button {
+        padding: 10px 12px !important;
+        font-size: 13px !important;
+    }
+}
+
+/* ===== АНАЛИТИКА - АДАПТИВНОСТЬ ===== */
+@media screen and (max-width: 1439px) {
+    /* Traffic Analytics Hub */
+    .analytics-header h2 {
+        font-size: 22px !important;
+    }
+    
+    .analytics-header p {
+        font-size: 13px !important;
+    }
+    
+    /* KPI Cards */
+    .kpi-grid {
+        gap: 12px !important;
+    }
+    
+    .kpi-card {
+        padding: 16px !important;
+    }
+    
+    .kpi-card .kpi-value {
+        font-size: 24px !important;
+    }
+    
+    .kpi-card .kpi-label {
+        font-size: 11px !important;
+    }
+    
+    /* Date picker */
+    .analytics-date-controls {
+        flex-wrap: wrap;
+        gap: 8px !important;
+    }
+    
+    .analytics-date-controls input {
+        padding: 8px 10px !important;
+        font-size: 13px !important;
+    }
+    
+    .analytics-date-controls button {
+        padding: 8px 14px !important;
+        font-size: 12px !important;
+    }
+    
+    /* Charts */
+    .analytics-chart-container {
+        padding: 16px !important;
+    }
+    
+    /* Buyer Cards */
+    .buyer-card {
+        padding: 16px !important;
+    }
+    
+    .buyer-card h4 {
+        font-size: 16px !important;
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+        gap: 8px !important;
+    }
+    
+    .stat-item {
+        padding: 10px 12px !important;
+    }
+    
+    .stat-value {
+        font-size: 16px !important;
+    }
+    
+    .stat-label {
+        font-size: 10px !important;
+    }
+}
+
+@media screen and (max-width: 1023px) and (min-width: 769px) {
+    /* Ещё компактнее для маленьких экранов */
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .buyer-cards-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .kpi-card .kpi-value {
+        font-size: 20px !important;
+    }
+    
+    .analytics-chart-container canvas {
+        max-height: 250px !important;
+    }
+}
+
+/* ===== ГРАФИКИ И ТАБЛИЦЫ ===== */
+@media screen and (max-width: 1439px) {
+    /* Schedule calendar */
+    .schedule-container-wrapper {
+        padding: 16px !important;
+    }
+    
+    .schedule-header h2 {
+        font-size: 18px !important;
+    }
+    
+    .schedule-day {
+        height: 80px !important;
+        padding: 4px !important;
+    }
+    
+    .schedule-day-number {
+        font-size: 12px !important;
+    }
+    
+    .schedule-day-badge {
+        font-size: 10px !important;
+        padding: 2px 6px !important;
+    }
+    
+    .schedule-legend {
+        gap: 12px !important;
+    }
+    
+    .legend-item {
+        font-size: 11px !important;
+    }
+}
+
+/* ===== MANAGER CONTROLS ===== */
+@media screen and (max-width: 1439px) {
+    .manager-controls {
+        padding: 16px !important;
+        gap: 12px !important;
+    }
+    
+    .manager-controls-segmented button {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+    }
+    
+    /* Manager contact modal */
+    .modal-content {
+        padding: 24px !important;
+        max-width: 90% !important;
+    }
+    
+    .modal-content h3 {
+        font-size: 20px !important;
+    }
+}
+
+/* ===== УВЕДОМЛЕНИЯ ===== */
+@media screen and (max-width: 1439px) {
+    .notifications-header h3 {
+        font-size: 24px !important;
+    }
+    
+    .notifications-subtitle {
+        font-size: 13px !important;
+    }
+    
+    .notifications-card-header h4 {
+        font-size: 16px !important;
+    }
+    
+    .notifications-input,
+    .notifications-textarea {
+        padding: 12px 14px !important;
+        font-size: 14px !important;
+    }
+    
+    .notifications-publish-btn {
+        padding: 12px 24px !important;
+        font-size: 14px !important;
+    }
+    
+    .notifications-history-list .history-item {
+        padding: 14px 16px !important;
+    }
+    
+    .notifications-history-list .history-item .title {
+        font-size: 14px !important;
+    }
+}
+
+/* ===== APPLICATIONS / ЗАЯВКИ ===== */
+@media screen and (max-width: 1439px) {
+    .applications-container h3 {
+        font-size: 20px !important;
+    }
+    
+    .applications-filters {
+        flex-wrap: wrap;
+        gap: 8px !important;
+    }
+    
+    .applications-filters select,
+    .applications-filters button {
+        padding: 8px 12px !important;
+        font-size: 13px !important;
+    }
+    
+    .applications-list .application-card {
+        padding: 16px !important;
+    }
+}
+
+/* ===== ПОЛЬЗОВАТЕЛИ ===== */
+@media screen and (max-width: 1439px) {
+    .user-list-item {
+        padding: 12px 0 !important;
+    }
+    
+    .user-info .username {
+        font-size: 14px !important;
+    }
+    
+    .user-info .role {
+        font-size: 11px !important;
+    }
+    
+    .user-actions button {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+    }
+}
+
+/* ===== SCROLL IMPROVEMENTS ===== */
+/* Красивые тонкие скроллбары для webkit браузеров */
+.info::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar,
+.sidebar-scrollable-content::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.info::-webkit-scrollbar-track,
+.sidebar::-webkit-scrollbar-track,
+.sidebar-scrollable-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.info::-webkit-scrollbar-thumb,
+.sidebar::-webkit-scrollbar-thumb,
+.sidebar-scrollable-content::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 3px;
+}
+
+.info::-webkit-scrollbar-thumb:hover,
+.sidebar::-webkit-scrollbar-thumb:hover,
+.sidebar-scrollable-content::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-secondary);
+}
+
+/* Firefox scrollbar */
+.info,
+.sidebar,
+.sidebar-scrollable-content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+/* ===== ВЫСОТА ЭКРАНА - ДИНАМИЧЕСКОЕ ЗНАЧЕНИЕ ===== */
+/* Использование dvh для мобильных браузеров где 100vh может быть неточным */
+@supports (height: 100dvh) {
+    #app-container {
+        min-height: 100dvh;
+    }
+    
+    .info,
+    .sidebar.desktop-only {
+        max-height: calc(100dvh - var(--header-height));
+    }
+}
+
+/* ===== ПЛАВНЫЕ ПЕРЕХОДЫ ===== */
+.sidebar,
+.info,
+.app-header,
+.sidebar-button,
+.editor-tabs button,
+.kpi-card,
+.notifications-create-card {
+    transition: all 0.2s ease;
+}
+
+/* ===== ОПТИМИЗАЦИЯ ДЛЯ ПЕЧАТИ ===== */
+@media print {
+    .sidebar,
+    .app-header,
+    .mobile-bottom-nav,
+    .notifications-btn,
+    #sidebar-expand-btn {
+        display: none !important;
+    }
+    
+    .info {
+        padding: 20px !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+    
+    body {
+        overflow: visible !important;
+    }
+}
+
+/* ===== ИСПРАВЛЕНИЕ ДЛЯ СВЁРНУТОГО SIDEBAR ===== */
+.sidebar.collapsed + .info {
+    max-width: 100%;
+}
+
+/* ===== ПРЕДОТВРАЩЕНИЕ ГОРИЗОНТАЛЬНОЙ ПРОКРУТКИ ===== */
+html {
+    overflow-x: hidden;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* ===== ФИКС ДЛЯ ТАБЛИЦ И ШИРОКОГО КОНТЕНТА ===== */
+.info table,
+.info pre,
+.info .wide-content {
+    max-width: 100%;
+    overflow-x: auto;
+    display: block;
+}
+
+/* ===== КОНТЕЙНЕРЫ ВНУТРИ INFO ===== */
+.info > * {
+    max-width: 100%;
+}
+
+#main-content-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+/* ===== EDITOR CONTENT WRAPPER ===== */
+#content-editor {
+    width: 100%;
+    max-width: 100%;
+}
+
+.editor-panel {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* ===== ANALYTICS CONTAINERS ===== */
+.analytics-hub {
+    width: 100%;
+    max-width: 100%;
+}
+
+.analytics-content {
+    width: 100%;
+}
+
+/* ===== ФИКС FLEX OVERFLOW ===== */
+main > * {
+    min-width: 0;
+}
+
+/* ===== LANDING LINK IN HEADER ===== */
+@media screen and (max-width: 1200px) {
+    .app-header .btn--secondary {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+    }
+}
+
+/* ===== COLLAPSE BUTTON ===== */
+@media screen and (max-width: 1439px) {
+    .sidebar-collapse-btn {
+        width: 28px !important;
+        height: 28px !important;
+    }
+    
+    .sidebar-expand-btn {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+    }
+    
+    .sidebar-expand-btn svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+}
+
+/* ===== ANALYTICS HUB - ПОЛНАЯ АДАПТИВНОСТЬ ===== */
+.analytics-hub {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+/* Analytics Header */
+.analytics-header {
+    margin-bottom: 24px;
+}
+
+/* Analytics Date Controls - Гибкая обёртка */
+.analytics-date-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+/* KPI Grid - Адаптивная сетка */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+@media screen and (max-width: 1200px) {
+    .kpi-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+    }
+}
+
+/* Buyer Cards Grid */
+.buyer-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+@media screen and (max-width: 1200px) {
+    .buyer-cards-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Chart Container */
+.analytics-chart-container {
+    width: 100%;
+    overflow: hidden;
+}
+
+.analytics-chart-container canvas {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+/* ===== EDITOR PANEL IMPROVEMENTS ===== */
+.editor-main-controls {
+    margin-bottom: 20px;
+}
+
+.editor-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+@media screen and (max-width: 1200px) {
+    .editor-tabs {
+        gap: 2px;
+    }
+    
+    .editor-tabs button {
+        flex: 1 1 auto;
+        min-width: fit-content;
+    }
+}
+
+/* ===== MANAGER SECTION ===== */
+.manager-section {
+    width: 100%;
+    max-width: 100%;
+}
+
+.manager-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.manager-card {
+    width: 100%;
+}
+
+/* ===== INSTRUCTIONS CONTENT ===== */
+.instructions {
+    width: 100%;
+    max-width: 100%;
+}
+
+.instructions img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ===== MODAL IMPROVEMENTS ===== */
+.modal-content {
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+@media screen and (max-width: 1200px) {
+    .modal-content {
+        padding: 20px !important;
+    }
+}
+
+/* ===== TABLES IN ANALYTICS ===== */
+.analytics-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.analytics-table-wrapper table {
+    min-width: 600px;
+}
+
+/* ===== SEGMENTED CONTROLS ===== */
+.manager-controls-segmented {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.manager-controls-segmented::-webkit-scrollbar {
+    display: none;
+}
+
+/* ===== SIDEBAR SCROLLABLE CONTENT ===== */
+.sidebar-scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+}
+
+/* ===== FIX FOR VERY SMALL HEIGHTS (< 700px) ===== */
+@media screen and (max-height: 700px) {
+    :root {
+        --content-padding: 16px;
+        --card-padding: 12px;
+    }
+    
+    .app-header {
+        padding: 6px 12px !important;
+    }
+    
+    .app-header .app-header-title {
+        font-size: 20px !important;
+    }
+    
+    .app-header .app-header-subtitle {
+        display: none !important;
+    }
+    
+    .sidebar-footer {
+        padding: 8px !important;
+    }
+    
+    .sidebar-footer button {
+        padding: 8px 10px !important;
+        font-size: 12px !important;
+    }
+    
+    .kpi-card {
+        padding: 12px !important;
+    }
+    
+    .kpi-card .kpi-value {
+        font-size: 18px !important;
+    }
+}
+
+/* ===== LANDSCAPE TABLETS ===== */
+@media screen and (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+    :root {
+        --sidebar-width: 220px;
+        --content-padding: 16px;
+    }
+    
+    .sidebar.desktop-only {
+        padding: 12px !important;
+    }
+    
+    .sidebar-button {
+        padding: 8px 10px !important;
+        font-size: 12px !important;
+    }
+}
+
+/* ===== ENSURE NO HORIZONTAL OVERFLOW ===== */
+.info > *,
+#content-editor > *,
+.editor-panel > * {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+/* ===== ACCESSIBILITY: FOCUS STATES ===== */
+@media screen and (max-width: 1439px) {
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+        outline: 2px solid var(--primary-blue);
+        outline-offset: 2px;
+    }
+}
+
+/* ===== LOADING STATES ===== */
+.loading-skeleton {
+    background: linear-gradient(90deg, var(--border-color) 25%, var(--background-main) 50%, var(--border-color) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ===== DARK MODE ADJUSTMENTS FOR SMALL SCREENS ===== */
+body.dark-mode .info::-webkit-scrollbar-thumb,
+body.dark-mode .sidebar::-webkit-scrollbar-thumb {
+    background-color: #475569;
+}
+
+body.dark-mode .info::-webkit-scrollbar-track,
+body.dark-mode .sidebar::-webkit-scrollbar-track {
+    background: #1e293b;
+}
