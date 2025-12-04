@@ -2389,72 +2389,105 @@ function renderTrafficSummary(data) {
         const tooltip = `Данные за этот период могут быть неполными (${buyerCompleteness.filledDays}/${buyerCompleteness.expectedDays} дней). CPL будет точным только после внесения всех расходов таргетологом. ${missingText}`;
         return `<span class="data-warning-icon" title="${tooltip}">⚠️</span>`;
     };
-    
     const mishaWarning = completeness ? getDataWarning(completeness.misha, 'Миша') : '';
     const alinaWarning = completeness ? getDataWarning(completeness.alina, 'Алина') : '';
     const hasAnyWarning = mishaWarning || alinaWarning;
 
+    // New compact layout: Buyers row + Summary section
     container.innerHTML = `
-        <!-- Misha Summary -->
-        <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #3b82f6;">
-            <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">👨‍💻 Миша</p>
-            <div style="font-size: 28px; font-weight: 700; color: var(--text-primary);">${summary.misha.leads}</div>
-            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">лидов • $${summary.misha.spend} • CPL $${summary.misha.cpl}${mishaWarning}</div>
-        </div>
-
-        <!-- Alina Summary -->
-        <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #8b5cf6;">
-            <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">👩‍💻 Алина</p>
-            <div style="font-size: 28px; font-weight: 700; color: var(--text-primary);">${summary.alina.leads}</div>
-            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">лидов • $${summary.alina.spend} • CPL $${summary.alina.cpl}${alinaWarning}</div>
-        </div>
-
-        <!-- Total Leads with Trend -->
-        <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #10b981;">
-            <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">📊 Всего лидов</p>
-            <div style="font-size: 28px; font-weight: 700; color: var(--text-primary);">
-            <div style="font-size: 28px; font-weight: 700; color: #10b981;">
-                ${totalLeads}${trends ? getTrendBadge(trends.leads, false) : ''}
-            </div>
-            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
-                CPL: $${avgCPL}${trends ? getTrendBadge(trends.cpl, true) : ''}
-            </div>
-        </div>
-
-        <!-- Total Spend with Trend -->
-        <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #f59e0b;">
-            <p style="margin: 0 0 8px; font-size: 13px; color: var(--text-secondary);">💰 Общий расход</p>
-            <div style="font-size: 28px; font-weight: 700; color: #f59e0b;">
-                $${totalSpend.toFixed(2)}${trends ? getTrendBadge(trends.spend, false) : ''}
-            </div>
-            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">vs предыдущий период</div>
-        </div>
-
-        <!-- HR Эффективность - Простой текстовый список -->
-        ${funnel ? `
-        <div style="background: var(--background-card); border-radius: 12px; padding: 16px; border-left: 4px solid #8b5cf6; grid-column: span 2;">
-            <p style="margin: 0 0 12px; font-size: 13px; color: var(--text-secondary);">📊 Эффективность HR (Сводка)</p>
-            
-            <div style="font-size: 13px; line-height: 1.8;">
-                <div>🔹 <b>Новых на обучении:</b> <span style="color: #3b82f6; font-weight: 700;">${funnel.training}</span> (строк в таблице)</div>
-                <div>🔹 <b>Стали стажёрами:</b> <span style="color: #10b981; font-weight: 700;">${funnel.interns}</span> (получили статус)</div>
+        <!-- ROW 1: Compact Buyer Cards (Horizontal) -->
+        <div class="traffic-buyers-row">
+            <!-- Misha - Compact Horizontal -->
+            <div class="traffic-buyer-compact misha">
+                <div class="buyer-icon">👨‍💻</div>
+                <div class="buyer-data">
+                    <div class="buyer-name">Миша</div>
+                    <div class="buyer-stats">
+                        <span class="stat-leads">${summary.misha.leads} лидов</span>
+                        <span class="stat-divider">•</span>
+                        <span class="stat-spend">$${summary.misha.spend}</span>
+                        <span class="stat-divider">•</span>
+                        <span class="stat-cpl">CPL $${summary.misha.cpl}${mishaWarning}</span>
+                    </div>
+                </div>
             </div>
             
-            <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-color); font-size: 13px; line-height: 1.8;">
-                <div>📈 <b>Конверсия (Обучение → Стажёр):</b> <span style="color: #10b981; font-weight: 700;">${funnel.hr_conversion}</span></div>
-                <div>📉 <b>Качество трафика (Лид → Обучение):</b> <span style="color: #6366f1; font-weight: 700;">${funnel.traffic_quality}</span></div>
-            </div>
-            
-            <div style="margin-top: 10px; padding: 6px 10px; background: var(--background-secondary); border-radius: 4px; font-size: 11px; color: var(--text-secondary);">
-                📥 Входящий поток: <b>${funnel.raw_leads}</b> сырых лидов
+            <!-- Alina - Compact Horizontal -->
+            <div class="traffic-buyer-compact alina">
+                <div class="buyer-icon">👩‍💻</div>
+                <div class="buyer-data">
+                    <div class="buyer-name">Алина</div>
+                    <div class="buyer-stats">
+                        <span class="stat-leads">${summary.alina.leads} лидов</span>
+                        <span class="stat-divider">•</span>
+                        <span class="stat-spend">$${summary.alina.spend}</span>
+                        <span class="stat-divider">•</span>
+                        <span class="stat-cpl">CPL $${summary.alina.cpl}${alinaWarning}</span>
+                    </div>
+                </div>
             </div>
         </div>
-        ` : ''}
+
+        <!-- ROW 2: Summary Section (Spacious) -->
+        <div class="traffic-summary-section">
+            <!-- Main Metrics -->
+            <div class="summary-metrics">
+                <div class="metric-block leads">
+                    <div class="metric-icon">📊</div>
+                    <div class="metric-content">
+                        <div class="metric-label">Всего лидов</div>
+                        <div class="metric-value">${totalLeads}${trends ? getTrendBadge(trends.leads, false) : ''}</div>
+                    </div>
+                </div>
+                
+                <div class="metric-block spend">
+                    <div class="metric-icon">💰</div>
+                    <div class="metric-content">
+                        <div class="metric-label">Общий расход</div>
+                        <div class="metric-value">$${totalSpend.toFixed(2)}${trends ? getTrendBadge(trends.spend, false) : ''}</div>
+                    </div>
+                </div>
+                
+                <div class="metric-block cpl">
+                    <div class="metric-icon">📈</div>
+                    <div class="metric-content">
+                        <div class="metric-label">Средний CPL</div>
+                        <div class="metric-value">$${avgCPL}${trends ? getTrendBadge(trends.cpl, true) : ''}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HR Funnel (if exists) -->
+            ${funnel ? `
+            <div class="summary-hr-funnel">
+                <div class="funnel-title">📋 HR Воронка</div>
+                <div class="funnel-flow">
+                    <div class="funnel-step">
+                        <span class="step-value">${funnel.raw_leads}</span>
+                        <span class="step-label">Сырых лидов</span>
+                    </div>
+                    <div class="funnel-arrow">→</div>
+                    <div class="funnel-step">
+                        <span class="step-value">${funnel.training}</span>
+                        <span class="step-label">На обучении</span>
+                        <span class="step-rate">${funnel.traffic_quality}</span>
+                    </div>
+                    <div class="funnel-arrow">→</div>
+                    <div class="funnel-step success">
+                        <span class="step-value">${funnel.interns}</span>
+                        <span class="step-label">Стажёры</span>
+                        <span class="step-rate">${funnel.hr_conversion}</span>
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+        </div>
     `;
 }
 
 function renderTrafficCharts(chartData) {
     // Destroy existing charts
+    // ...
     destroyTrafficCharts();
 
     const labels = chartData.map(d => {
